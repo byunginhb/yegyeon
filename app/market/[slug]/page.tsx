@@ -1,0 +1,236 @@
+import { notFound } from 'next/navigation'
+import { adminSupabase } from '@/lib/supabase/admin'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { Users, Calendar, TrendingUp, ArrowLeft } from 'lucide-react'
+import type { Market, MarketOption } from '@/types'
+import InlineMarketBetting from '@/components/market/InlineMarketBetting'
+import CommentSection from '@/components/market/CommentSection'
+import RelatedQuestions from '@/components/market/RelatedQuestions'
+import type { ChartPoint } from '@/components/market/ProbabilityChart'
+import Link from 'next/link'
+import { ReportButton } from '@/components/common/ReportButton'
+
+interface Props {
+  params: Promise<{ slug: string }>
+}
+
+export async function generateMetadata({ params }: Props) {
+  const { slug } = await params
+  const { data } = await adminSupabase
+    .from('markets')
+    .select('title, description')
+    .eq('slug', slug)
+    .single()
+  if (!data) return { title: '마켓을 찾을 수 없습니다 — 예견' }
+  return {
+    title: `${data.title} — 예견`,
+    description: data.description ?? undefined,
+  }
+}
+
+export default async function MarketDetailPage({ params }: Props) {
+  const { slug } = await params
+
+  const [marketResult, authResult] = await Promise.all([
+    adminSupabase
+      .from('markets')
+      .select(
+        `
+        id, title, description, type, status,
+        creator_id, category_id, close_date, resolved_at, resolution,
+        total_volume, unique_traders, comment_count,
+        yes_probability, yes_amount, no_amount,
+        min_value, max_value, unit,
+        is_hidden, tags, created_at, updated_at,
+        creator:users!creator_id(id, username, display_name, avatar_url),
+        category:categories!category_id(id, name, slug, icon, color),
+        options:market_options(id, market_id, text, color, probability, total_amount, sort_order)
+        `
+      )
+      .eq('slug', slug)
+      .single(),
+    createServerSupabaseClient().then((s) => s.auth.getUser()),
+  ])
+
+  const { data, error } = marketResult
+  if (error || !data || data.is_hidden) notFound()
+
+  const market = data as unknown as Market & { options?: MarketOption[] }
+
+  // 인증 & 포인트
+  let userPoints: number | null = null
+  let isLoggedIn = false
+  const authUser = authResult.data.user
+  if (authUser) {
+    isLoggedIn = true
+    const { data: dbUser } = await adminSupabase
+      .from('users')
+      .select('points')
+      .eq('auth_id', authUser.id)
+      .single()
+    userPoints = dbUser?.points ?? null
+  }
+
+  // 확률 히스토리 (bets.probability_at_bet 이용)
+  const { data: betRows } = await adminSupabase
+    .from('bets')
+    .select('created_at, probability_at_bet')
+    .eq('market_id', market.id)
+    .not('probability_at_bet', 'is', null)
+    .order('created_at', { ascending: true })
+
+  const chartData: ChartPoint[] = [
+    // 시작점: 마켓 생성 시 50%
+    { t: new Date(market.created_at).getTime(), p: 50 },
+    ...(betRows ?? []).map((b) => ({
+      t: new Date(b.created_at).getTime(),
+      p: Math.round((b.probability_at_bet as number) * 100),
+    })),
+    // 현재 확률
+    { t: Date.now(), p: Math.round(market.yes_probability * 100) },
+  ]
+
+  const isOpen = market.status === 'open'
+  const statusLabel =
+    market.status === 'open' ? '진행 중' :
+    market.status === 'closed' ? '마감됨' :
+    market.status === 'resolved' ? '종료' : '취소됨'
+
+  const closeDate = new Date(market.close_date)
+
+  return (
+    /* 3단: 좌측 정렬로 꽉 채우되 내부 flex로 메인+관련질문 분리 */
+    <div className="max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+      <div className="flex gap-8">
+
+        {/* ── 메인 콘텐츠 ─────────────────────────────── */}
+        <div className="flex-1 min-w-0">
+
+          {/* 뒤로가기 + 상태 */}
+          <div className="flex items-center gap-2 text-sm text-ink-400 mb-5">
+            <Link href="/" className="flex items-center gap-1.5 hover:text-ink-700 transition-colors">
+              <ArrowLeft className="h-4 w-4" />
+              홈
+            </Link>
+            {market.category && (
+              <>
+                <span>/</span>
+                <span className="text-ink-500">{market.category.icon} {market.category.name}</span>
+              </>
+            )}
+            <span className="ml-auto">
+              <span
+                className={`text-xs font-medium px-2.5 py-1 rounded-full ${
+                  isOpen ? 'bg-teal-500/10 text-teal-600' : 'bg-ink-200 text-ink-600'
+                }`}
+              >
+                {statusLabel}
+              </span>
+            </span>
+          </div>
+
+          {/* 제목 */}
+          <h1 className="text-2xl font-bold text-ink-1000 leading-snug mb-3">
+            {market.title}
+          </h1>
+
+          {/* 생성자 + 통계 바 */}
+          <div className="flex items-center gap-3 flex-wrap mb-5 text-sm text-ink-500">
+            {market.creator && (
+              <>
+                <div className="flex items-center gap-1.5">
+                  <div className="h-5 w-5 rounded-full bg-primary/15 flex items-center justify-center text-[10px] font-bold text-primary">
+                    {market.creator.display_name.slice(0, 1).toUpperCase()}
+                  </div>
+                  <Link
+                    href={`/profile/${market.creator.username}`}
+                    className="font-medium text-ink-700 hover:text-primary transition-colors"
+                  >
+                    {market.creator.display_name}
+                  </Link>
+                </div>
+                <span className="text-ink-300">·</span>
+              </>
+            )}
+            <span className="flex items-center gap-1">
+              <Users className="h-3.5 w-3.5" />
+              {market.unique_traders.toLocaleString()}명
+            </span>
+            <span className="text-ink-300">·</span>
+            <span className="flex items-center gap-1">
+              <TrendingUp className="h-3.5 w-3.5" />
+              {market.total_volume.toLocaleString()} 포인트
+            </span>
+            <span className="text-ink-300">·</span>
+            <span className="flex items-center gap-1">
+              <Calendar className="h-3.5 w-3.5" />
+              {closeDate.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })} 마감
+            </span>
+            {isLoggedIn && (
+              <ReportButton
+                type="market"
+                targetId={market.id}
+                targetLabel={market.title}
+                variant="text"
+                className="ml-auto"
+              />
+            )}
+          </div>
+
+          {/* 종료 결과 */}
+          {market.status === 'resolved' && market.resolution && (
+            <div className="mb-5 p-4 rounded-xl bg-teal-500/10 border border-teal-500/20">
+              <p className="text-sm font-semibold text-teal-700 mb-1">종료 결과</p>
+              <p className="text-xl font-bold text-teal-600 uppercase">{market.resolution}</p>
+            </div>
+          )}
+
+          {/* 확률 차트 + YES/NO 버튼 + 인라인 베팅 폼 */}
+          <InlineMarketBetting
+            market={market}
+            userPoints={userPoints}
+            isLoggedIn={isLoggedIn}
+            chartData={market.type === 'binary' ? chartData : undefined}
+          />
+
+          {/* 설명 */}
+          {market.description && (
+            <div className="mb-5 p-4 bg-canvas-50 rounded-xl border border-ink-200">
+              <p className="text-sm text-ink-700 leading-relaxed whitespace-pre-line">
+                {market.description}
+              </p>
+            </div>
+          )}
+
+          {/* 태그 */}
+          {market.tags && market.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-5">
+              {market.tags.map((tag: string) => (
+                <span
+                  key={tag}
+                  className="text-xs px-2.5 py-1 rounded-full bg-canvas-100 border border-ink-200 text-ink-600"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* 댓글 */}
+          <CommentSection marketId={market.id} isLoggedIn={isLoggedIn} />
+        </div>
+
+        {/* ── 관련 질문 패널 (xl+) ──────────────────── */}
+        <div className="hidden xl:block w-72 shrink-0">
+          <div className="sticky top-6">
+            <RelatedQuestions
+              currentMarketId={market.id}
+              categoryId={market.category_id ?? null}
+            />
+          </div>
+        </div>
+
+      </div>
+    </div>
+  )
+}

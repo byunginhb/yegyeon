@@ -1,26 +1,193 @@
+@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap');
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
+/* ── Tailwind v4 테마 토큰 ─────────────────────────── */
 @theme inline {
+  /* 폰트 사이즈 +2px 전역 적용 */
+  --text-xs:   0.875rem;   /* 14px (기본 12px) */
+  --text-sm:   1rem;       /* 16px (기본 14px) */
+  --text-base: 1.125rem;   /* 18px (기본 16px) */
+  --text-lg:   1.25rem;    /* 20px (기본 18px) */
+  --text-xl:   1.375rem;   /* 22px (기본 20px) */
+  --text-2xl:  1.625rem;   /* 26px (기본 24px) */
+  --text-3xl:  2rem;       /* 32px (기본 30px) */
+  --text-4xl:  2.375rem;   /* 38px (기본 36px) */
+  --text-5xl:  3.125rem;   /* 50px (기본 48px) */
+  /* shadcn 기본 */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  /* Manifold 디자인 토큰 */
+  --color-ink-0:    var(--ink-0);
+  --color-ink-100:  var(--ink-100);
+  --color-ink-200:  var(--ink-200);
+  --color-ink-300:  var(--ink-300);
+  --color-ink-400:  var(--ink-400);
+  --color-ink-500:  var(--ink-500);
+  --color-ink-600:  var(--ink-600);
+  --color-ink-700:  var(--ink-700);
+  --color-ink-800:  var(--ink-800);
+  --color-ink-900:  var(--ink-900);
+  --color-ink-1000: var(--ink-1000);
+
+  --color-canvas-0:   var(--canvas-0);
+  --color-canvas-50:  var(--canvas-50);
+  --color-canvas-100: var(--canvas-100);
+
+  --color-teal-300: var(--yes-300);
+  --color-teal-400: var(--yes-400);
+  --color-teal-500: var(--yes-500);
+  --color-teal-600: var(--yes-600);
+  --color-teal-700: var(--yes-700);
+
+  --color-scarlet-300: var(--no-300);
+  --color-scarlet-400: var(--no-400);
+  --color-scarlet-500: var(--no-500);
+  --color-scarlet-600: var(--no-600);
+  --color-scarlet-700: var(--no-700);
+
+  --color-brand-500: #6366f1;
+  --color-brand-600: #4f46e5;
+
+  --font-sans: 'Figtree', 'Noto Sans KR', sans-serif;
+
+  --animate-fade-in: fadeIn 0.2s ease-in-out;
+  --animate-slide-up: slideUp 0.3s ease-out;
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes slideUp {
+    from { transform: translateY(8px); opacity: 0; }
+    to   { transform: translateY(0);   opacity: 1; }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ── 라이트 모드 ───────────────────────────────────── */
+:root {
+  /* shadcn */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: #6366f1;
+  --primary-foreground: #ffffff;
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: #E70D3D;
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: #6366f1;
+  --radius: 0.75rem;
+
+  /* Manifold ink (텍스트) */
+  --ink-0:    #ffffff;
+  --ink-100:  #f9fafb;
+  --ink-200:  #f3f4f6;
+  --ink-300:  #e5e7eb;
+  --ink-400:  #d1d5db;
+  --ink-500:  #9ca3af;
+  --ink-600:  #6b7280;
+  --ink-700:  #4b5563;
+  --ink-800:  #374151;
+  --ink-900:  #1f2937;
+  --ink-1000: #111827;
+
+  /* Manifold canvas (배경) */
+  --canvas-0:   #ffffff;
+  --canvas-50:  #f9fafb;
+  --canvas-100: #f3f4f6;
+
+  /* YES (teal/emerald) */
+  --yes-300: #6ee7b7;
+  --yes-400: #34d399;
+  --yes-500: #10b981;
+  --yes-600: #059669;
+  --yes-700: #047857;
+
+  /* NO (scarlet/red) */
+  --no-300: #fca5a5;
+  --no-400: #f87171;
+  --no-500: #ef4444;
+  --no-600: #dc2626;
+  --no-700: #b91c1c;
+}
+
+/* ── 다크 모드 ────────────────────────────────────── */
+.dark {
+  --background: #111827;
+  --foreground: #f9fafb;
+  --card: #1f2937;
+  --card-foreground: #f9fafb;
+  --popover: #1f2937;
+  --popover-foreground: #f9fafb;
+  --primary: #818cf8;
+  --primary-foreground: #ffffff;
+  --secondary: #374151;
+  --secondary-foreground: #f9fafb;
+  --muted: #374151;
+  --muted-foreground: #9ca3af;
+  --accent: #374151;
+  --accent-foreground: #f9fafb;
+  --destructive: #f87171;
+  --border: rgba(255,255,255,0.1);
+  --input: rgba(255,255,255,0.15);
+  --ring: #818cf8;
+
+  --ink-0:    #111827;
+  --ink-100:  #1f2937;
+  --ink-200:  #374151;
+  --ink-300:  #4b5563;
+  --ink-400:  #6b7280;
+  --ink-500:  #9ca3af;
+  --ink-600:  #d1d5db;
+  --ink-700:  #e5e7eb;
+  --ink-800:  #f3f4f6;
+  --ink-900:  #f9fafb;
+  --ink-1000: #ffffff;
+
+  --canvas-0:   #1f2937;
+  --canvas-50:  #374151;
+  --canvas-100: #111827;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-canvas-100 text-ink-900;
+    font-family: 'Figtree', 'Noto Sans KR', sans-serif;
+  }
 }

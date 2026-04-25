@@ -1,0 +1,86 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { adminSupabase } from '@/lib/supabase/admin'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
+import type { Comment } from '@/types'
+
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url)
+  const market_id = searchParams.get('market_id')
+
+  if (!market_id) {
+    return NextResponse.json({ success: false, error: 'market_id가 필요합니다' }, { status: 400 })
+  }
+
+  const { data, error } = await adminSupabase
+    .from('comments')
+    .select(`
+      id, market_id, user_id, content, is_deleted, created_at, updated_at,
+      user:users!user_id(id, username, display_name, avatar_url)
+    `)
+    .eq('market_id', market_id)
+    .eq('is_deleted', false)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+  }
+
+  return NextResponse.json({ success: true, data: data as unknown as Comment[] })
+}
+
+export async function POST(request: NextRequest) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user: authUser } } = await supabase.auth.getUser()
+
+  if (!authUser) {
+    return NextResponse.json({ success: false, error: '로그인이 필요합니다' }, { status: 401 })
+  }
+
+  const body = await request.json()
+  const { market_id, content } = body
+
+  if (!market_id || !content) {
+    return NextResponse.json({ success: false, error: 'market_id와 content가 필요합니다' }, { status: 400 })
+  }
+
+  const trimmed = String(content).trim()
+  if (trimmed.length === 0) {
+    return NextResponse.json({ success: false, error: '댓글 내용을 입력해주세요' }, { status: 400 })
+  }
+  if (trimmed.length > 500) {
+    return NextResponse.json({ success: false, error: '댓글은 500자 이내로 작성해주세요' }, { status: 400 })
+  }
+
+  // users 테이블에서 user_id 조회
+  const { data: dbUser, error: userError } = await adminSupabase
+    .from('users')
+    .select('id')
+    .eq('auth_id', authUser.id)
+    .single()
+
+  if (userError || !dbUser) {
+    return NextResponse.json({ success: false, error: '사용자를 찾을 수 없습니다' }, { status: 404 })
+  }
+
+  const { data, error } = await adminSupabase
+    .from('comments')
+    .insert({ market_id, user_id: dbUser.id, content: trimmed })
+    .select(`
+      id, market_id, user_id, content, is_deleted, created_at, updated_at,
+      user:users!user_id(id, username, display_name, avatar_url)
+    `)
+    .single()
+
+  if (error) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+  }
+
+  // comment_count 증가 (실패해도 무시)
+  try {
+    await adminSupabase.rpc('increment_comment_count', { p_market_id: market_id })
+  } catch {
+    // 무시
+  }
+
+  return NextResponse.json({ success: true, data: data as unknown as Comment }, { status: 201 })
+}
