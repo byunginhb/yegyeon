@@ -58,7 +58,7 @@ interface MarketDetail {
 const STATUS_LABELS: Record<string, string> = {
   open: '진행 중',
   closed: '마감',
-  resolved: '해결됨',
+  resolved: '마감됨',
   cancelled: '취소됨',
 }
 
@@ -178,9 +178,9 @@ export default function AdminMarketDetailPage({ params }: { params: Promise<{ id
             {market.status === 'open' && (
               <Button
                 variant="outline"
-                onClick={() => patch({ status: 'closed' }, '마켓이 종료되었습니다.')}
+                onClick={() => patch({ status: 'closed' }, '마켓이 취소되었습니다.')}
               >
-                강제 종료
+                마켓 취소
               </Button>
             )}
           </div>

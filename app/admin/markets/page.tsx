@@ -42,7 +42,7 @@ interface Market {
 const STATUS_LABELS: Record<string, string> = {
   open: '진행 중',
   closed: '마감',
-  resolved: '해결됨',
+  resolved: '마감됨',
   cancelled: '취소됨',
 }
 
@@ -67,6 +67,12 @@ function formatDate(iso: string) {
   })
 }
 
+interface MarketOption {
+  id: string
+  text: string
+  probability: number
+}
+
 interface ResolveModalProps {
   market: Market | null
   onClose: () => void
@@ -76,9 +82,28 @@ interface ResolveModalProps {
 function ResolveModal({ market, onClose, onResolved }: ResolveModalProps) {
   const [resolutionValue, setResolutionValue] = useState('')
   const [loading, setLoading] = useState(false)
+  const [options, setOptions] = useState<MarketOption[]>([])
+  const [optionsLoading, setOptionsLoading] = useState(false)
 
   useEffect(() => {
     setResolutionValue('')
+    setOptions([])
+    if (market?.type === 'multiple_choice') {
+      setOptionsLoading(true)
+      fetch(`/api/admin/markets/${market.id}`)
+        .then((r) => r.json())
+        .then((json) => {
+          if (json.success && json.data?.market?.options) {
+            setOptions(
+              json.data.market.options
+                .slice()
+                .sort((a: MarketOption & { sort_order: number }, b: MarketOption & { sort_order: number }) => a.sort_order - b.sort_order)
+            )
+          }
+        })
+        .catch(() => {})
+        .finally(() => setOptionsLoading(false))
+    }
   }, [market])
 
   if (!market) return null
@@ -94,11 +119,11 @@ function ResolveModal({ market, onClose, onResolved }: ResolveModalProps) {
       })
       const data = await res.json()
       if (data.success) {
-        toast.success('마켓이 해결되었습니다.')
+        toast.success('마켓이 마감되었습니다.')
         onResolved()
         onClose()
       } else {
-        toast.error(data.error ?? '마켓 해결 실패')
+        toast.error(data.error ?? '마켓 마감 실패')
       }
     } catch {
       toast.error('서버 오류가 발생했습니다.')
@@ -111,7 +136,7 @@ function ResolveModal({ market, onClose, onResolved }: ResolveModalProps) {
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>마켓 해결</DialogTitle>
+          <DialogTitle>마켓 마감</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <p className="text-sm text-ink-700 line-clamp-2">{market.title}</p>
@@ -125,11 +150,26 @@ function ResolveModal({ market, onClose, onResolved }: ResolveModalProps) {
                 <SelectItem value="NO">NO</SelectItem>
               </SelectContent>
             </Select>
+          ) : market.type === 'multiple_choice' ? (
+            optionsLoading ? (
+              <div className="text-sm text-ink-400">옵션 불러오는 중...</div>
+            ) : (
+              <Select value={resolutionValue} onValueChange={(v) => setResolutionValue(v ?? '')}>
+                <SelectTrigger>
+                  <SelectValue placeholder="당첨 옵션 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  {options.map((opt) => (
+                    <SelectItem key={opt.id} value={opt.id}>
+                      {opt.text} ({Math.round(opt.probability * 100)}%)
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )
           ) : (
             <Input
-              placeholder={
-                market.type === 'numeric' ? '최종 숫자 입력' : '당첨 옵션 입력'
-              }
+              placeholder="최종 숫자 입력"
               value={resolutionValue}
               onChange={(e) => setResolutionValue(e.target.value)}
             />
@@ -143,7 +183,7 @@ function ResolveModal({ market, onClose, onResolved }: ResolveModalProps) {
             onClick={handleResolve}
             disabled={!resolutionValue.trim() || loading}
           >
-            {loading ? '처리 중...' : '해결 확정'}
+            {loading ? '처리 중...' : '마감 확정'}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -246,10 +286,10 @@ export default function AdminMarketsPage() {
       })
       const data = await res.json()
       if (data.success) {
-        toast.success('마켓이 종료되었습니다.')
+        toast.success('마켓이 취소되었습니다.')
         fetchMarkets()
       } else {
-        toast.error(data.error ?? '마켓 종료 실패')
+        toast.error(data.error ?? '마켓 취소 실패')
       }
     } catch {
       toast.error('서버 오류가 발생했습니다.')
@@ -312,7 +352,7 @@ export default function AdminMarketsPage() {
             <SelectItem value="all">전체</SelectItem>
             <SelectItem value="open">진행 중</SelectItem>
             <SelectItem value="closed">마감</SelectItem>
-            <SelectItem value="resolved">해결됨</SelectItem>
+            <SelectItem value="resolved">마감됨</SelectItem>
           </SelectContent>
         </Select>
         <span className="text-sm text-ink-500">총 {total.toLocaleString()}개</span>
@@ -389,7 +429,7 @@ export default function AdminMarketsPage() {
                           className="h-7 text-xs px-2"
                           onClick={() => setCloseTarget(market)}
                         >
-                          종료
+                          취소
                         </Button>
                       )}
                       {(market.status === 'open' || market.status === 'closed') && (
@@ -399,7 +439,7 @@ export default function AdminMarketsPage() {
                           className="h-7 text-xs px-2"
                           onClick={() => setResolveTarget(market)}
                         >
-                          해결
+                          마감
                         </Button>
                       )}
                       <Button
@@ -453,9 +493,9 @@ export default function AdminMarketsPage() {
 
       <ConfirmModal
         open={!!closeTarget}
-        title="마켓 강제 종료"
-        description={`"${closeTarget?.title}" 마켓을 강제 종료하시겠습니까? 이 작업은 되돌릴 수 없습니다.`}
-        confirmLabel="종료"
+        title="마켓 취소"
+        description={`"${closeTarget?.title}" 마켓을 취소하시겠습니까? 베팅이 중단되며 되돌릴 수 없습니다.`}
+        confirmLabel="마켓 취소"
         onConfirm={handleClose}
         onClose={() => setCloseTarget(null)}
         loading={actionLoading}
