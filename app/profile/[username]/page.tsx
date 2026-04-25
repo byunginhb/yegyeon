@@ -148,7 +148,14 @@ export default async function ProfilePage({ params }: Props) {
                   <h1 className="text-xl font-bold text-ink-1000">{profileUser.display_name}</h1>
                   <p className="text-sm text-ink-500">@{profileUser.username}</p>
                 </div>
-                {!isSelf && (
+                {isSelf ? (
+                  <Link
+                    href="/settings"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border border-ink-200 text-ink-700 hover:bg-canvas-100 hover:text-ink-900 transition-colors"
+                  >
+                    프로필 편집
+                  </Link>
+                ) : (
                   <div className="flex items-center gap-2">
                     <FollowButton
                       targetUserId={profileUser.id}

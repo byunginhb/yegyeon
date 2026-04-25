@@ -19,7 +19,7 @@ const NAV_ITEMS = [
   { href: '/',           icon: Home,       label: '홈',        exact: true },
   { href: '/browse',     icon: Search,     label: '탐색',      exact: false },
   { href: '/leaderboard',icon: BarChart2,  label: '랭킹',      exact: false },
-  { href: '/portfolio',  icon: Briefcase,  label: '포트폴리오', exact: false },
+  { href: '/portfolio',  icon: Briefcase,  label: '마이페이지', exact: false },
 ]
 
 export default function LeftSidebar() {

@@ -10,7 +10,7 @@ const NAV_ITEMS = [
   { href: '/browse', icon: Search, label: '탐색', exact: false },
   { href: '/market/create', icon: PlusCircle, label: '만들기', exact: false },
   { href: '/leaderboard', icon: BarChart2, label: '랭킹', exact: false },
-  { href: '/portfolio', icon: User, label: '프로필', exact: false },
+  { href: '/portfolio', icon: User, label: '마이페이지', exact: false },
 ]
 
 export default function MobileNav() {
