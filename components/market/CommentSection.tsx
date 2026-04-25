@@ -157,7 +157,7 @@ export default function CommentSection({ marketId, isLoggedIn }: Props) {
           {comments.map((comment) => (
             <li key={comment.id} className="flex gap-3">
               <Avatar className="h-8 w-8 shrink-0">
-                <AvatarImage src={comment.user?.avatar_url ?? undefined} alt={comment.user?.display_name} />
+                <AvatarImage src={comment.user?.avatar_url ?? undefined} alt={comment.user?.display_name ?? ''} />
                 <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
                   {(comment.user?.display_name ?? '?').slice(0, 2).toUpperCase()}
                 </AvatarFallback>
