@@ -15,9 +15,8 @@ import ProbabilityChart, {
 } from '@/components/market/ProbabilityChart'
 import type { Market, MarketOption } from '@/types'
 import {
-  calcSharesReceived,
-  calcProbabilityAfterBet,
-  calcPotentialPayout,
+  calcExpectedPayoutBinary,
+  calcExpectedPayoutOption,
 } from '@/lib/market-math'
 
 interface Props {
@@ -61,13 +60,24 @@ export default function InlineMarketBetting({ market, userPoints, isLoggedIn, ch
     }
     if (market.type === 'binary') {
       const outcome = selectedOutcome as 'YES' | 'NO'
-      const shares = calcSharesReceived(currentProb, amount, outcome)
-      const payout = calcPotentialPayout(shares, outcome)
-      const newProb = calcProbabilityAfterBet(currentProb, amount, outcome)
+      const yesPool = market.yes_amount ?? 0
+      const noPool = market.no_amount ?? 0
+      const payout = calcExpectedPayoutBinary(amount, outcome, yesPool, noPool)
+      const newYes = outcome === 'YES' ? yesPool + amount : yesPool
+      const newNo = outcome === 'NO' ? noPool + amount : noPool
+      const total = newYes + newNo
+      const newProb = total > 0 ? Math.max(0.01, Math.min(0.99, newYes / total)) : currentProb
       return { payout, newProb, multiplier: amount > 0 ? payout / amount : 0 }
     }
+    if (market.type === 'multiple_choice' && market.options) {
+      const opt = market.options.find((o) => o.id === selectedOutcome)
+      const optionPool = opt?.total_amount ?? 0
+      const totalPool = market.options.reduce((s, o) => s + (o.total_amount ?? 0), 0)
+      const payout = calcExpectedPayoutOption(amount, optionPool, totalPool)
+      return { payout, newProb: currentProb, multiplier: amount > 0 ? payout / amount : 0 }
+    }
     return { payout: amount, newProb: currentProb, multiplier: 1 }
-  }, [selectedOutcome, amount, currentProb, market.type])
+  }, [selectedOutcome, amount, currentProb, market.type, market.yes_amount, market.no_amount, market.options])
 
   const p = preview()
 
@@ -121,9 +131,8 @@ export default function InlineMarketBetting({ market, userPoints, isLoggedIn, ch
         setLocalPoints((prev) => prev - amount)
       }
       if (json.data.new_probability) setCurrentProb(json.data.new_probability)
-      const sharesValue = json.data.shares ?? json.data.shares_received ?? amount
       toast.success(
-        `${selectedOutcome}에 ${amount.toLocaleString()}포인트 베팅 완료! 예상 수익: ${Math.round(sharesValue).toLocaleString()}포인트`
+        `${selectedOutcome}에 ${amount.toLocaleString()}포인트 베팅 완료`
       )
       setSelectedOutcome(null)
       setAmount(100)

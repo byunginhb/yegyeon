@@ -103,12 +103,67 @@ export function calcSharesReceived(
 }
 
 /**
- * 잠재적 수익 계산
- * 각 share는 해결 시 ₣1 가치
+ * 잠재적 수익 계산 (deprecated — parimutuel 통일 이후 calcExpectedPayout 사용)
+ * 각 share는 해결 시 ₣1 가치 (LMSR 가정 — 호환용으로 남겨둠)
  */
 export function calcPotentialPayout(
   shares: number,
   _outcome: 'YES' | 'NO'
 ): number {
   return shares
+}
+
+/**
+ * Parimutuel 예상 수익 — 베팅 미리보기와 실제 정산을 일치시키는 단일 공식.
+ *
+ * 가정: 사용자가 amount 포인트를 'YES' 또는 'NO'에 베팅하고 그 결과가 정답이면,
+ *        나의 amount / 새 winner_pool 비율 × 새 total_pool 만큼 받음.
+ *
+ * 예: yes_pool=300, no_pool=200, 내가 NO에 100 → 결과 NO일 때
+ *     expected = (100 / (200 + 100)) * (300 + 200 + 100) = 1/3 * 600 = 200
+ *
+ * 자기 베팅분이 자기에게 포함되어 단순한 "self-fraction × 전체" 형태이므로
+ * 실제 server-side parimutuel 정산 결과와 일치한다 (단, 다른 사용자가 동시에
+ * 베팅을 추가하면 수치 변동 가능 — 이건 본질적인 시장 변동성).
+ */
+export function calcExpectedPayoutBinary(
+  amount: number,
+  outcome: 'YES' | 'NO',
+  yesPool: number,
+  noPool: number
+): number {
+  if (amount <= 0) return 0
+  const myPool = outcome === 'YES' ? yesPool : noPool
+  const otherPool = outcome === 'YES' ? noPool : yesPool
+  const newMyPool = myPool + amount
+  const newTotalPool = myPool + otherPool + amount
+  if (newMyPool <= 0) return 0
+  return Math.floor((amount / newMyPool) * newTotalPool)
+}
+
+/**
+ * Multiple choice 예상 수익. optionPool = 해당 옵션의 total_amount.
+ * totalPool = 모든 옵션 total_amount 합.
+ */
+export function calcExpectedPayoutOption(
+  amount: number,
+  optionPool: number,
+  totalPool: number
+): number {
+  if (amount <= 0) return 0
+  const newOptionPool = optionPool + amount
+  const newTotalPool = totalPool + amount
+  if (newOptionPool <= 0) return 0
+  return Math.floor((amount / newOptionPool) * newTotalPool)
+}
+
+/**
+ * Numeric 예상 수익(정확값 기준 환원). 다른 베터가 모두 패배라고 가정한 상한치.
+ * 실제 정산은 ±tolerance 안 모든 베터에게 amount 비례 분배되므로,
+ * 미리보기에서는 단순히 "내 amount 비율로 전체 풀 환원"의 자기 자신 기준값을 표시.
+ */
+export function calcExpectedPayoutNumeric(amount: number, totalPool: number): number {
+  if (amount <= 0) return 0
+  // 새 total = 현재 풀 + 내 amount (자신만 winner라 가정 시 self-share = 1)
+  return Math.floor(totalPool + amount)
 }

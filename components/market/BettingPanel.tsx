@@ -9,9 +9,8 @@ import PointsDisplay from '@/components/ui/PointsDisplay'
 import PointIcon from '@/components/ui/PointIcon'
 import type { Market, MarketOption } from '@/types'
 import {
-  calcSharesReceived,
-  calcProbabilityAfterBet,
-  calcPotentialPayout,
+  calcExpectedPayoutBinary,
+  calcExpectedPayoutOption,
 } from '@/lib/market-math'
 
 interface BettingPanelProps {
@@ -44,7 +43,7 @@ export default function BettingPanel({
 
   const currentProb = market.yes_probability ?? 0.5
 
-  // 예상 수치 계산 (binary만 LMSR 적용)
+  // 예상 수치 계산 — parimutuel 통일 (서버 정산과 일치)
   const calcPreview = useCallback(() => {
     if (!selectedOutcome || amount <= 0) {
       return { shares: 0, payout: 0, newProb: currentProb, multiplier: 0 }
@@ -52,21 +51,34 @@ export default function BettingPanel({
 
     if (market.type === 'binary') {
       const outcome = selectedOutcome as 'YES' | 'NO'
-      const shares = calcSharesReceived(currentProb, amount, outcome)
-      const payout = calcPotentialPayout(shares, outcome)
-      const newProb = calcProbabilityAfterBet(currentProb, amount, outcome)
+      const yesPool = market.yes_amount ?? 0
+      const noPool = market.no_amount ?? 0
+      const payout = calcExpectedPayoutBinary(amount, outcome, yesPool, noPool)
+      // 새 확률 = 새 yes_amount / 새 total
+      const newYes = outcome === 'YES' ? yesPool + amount : yesPool
+      const newNo = outcome === 'NO' ? noPool + amount : noPool
+      const total = newYes + newNo
+      const newProb = total > 0 ? Math.max(0.01, Math.min(0.99, newYes / total)) : currentProb
       const multiplier = amount > 0 ? payout / amount : 0
-      return { shares, payout, newProb, multiplier }
+      return { shares: amount, payout, newProb, multiplier }
     }
 
-    // multiple_choice: 단순 1:1
+    if (market.type === 'multiple_choice' && market.options) {
+      const opt = market.options.find((o) => o.id === selectedOutcome)
+      const optionPool = opt?.total_amount ?? 0
+      const totalPool = market.options.reduce((s, o) => s + (o.total_amount ?? 0), 0)
+      const payout = calcExpectedPayoutOption(amount, optionPool, totalPool)
+      const multiplier = amount > 0 ? payout / amount : 0
+      return { shares: amount, payout, newProb: currentProb, multiplier }
+    }
+
     return {
       shares: amount,
       payout: amount,
       newProb: currentProb,
       multiplier: 1,
     }
-  }, [selectedOutcome, amount, currentProb, market.type])
+  }, [selectedOutcome, amount, currentProb, market.type, market.yes_amount, market.no_amount, market.options])
 
   const preview = calcPreview()
 
@@ -131,10 +143,8 @@ export default function BettingPanel({
       }
       onBetSuccess?.(json.data.new_probability)
 
-      const sharesValue = json.data.shares ?? json.data.shares_received ?? amount
       toast.success(
-        `${selectedOutcome}에 ${amount.toLocaleString()}포인트 베팅 완료! ` +
-          `예상 수익: ${Math.round(sharesValue).toLocaleString()}포인트`
+        `${selectedOutcome}에 ${amount.toLocaleString()}포인트 베팅 완료`
       )
 
       // 금액 초기화
