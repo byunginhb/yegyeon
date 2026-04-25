@@ -42,7 +42,7 @@ interface Market {
 const STATUS_LABELS: Record<string, string> = {
   open: '진행 중',
   closed: '마감',
-  resolved: '마감됨',
+  resolved: '결과 입력됨',
   cancelled: '취소됨',
 }
 
@@ -119,11 +119,11 @@ function ResolveModal({ market, onClose, onResolved }: ResolveModalProps) {
       })
       const data = await res.json()
       if (data.success) {
-        toast.success('마켓이 마감되었습니다.')
+        toast.success('결과가 입력되었습니다.')
         onResolved()
         onClose()
       } else {
-        toast.error(data.error ?? '마켓 마감 실패')
+        toast.error(data.error ?? '결과 입력 실패')
       }
     } catch {
       toast.error('서버 오류가 발생했습니다.')
@@ -136,7 +136,7 @@ function ResolveModal({ market, onClose, onResolved }: ResolveModalProps) {
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>마켓 마감</DialogTitle>
+          <DialogTitle>결과 입력</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <p className="text-sm text-ink-700 line-clamp-2">{market.title}</p>
@@ -183,7 +183,7 @@ function ResolveModal({ market, onClose, onResolved }: ResolveModalProps) {
             onClick={handleResolve}
             disabled={!resolutionValue.trim() || loading}
           >
-            {loading ? '처리 중...' : '마감 확정'}
+            {loading ? '처리 중...' : '결과 확정'}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -286,10 +286,10 @@ export default function AdminMarketsPage() {
       })
       const data = await res.json()
       if (data.success) {
-        toast.success('마켓이 취소되었습니다.')
+        toast.success('마켓이 종료되었습니다.')
         fetchMarkets()
       } else {
-        toast.error(data.error ?? '마켓 취소 실패')
+        toast.error(data.error ?? '마켓 종료 실패')
       }
     } catch {
       toast.error('서버 오류가 발생했습니다.')
@@ -352,7 +352,7 @@ export default function AdminMarketsPage() {
             <SelectItem value="all">전체</SelectItem>
             <SelectItem value="open">진행 중</SelectItem>
             <SelectItem value="closed">마감</SelectItem>
-            <SelectItem value="resolved">마감됨</SelectItem>
+            <SelectItem value="resolved">결과 입력됨</SelectItem>
           </SelectContent>
         </Select>
         <span className="text-sm text-ink-500">총 {total.toLocaleString()}개</span>
@@ -429,7 +429,7 @@ export default function AdminMarketsPage() {
                           className="h-7 text-xs px-2"
                           onClick={() => setCloseTarget(market)}
                         >
-                          취소
+                          종료
                         </Button>
                       )}
                       {(market.status === 'open' || market.status === 'closed') && (
@@ -439,7 +439,7 @@ export default function AdminMarketsPage() {
                           className="h-7 text-xs px-2"
                           onClick={() => setResolveTarget(market)}
                         >
-                          마감
+                          결과 입력
                         </Button>
                       )}
                       <Button
@@ -493,9 +493,9 @@ export default function AdminMarketsPage() {
 
       <ConfirmModal
         open={!!closeTarget}
-        title="마켓 취소"
-        description={`"${closeTarget?.title}" 마켓을 취소하시겠습니까? 베팅이 중단되며 되돌릴 수 없습니다.`}
-        confirmLabel="마켓 취소"
+        title="마켓 강제 종료"
+        description={`"${closeTarget?.title}" 마켓을 강제 종료하시겠습니까? 이 작업은 되돌릴 수 없습니다.`}
+        confirmLabel="종료"
         onConfirm={handleClose}
         onClose={() => setCloseTarget(null)}
         loading={actionLoading}
