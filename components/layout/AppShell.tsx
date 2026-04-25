@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation'
 import LeftSidebar from './LeftSidebar'
 import MobileNav from './MobileNav'
+import MobileTopBar from './MobileTopBar'
 import { AnnouncementBanner } from '@/components/common/AnnouncementBanner'
 
 const SIDEBAR_EXCLUDED = ['/admin', '/auth']
@@ -19,6 +20,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     <>
       <LeftSidebar />
       <div className="lg:ml-64 min-h-screen pb-16 lg:pb-0">
+        <MobileTopBar />
         <AnnouncementBanner />
         {children}
       </div>

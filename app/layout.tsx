@@ -38,7 +38,7 @@ export default function RootLayout({
       <body className={`${figtree.variable} font-sans min-h-screen antialiased bg-canvas-100 text-ink-900`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >
