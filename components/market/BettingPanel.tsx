@@ -118,12 +118,14 @@ export default function BettingPanel({
 
     try {
       const isOption = market.type === 'multiple_choice'
+      const selectedOption = isOption ? market.options?.find(o => o.id === selectedOutcome) : null
+      const outcomeText = isOption ? (selectedOption?.text ?? selectedOutcome) : selectedOutcome
       const res = await fetch('/api/bets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           market_id: market.id,
-          outcome: selectedOutcome,
+          outcome: outcomeText,
           option_id: isOption ? selectedOutcome : null,
           amount,
         }),
@@ -144,7 +146,7 @@ export default function BettingPanel({
       onBetSuccess?.(json.data.new_probability)
 
       toast.success(
-        `${selectedOutcome}에 ${amount.toLocaleString()}포인트 베팅 완료`
+        `${outcomeText}에 ${amount.toLocaleString()}포인트 베팅 완료`
       )
 
       // 금액 초기화
@@ -229,9 +231,9 @@ export default function BettingPanel({
               <button
                 key={opt.id}
                 type="button"
-                onClick={() => setSelectedOutcome(opt.text)}
+                onClick={() => setSelectedOutcome(opt.id)}
                 className={`w-full py-2.5 px-4 rounded-xl text-sm font-medium text-left transition-all flex items-center justify-between ${
-                  selectedOutcome === opt.text
+                  selectedOutcome === opt.id
                     ? 'bg-primary text-white shadow-sm'
                     : 'bg-canvas-100 text-ink-800 hover:bg-canvas-50 border border-ink-200'
                 }`}
@@ -304,7 +306,7 @@ export default function BettingPanel({
         {isSubmitting
           ? '처리 중...'
           : selectedOutcome
-            ? `${selectedOutcome}에 ${amount.toLocaleString()}포인트 베팅`
+            ? `${market.type === 'multiple_choice' ? (market.options?.find(o => o.id === selectedOutcome)?.text ?? selectedOutcome) : selectedOutcome}에 ${amount.toLocaleString()}포인트 베팅`
             : '항목을 선택해주세요'}
       </Button>
     </div>

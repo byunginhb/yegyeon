@@ -110,12 +110,13 @@ export default function InlineMarketBetting({ market, userPoints, isLoggedIn, ch
     setIsSubmitting(true)
     try {
       const isOption = market.type === 'multiple_choice'
+      const selectedOption = isOption ? market.options?.find(o => o.id === selectedOutcome) : null
       const res = await fetch('/api/bets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           market_id: market.id,
-          outcome: selectedOutcome,
+          outcome: isOption ? (selectedOption?.text ?? selectedOutcome) : selectedOutcome,
           option_id: isOption ? selectedOutcome : null,
           amount,
         }),
@@ -131,8 +132,9 @@ export default function InlineMarketBetting({ market, userPoints, isLoggedIn, ch
         setLocalPoints((prev) => prev - amount)
       }
       if (json.data.new_probability) setCurrentProb(json.data.new_probability)
+      const outcomeLabel = selectedOption?.text ?? selectedOutcome
       toast.success(
-        `${selectedOutcome}에 ${amount.toLocaleString()}포인트 베팅 완료`
+        `${outcomeLabel}에 ${amount.toLocaleString()}포인트 베팅 완료`
       )
       setSelectedOutcome(null)
       setAmount(100)
@@ -330,7 +332,7 @@ export default function InlineMarketBetting({ market, userPoints, isLoggedIn, ch
       <div className="mb-6 space-y-3">
         {sorted.map((opt) => {
           const pct = Math.round(opt.probability * 100)
-          const isSelected = selectedOutcome === opt.text
+          const isSelected = selectedOutcome === opt.id
           return (
             <div key={opt.id}>
               <div className="flex justify-between text-sm mb-1">
@@ -345,7 +347,7 @@ export default function InlineMarketBetting({ market, userPoints, isLoggedIn, ch
               </div>
               {isOpen && (
                 <button
-                  onClick={() => handleOutcomeClick(opt.text)}
+                  onClick={() => handleOutcomeClick(opt.id)}
                   className={`w-full py-2 rounded-lg text-sm font-medium transition-all ${
                     isSelected
                       ? 'bg-primary text-white'
@@ -363,7 +365,7 @@ export default function InlineMarketBetting({ market, userPoints, isLoggedIn, ch
           <div className="bg-canvas-50 border border-ink-200 rounded-xl p-4 space-y-3 mt-2">
             <div className="flex items-center justify-between text-sm">
               <span className="font-semibold text-ink-800">
-                <span className="text-primary">{selectedOutcome}</span> 베팅
+                <span className="text-primary">{market.options?.find(o => o.id === selectedOutcome)?.text ?? selectedOutcome}</span> 베팅
               </span>
               <span className="text-ink-500">
                 보유: <PointsDisplay amount={localPoints} size="sm" />
@@ -388,6 +390,17 @@ export default function InlineMarketBetting({ market, userPoints, isLoggedIn, ch
                 </button>
               ))}
             </div>
+            {amount >= 10 && (
+              <div className="bg-canvas-0 rounded-lg p-3 space-y-1.5">
+                <div className="flex justify-between text-sm">
+                  <span className="text-ink-500">예상 수익</span>
+                  <span className="font-semibold text-ink-900">
+                    <PointsDisplay amount={Math.round(p.payout)} size="sm" />
+                    <span className="text-ink-400 text-xs ml-1">({p.multiplier.toFixed(2)}배)</span>
+                  </span>
+                </div>
+              </div>
+            )}
             <Button className="w-full" onClick={handleSubmit} disabled={isSubmitting || amount < 10}>
               {isSubmitting ? '처리 중...' : `${amount.toLocaleString()}포인트 베팅`}
             </Button>
