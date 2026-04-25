@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { adminSupabase } from '@/lib/supabase/admin'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import FollowButton from '@/components/user/FollowButton'
 import { ReportButton } from '@/components/common/ReportButton'
@@ -137,21 +137,22 @@ export default async function ProfilePage({ params }: Props) {
         <div className="bg-canvas-0 rounded-2xl border border-ink-200 p-6 mb-6">
           <div className="flex items-start gap-4">
             <Avatar className="h-16 w-16 shrink-0">
+              <AvatarImage src={profileUser.avatar_url ?? undefined} alt={profileUser.display_name} />
               <AvatarFallback className="bg-primary/10 text-primary text-xl font-bold">
                 {profileUser.display_name.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
 
             <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h1 className="text-xl font-bold text-ink-1000">{profileUser.display_name}</h1>
-                  <p className="text-sm text-ink-500">@{profileUser.username}</p>
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <h1 className="text-xl font-bold text-ink-1000 truncate">{profileUser.display_name}</h1>
+                  <p className="text-sm text-ink-500 truncate">@{profileUser.username}</p>
                 </div>
                 {isSelf ? (
                   <Link
                     href="/settings"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border border-ink-200 text-ink-700 hover:bg-canvas-100 hover:text-ink-900 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border border-ink-200 text-ink-700 hover:bg-canvas-100 hover:text-ink-900 transition-colors shrink-0 whitespace-nowrap"
                   >
                     프로필 편집
                   </Link>
@@ -190,7 +191,7 @@ export default async function ProfilePage({ params }: Props) {
           {/* 통계 */}
           <div className="grid grid-cols-3 gap-3 mt-5 pt-5 border-t border-ink-100">
             <div className="text-center">
-              <p className="text-lg font-bold text-ink-1000">{profileUser.points.toLocaleString()}포인트</p>
+              <p className="text-sm sm:text-lg font-bold text-ink-1000 break-keep">{profileUser.points.toLocaleString()}포인트</p>
               <p className="text-xs text-ink-500">보유 포인트</p>
             </div>
             <div className="text-center">
