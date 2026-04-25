@@ -9,7 +9,7 @@ import PointsDisplay from '@/components/ui/PointsDisplay'
 import { useTheme } from 'next-themes'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -124,6 +124,7 @@ export default function Header() {
               <DropdownMenu>
                 <DropdownMenuTrigger className="flex items-center gap-1.5 outline-none">
                   <Avatar className="h-8 w-8">
+                    <AvatarImage src={user.avatar_url ?? undefined} alt={user.display_name} />
                     <AvatarFallback className="bg-primary text-white text-xs">
                       {user.display_name.slice(0, 2).toUpperCase()}
                     </AvatarFallback>

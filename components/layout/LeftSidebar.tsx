@@ -11,7 +11,7 @@ import {
 import { useTheme } from 'next-themes'
 import { createClient } from '@/lib/supabase/client'
 import PointsDisplay from '@/components/ui/PointsDisplay'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
 import type { User } from '@/types'
 
@@ -149,6 +149,7 @@ export default function LeftSidebar() {
               className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-canvas-100 transition-colors"
             >
               <Avatar className="h-7 w-7 shrink-0">
+                <AvatarImage src={user.avatar_url ?? undefined} alt={user.display_name} />
                 <AvatarFallback className="bg-primary text-white text-xs font-bold">
                   {user.display_name.slice(0, 2).toUpperCase()}
                 </AvatarFallback>
