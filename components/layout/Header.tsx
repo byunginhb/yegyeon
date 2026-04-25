@@ -26,27 +26,29 @@ export default function Header() {
   const supabase = createClient()
 
   useEffect(() => {
-    supabase.auth.getUser().then(async ({ data: { user: authUser } }) => {
-      if (!authUser) return
-      const { data } = await supabase
+    async function loadUser(authUserId: string) {
+      const { data, error } = await supabase
         .from('users')
         .select('*')
-        .eq('auth_id', authUser.id)
-        .single()
+        .eq('auth_id', authUserId)
+        .maybeSingle()
+      if (error) {
+        console.error('Header user fetch error:', error)
+        return
+      }
       if (data) setUser(data)
+    }
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) loadUser(session.user.id)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         if (event === 'SIGNED_OUT') {
           setUser(null)
         } else if (session?.user) {
-          const { data } = await supabase
-            .from('users')
-            .select('*')
-            .eq('auth_id', session.user.id)
-            .single()
-          if (data) setUser(data)
+          loadUser(session.user.id)
         }
       }
     )

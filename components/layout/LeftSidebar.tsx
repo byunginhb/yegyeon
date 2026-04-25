@@ -32,27 +32,32 @@ export default function LeftSidebar() {
 
   useEffect(() => {
     setMounted(true)
-    supabase.auth.getUser().then(async ({ data: { user: authUser } }) => {
-      if (!authUser) return
-      const { data } = await supabase
+
+    async function loadUser(authUserId: string) {
+      const { data, error } = await supabase
         .from('users')
         .select('*')
-        .eq('auth_id', authUser.id)
-        .single()
+        .eq('auth_id', authUserId)
+        .maybeSingle()
+      if (error) {
+        console.error('LeftSidebar user fetch error:', error)
+        return
+      }
       if (data) setUser(data)
+    }
+
+    // 즉시 1회: cookie에서 session 동기 조회 (네트워크 안 탐)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) loadUser(session.user.id)
     })
 
+    // 인증 상태 변화 구독 (SIGNED_IN, SIGNED_OUT, TOKEN_REFRESHED, INITIAL_SESSION 모두 처리)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         if (event === 'SIGNED_OUT') {
           setUser(null)
         } else if (session?.user) {
-          const { data } = await supabase
-            .from('users')
-            .select('*')
-            .eq('auth_id', session.user.id)
-            .single()
-          if (data) setUser(data)
+          loadUser(session.user.id)
         }
       }
     )
