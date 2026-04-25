@@ -1,6 +1,6 @@
 export type UserRole = 'user' | 'admin'
 export type MarketType = 'binary' | 'multiple_choice' | 'numeric'
-export type MarketStatus = 'open' | 'closed' | 'resolved' | 'cancelled'
+export type MarketStatus = 'pending' | 'open' | 'closed' | 'resolved' | 'cancelled' | 'rejected'
 export type PointTxType =
   | 'signup_bonus'
   | 'bet_placed'
@@ -58,6 +58,9 @@ export interface Market {
   unit: string | null
   numeric_tolerance: number | null
   is_hidden: boolean
+  rejection_reason: string | null
+  reviewed_by: string | null
+  reviewed_at: string | null
   tags: string[]
   created_at: string
   updated_at: string

@@ -44,9 +44,15 @@ export async function GET(req: NextRequest) {
       )
       .eq('is_hidden', false)
 
-    // 상태 필터
-    if (status !== 'all') {
+    // 상태 필터: 공개 API는 pending/rejected 노출 금지
+    const PUBLIC_STATUSES = ['open', 'closed', 'resolved', 'cancelled']
+    if (status === 'all') {
+      query = query.in('status', PUBLIC_STATUSES)
+    } else if (PUBLIC_STATUSES.includes(status)) {
       query = query.eq('status', status)
+    } else {
+      // pending/rejected 직접 요청 → 빈 결과
+      query = query.eq('status', '__none__')
     }
 
     // 카테고리 필터 (slug 기반)

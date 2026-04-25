@@ -6,6 +6,7 @@ import { adminSupabase } from '@/lib/supabase/admin'
 const navItems = [
   { href: '/admin', label: '대시보드', icon: '📊' },
   { href: '/admin/markets', label: '마켓 관리', icon: '📈' },
+  { href: '/admin/markets/pending', label: '승인 대기', icon: '⏳' },
   { href: '/admin/users', label: '유저 관리', icon: '👥' },
   { href: '/admin/points', label: '포인트 관리', icon: '💰' },
   { href: '/admin/categories', label: '카테고리', icon: '🏷️' },

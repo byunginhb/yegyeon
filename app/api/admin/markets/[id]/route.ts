@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { adminSupabase } from '@/lib/supabase/admin'
 
@@ -9,13 +10,20 @@ async function verifyAdmin() {
 
   const { data: profile } = await adminSupabase
     .from('users')
-    .select('role')
+    .select('id, role')
     .eq('auth_id', user.id)
     .single()
 
   if (profile?.role !== 'admin') return null
-  return user
+  return { authUser: user, dbUserId: profile.id as string }
 }
+
+const PatchSchema = z.discriminatedUnion('action', [
+  z.object({ action: z.literal('approve') }),
+  z.object({ action: z.literal('reject'), reason: z.string().min(1, '거절 사유를 입력해주세요.').max(500) }),
+  z.object({ action: z.literal('status'), status: z.enum(['open', 'closed']) }),
+  z.object({ action: z.literal('hide'), is_hidden: z.boolean() }),
+])
 
 export async function GET(
   _req: NextRequest,
@@ -75,23 +83,63 @@ export async function PATCH(
     }
 
     const { id } = await params
-    const body = await req.json()
-    const { status, is_hidden } = body
 
-    const updatePayload: Record<string, unknown> = { updated_at: new Date().toISOString() }
+    let body: unknown
+    try { body = await req.json() } catch {
+      return NextResponse.json({ success: false, error: '잘못된 요청 본문입니다.' }, { status: 400 })
+    }
 
-    if (status !== undefined) {
-      if (!['open', 'closed'].includes(status)) {
-        return NextResponse.json({ success: false, error: '유효하지 않은 상태값입니다.' }, { status: 400 })
+    const parsed = PatchSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json(
+        { success: false, error: parsed.error.issues[0]?.message ?? '입력이 잘못되었습니다.' },
+        { status: 400 }
+      )
+    }
+
+    const now = new Date().toISOString()
+    const input = parsed.data
+    let updatePayload: Record<string, unknown>
+
+    if (input.action === 'approve') {
+      const { data: current } = await adminSupabase
+        .from('markets').select('status').eq('id', id).single()
+      if (current?.status !== 'pending') {
+        return NextResponse.json({ success: false, error: '승인 대기 상태의 마켓만 승인할 수 있습니다.' }, { status: 409 })
       }
-      updatePayload.status = status
-    }
-    if (typeof is_hidden === 'boolean') {
-      updatePayload.is_hidden = is_hidden
-    }
-
-    if (Object.keys(updatePayload).length <= 1) {
-      return NextResponse.json({ success: false, error: '변경할 항목이 없습니다.' }, { status: 400 })
+      updatePayload = {
+        status: 'open',
+        reviewed_by: admin.dbUserId,
+        reviewed_at: now,
+        rejection_reason: null,
+        updated_at: now,
+      }
+    } else if (input.action === 'reject') {
+      const { data: current } = await adminSupabase
+        .from('markets').select('status').eq('id', id).single()
+      if (current?.status !== 'pending') {
+        return NextResponse.json({ success: false, error: '승인 대기 상태의 마켓만 거절할 수 있습니다.' }, { status: 409 })
+      }
+      updatePayload = {
+        status: 'rejected',
+        rejection_reason: input.reason,
+        reviewed_by: admin.dbUserId,
+        reviewed_at: now,
+        updated_at: now,
+      }
+    } else if (input.action === 'status') {
+      // pending 마켓은 approve/reject 액션으로만 상태 변경 가능 (우회 방지)
+      const { data: current } = await adminSupabase
+        .from('markets').select('status').eq('id', id).single()
+      if (current?.status === 'pending' || current?.status === 'rejected') {
+        return NextResponse.json(
+          { success: false, error: 'pending/rejected 마켓은 approve/reject 액션을 사용해주세요.' },
+          { status: 400 }
+        )
+      }
+      updatePayload = { status: input.status, updated_at: now }
+    } else {
+      updatePayload = { is_hidden: input.is_hidden, updated_at: now }
     }
 
     const { error } = await adminSupabase

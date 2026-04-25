@@ -143,7 +143,7 @@ export async function POST(req: NextRequest) {
       category_id: data.category_id ?? null,
       creator_id: dbUser.id,
       type: data.type,
-      status: 'open',
+      status: 'pending',
       close_date: closeDate.toISOString(),
       resolution_criteria: data.resolution_criteria ?? null,
     }

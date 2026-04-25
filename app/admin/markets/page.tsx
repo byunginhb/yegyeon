@@ -40,17 +40,21 @@ interface Market {
 }
 
 const STATUS_LABELS: Record<string, string> = {
+  pending: '승인 대기',
   open: '진행 중',
   closed: '마감',
   resolved: '결과 입력됨',
   cancelled: '취소됨',
+  rejected: '거절됨',
 }
 
 const STATUS_BADGE: Record<string, string> = {
+  pending: 'bg-amber-500/10 text-amber-600',
   open: 'bg-teal-500/10 text-teal-600',
   closed: 'bg-ink-300/30 text-ink-600',
   resolved: 'bg-brand-500/10 text-brand-600',
   cancelled: 'bg-scarlet-500/10 text-scarlet-600',
+  rejected: 'bg-scarlet-500/10 text-scarlet-600',
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -243,6 +247,9 @@ export default function AdminMarketsPage() {
   const [resolveTarget, setResolveTarget] = useState<Market | null>(null)
   const [closeTarget, setCloseTarget] = useState<Market | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Market | null>(null)
+  const [approveTarget, setApproveTarget] = useState<Market | null>(null)
+  const [rejectTarget, setRejectTarget] = useState<Market | null>(null)
+  const [rejectReason, setRejectReason] = useState('')
   const [actionLoading, setActionLoading] = useState(false)
 
   const limit = 20
@@ -321,6 +328,55 @@ export default function AdminMarketsPage() {
     }
   }
 
+  async function handleApprove() {
+    if (!approveTarget) return
+    setActionLoading(true)
+    try {
+      const res = await fetch(`/api/admin/markets/${approveTarget.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'approve' }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        toast.success('마켓이 승인되었습니다.')
+        fetchMarkets()
+      } else {
+        toast.error(data.error ?? '승인 실패')
+      }
+    } catch {
+      toast.error('서버 오류가 발생했습니다.')
+    } finally {
+      setActionLoading(false)
+      setApproveTarget(null)
+    }
+  }
+
+  async function handleReject() {
+    if (!rejectTarget || !rejectReason.trim()) return
+    setActionLoading(true)
+    try {
+      const res = await fetch(`/api/admin/markets/${rejectTarget.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reject', reason: rejectReason.trim() }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        toast.success('마켓이 거절되었습니다.')
+        fetchMarkets()
+      } else {
+        toast.error(data.error ?? '거절 실패')
+      }
+    } catch {
+      toast.error('서버 오류가 발생했습니다.')
+    } finally {
+      setActionLoading(false)
+      setRejectTarget(null)
+      setRejectReason('')
+    }
+  }
+
   const totalPages = Math.ceil(total / limit)
 
   return (
@@ -350,9 +406,11 @@ export default function AdminMarketsPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">전체</SelectItem>
+            <SelectItem value="pending">승인 대기</SelectItem>
             <SelectItem value="open">진행 중</SelectItem>
             <SelectItem value="closed">마감</SelectItem>
             <SelectItem value="resolved">결과 입력됨</SelectItem>
+            <SelectItem value="rejected">거절됨</SelectItem>
           </SelectContent>
         </Select>
         <span className="text-sm text-ink-500">총 {total.toLocaleString()}개</span>
@@ -421,7 +479,27 @@ export default function AdminMarketsPage() {
                     <span className="text-xs text-ink-500">{formatDate(market.close_date)}</span>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 flex-wrap">
+                      {market.status === 'pending' && (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-xs px-2 border-teal-400 text-teal-600 hover:bg-teal-50"
+                            onClick={() => setApproveTarget(market)}
+                          >
+                            승인
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-xs px-2 border-scarlet-400 text-scarlet-500 hover:bg-scarlet-50"
+                            onClick={() => { setRejectTarget(market); setRejectReason('') }}
+                          >
+                            거절
+                          </Button>
+                        </>
+                      )}
                       {market.status === 'open' && (
                         <Button
                           size="sm"
@@ -511,6 +589,50 @@ export default function AdminMarketsPage() {
         onClose={() => setDeleteTarget(null)}
         loading={actionLoading}
       />
+
+      <ConfirmModal
+        open={!!approveTarget}
+        title="마켓 승인"
+        description={`"${approveTarget?.title}" 마켓을 승인하시겠습니까? 승인 후 모든 사용자에게 공개됩니다.`}
+        confirmLabel="승인"
+        onConfirm={handleApprove}
+        onClose={() => setApproveTarget(null)}
+        loading={actionLoading}
+      />
+
+      <Dialog open={!!rejectTarget} onOpenChange={(o) => !o && setRejectTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>마켓 거절</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            {rejectTarget && (
+              <p className="text-sm text-ink-700 font-medium line-clamp-2">{rejectTarget.title}</p>
+            )}
+            <p className="text-sm text-ink-600">거절 사유를 입력해주세요. 마켓 생성자에게 표시됩니다.</p>
+            <textarea
+              placeholder="거절 사유 (최대 500자)"
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value.slice(0, 500))}
+              rows={4}
+              className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            />
+            <p className="text-xs text-ink-400 text-right">{rejectReason.length} / 500</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRejectTarget(null)} disabled={actionLoading}>
+              취소
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleReject}
+              disabled={!rejectReason.trim() || actionLoading}
+            >
+              {actionLoading ? '처리 중...' : '거절 확정'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
