@@ -21,6 +21,9 @@ import {
   Loader2,
   Copy,
   SquareArrowOutUpRight,
+  Ban,
+  Trophy,
+  Trash2,
 } from 'lucide-react'
 import { CategoryIcon } from '@/lib/categoryIcon'
 
@@ -147,14 +150,19 @@ export default function MarketDetailDialog({
   onNavigate,
 }: Props) {
   const [fetchedDetail, setFetchedDetail] = useState<MarketDetail | null>(null)
-  const [detailOverride, setDetailOverride] = useState<MarketDetail | null>(null)
-  const detail = detailOverride ?? (prefetchedData?.id === marketId ? prefetchedData : fetchedDetail)
+  // forId를 함께 저장해 marketId가 바뀌면 자동으로 무효화 — useEffect 내 동기 setState 불필요
+  const [detailOverride, setDetailOverride] = useState<{ forId: string; data: MarketDetail } | null>(null)
+  const detail = (detailOverride?.forId === marketId ? detailOverride.data : null)
+    ?? (prefetchedData?.id === marketId ? prefetchedData : fetchedDetail)
 
   const [loading, setLoading] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
 
   const [rejectMode, setRejectMode] = useState(false)
   const [rejectReason, setRejectReason] = useState('')
+  const [resolveMode, setResolveMode] = useState(false)
+  const [resolveValue, setResolveValue] = useState('')
+  const [deleteConfirm, setDeleteConfirm] = useState(false)
 
   const currentIndex = marketId ? marketIds.indexOf(marketId) : -1
 
@@ -164,6 +172,9 @@ export default function MarketDetailDialog({
     setDetailOverride(null)
     setRejectMode(false)
     setRejectReason('')
+    setResolveMode(false)
+    setResolveValue('')
+    setDeleteConfirm(false)
     try {
       const res = await fetch(`/api/admin/markets/${id}`)
       const json = await res.json()
@@ -181,11 +192,13 @@ export default function MarketDetailDialog({
 
   useEffect(() => {
     if (!marketId) return
-    setDetailOverride(null)
     if (prefetchedData?.id === marketId) {
       setLoading(false)
       setRejectMode(false)
       setRejectReason('')
+      setResolveMode(false)
+      setResolveValue('')
+      setDeleteConfirm(false)
     } else {
       fetchDetail(marketId)
     }
@@ -274,10 +287,78 @@ export default function MarketDetailDialog({
       const json = await res.json()
       if (json.success) {
         toast.success(detail.is_hidden ? '숨김이 해제되었습니다.' : '마켓이 숨겨졌습니다.')
-        setDetailOverride({ ...detail, is_hidden: !detail.is_hidden })
+        setDetailOverride({ forId: detail.id, data: { ...detail, is_hidden: !detail.is_hidden } })
         onActionSuccess()
       } else {
         toast.error(json.error ?? '처리 실패')
+      }
+    } catch {
+      toast.error('서버 오류가 발생했습니다.')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  async function handleClose() {
+    if (!detail) return
+    setActionLoading(true)
+    try {
+      const res = await fetch(`/api/admin/markets/${detail.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'status', status: 'closed' }),
+      })
+      const json = await res.json()
+      if (json.success) {
+        toast.success('마켓이 종료되었습니다.')
+        setDetailOverride({ forId: detail.id, data: { ...detail, status: 'closed' } })
+        onActionSuccess()
+      } else {
+        toast.error(json.error ?? '종료 실패')
+      }
+    } catch {
+      toast.error('서버 오류가 발생했습니다.')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  async function handleResolve() {
+    if (!detail || !resolveValue.trim()) return
+    setActionLoading(true)
+    try {
+      const res = await fetch(`/api/admin/markets/${detail.id}/resolve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resolution_value: resolveValue.trim() }),
+      })
+      const json = await res.json()
+      if (json.success) {
+        toast.success(`"${detail.title}" 결과가 입력되었습니다.`)
+        onActionSuccess()
+        onClose()
+      } else {
+        toast.error(json.error ?? '결과 입력 실패')
+      }
+    } catch {
+      toast.error('서버 오류가 발생했습니다.')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  async function handleDelete() {
+    if (!detail) return
+    setActionLoading(true)
+    try {
+      const res = await fetch(`/api/admin/markets/${detail.id}`, { method: 'DELETE' })
+      const json = await res.json()
+      if (json.success) {
+        toast.success('마켓이 삭제되었습니다.')
+        onActionSuccess()
+        onClose()
+      } else {
+        toast.error(json.error ?? '삭제 실패')
       }
     } catch {
       toast.error('서버 오류가 발생했습니다.')
@@ -470,6 +551,96 @@ export default function MarketDetailDialog({
                 </div>
               )}
 
+              {/* 결과 입력 패널 */}
+              {resolveMode && (
+                <div className="mb-4 p-3 bg-brand-50 border border-brand-200 rounded-lg space-y-2">
+                  <p className="text-xs font-medium text-brand-700">결과 입력</p>
+                  {detail.type === 'binary' && (
+                    <div className="flex gap-2">
+                      {['YES', 'NO'].map((v) => (
+                        <button
+                          key={v}
+                          type="button"
+                          onClick={() => setResolveValue(v)}
+                          className={`flex-1 py-1.5 rounded-md text-sm font-semibold border transition-colors ${
+                            resolveValue === v
+                              ? v === 'YES'
+                                ? 'bg-teal-600 text-white border-teal-600'
+                                : 'bg-scarlet-600 text-white border-scarlet-600'
+                              : 'bg-white text-ink-700 border-ink-300 hover:border-ink-400'
+                          }`}
+                        >
+                          {v}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {detail.type === 'multiple_choice' && (
+                    <div className="space-y-1">
+                      {detail.options
+                        .slice()
+                        .sort((a, b) => a.sort_order - b.sort_order)
+                        .map((opt) => (
+                          <label key={opt.id} className="flex items-center gap-2 cursor-pointer py-1">
+                            <input
+                              type="radio"
+                              name="resolve-option"
+                              value={opt.id}
+                              checked={resolveValue === opt.id}
+                              onChange={() => setResolveValue(opt.id)}
+                              className="accent-brand-500"
+                            />
+                            <span className="text-sm text-ink-700">{opt.text}</span>
+                            <span className="text-xs text-ink-400">({Math.round(opt.probability * 100)}%)</span>
+                          </label>
+                        ))}
+                    </div>
+                  )}
+                  {detail.type === 'numeric' && (
+                    <div>
+                      <input
+                        type="number"
+                        value={resolveValue}
+                        onChange={(e) => setResolveValue(e.target.value)}
+                        placeholder={`결과값${detail.unit ? ` (${detail.unit})` : ''}${detail.min_value != null ? ` · 범위: ${detail.min_value}~${detail.max_value}` : ''}`}
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        autoFocus
+                      />
+                    </div>
+                  )}
+                  <div className="flex justify-end gap-2 pt-1">
+                    <Button size="sm" variant="outline" onClick={() => { setResolveMode(false); setResolveValue('') }} disabled={actionLoading}>
+                      취소
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="bg-brand-600 hover:bg-brand-700 text-white gap-1.5"
+                      disabled={!resolveValue.trim() || actionLoading}
+                      onClick={handleResolve}
+                    >
+                      <Trophy className="h-3.5 w-3.5" />
+                      {actionLoading ? '처리 중...' : '결과 확정'}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* 삭제 확인 패널 */}
+              {deleteConfirm && (
+                <div className="mb-4 p-3 bg-scarlet-50 border border-scarlet-200 rounded-lg space-y-2">
+                  <p className="text-xs font-medium text-scarlet-700">정말 삭제하시겠습니까?</p>
+                  <p className="text-xs text-scarlet-600">삭제된 마켓과 베팅 데이터는 복구할 수 없습니다.</p>
+                  <div className="flex justify-end gap-2">
+                    <Button size="sm" variant="outline" onClick={() => setDeleteConfirm(false)} disabled={actionLoading}>
+                      취소
+                    </Button>
+                    <Button size="sm" variant="destructive" onClick={handleDelete} disabled={actionLoading}>
+                      {actionLoading ? '삭제 중...' : '삭제 확정'}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
               {/* 액션 버튼 */}
               <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-ink-200">
                 {/* pending 전용 액션 */}
@@ -497,6 +668,34 @@ export default function MarketDetailDialog({
                   </>
                 )}
 
+                {/* 강제 종료 (open 상태만) */}
+                {detail.status === 'open' && !resolveMode && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1.5 border-amber-400 text-amber-700 hover:bg-amber-50"
+                    onClick={handleClose}
+                    disabled={actionLoading}
+                  >
+                    <Ban className="h-3.5 w-3.5" />
+                    종료
+                  </Button>
+                )}
+
+                {/* 결과 입력 (open/closed) */}
+                {['open', 'closed'].includes(detail.status) && !resolveMode && !rejectMode && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1.5 border-brand-400 text-brand-700 hover:bg-brand-50"
+                    onClick={() => setResolveMode(true)}
+                    disabled={actionLoading}
+                  >
+                    <Trophy className="h-3.5 w-3.5" />
+                    결과 입력
+                  </Button>
+                )}
+
                 {/* 숨김 토글 (open/closed/resolved) */}
                 {['open', 'closed', 'resolved'].includes(detail.status) && (
                   <Button
@@ -510,6 +709,20 @@ export default function MarketDetailDialog({
                       ? <><Eye className="h-3.5 w-3.5" /> 숨김 해제</>
                       : <><EyeOff className="h-3.5 w-3.5" /> 숨기기</>
                     }
+                  </Button>
+                )}
+
+                {/* 삭제 (모든 상태) */}
+                {!deleteConfirm && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1.5 border-scarlet-300 text-scarlet-600 hover:bg-scarlet-50"
+                    onClick={() => setDeleteConfirm(true)}
+                    disabled={actionLoading}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    삭제
                   </Button>
                 )}
 
