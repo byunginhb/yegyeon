@@ -1,27 +1,11 @@
 import Link from 'next/link'
-import { TrendingUp, Flame, Trophy, Landmark, BarChart2, Zap, Cpu, Film, Globe, Tag, Mic2, type LucideIcon } from 'lucide-react'
+import { TrendingUp, Flame, Trophy } from 'lucide-react'
 import { adminSupabase } from '@/lib/supabase/admin'
 import PointIcon from '@/components/ui/PointIcon'
-
-const CATEGORY_ICON_MAP: Record<string, LucideIcon> = {
-  politics: Landmark,
-  economy: BarChart2,
-  sports: Zap,
-  tech: Cpu,
-  entertainment: Film,
-  other: Tag,
-  // DB에 추가된 카테고리 slug 패턴
-  'politics-society': Landmark,
-  'it-ai': Cpu,
-  kpop: Mic2,
-  'economy-finance': BarChart2,
-  international: Globe,
-  global: Globe,
-  fun: Tag,
-}
+import { getCategoryIcon } from '@/lib/categoryIcon'
 
 function CategoryIcon({ slug, color }: { slug: string; color: string }) {
-  const Icon = CATEGORY_ICON_MAP[slug] ?? Tag
+  const Icon = getCategoryIcon(slug)
   return <Icon className="h-3 w-3 shrink-0" style={{ color }} />
 }
 

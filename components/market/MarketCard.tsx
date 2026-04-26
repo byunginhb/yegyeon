@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Users, MessageCircle } from 'lucide-react'
 import PointIcon from '@/components/ui/PointIcon'
+import { CategoryIcon } from '@/lib/categoryIcon'
 import type { Market } from '@/types/index'
 
 interface MarketCardProps {
@@ -92,7 +93,7 @@ export default function MarketCard({ market }: MarketCardProps) {
                   color: categoryColor,
                 }}
               >
-                <span>{market.category.icon}</span>
+                <CategoryIcon slug={market.category.slug ?? ''} className="h-3 w-3 shrink-0" />
                 <span>{market.category.name}</span>
               </span>
             )}

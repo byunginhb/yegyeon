@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, use } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
+import { CategoryIcon } from '@/lib/categoryIcon'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -34,7 +35,7 @@ interface MarketDetail {
     tags: string[]
     created_at: string
     creator: { id: string; username: string; display_name: string; avatar_url: string | null } | null
-    category: { id: number; name: string; icon: string; color: string } | null
+    category: { id: number; name: string; slug: string; icon: string; color: string } | null
     options: Array<{ id: string; text: string; color: string; probability: number; total_amount: number; sort_order: number }>
   }
   recentBets: Array<{
@@ -140,7 +141,7 @@ export default function AdminMarketDetailPage({ params }: { params: Promise<{ id
             <div className="mt-1 flex items-center gap-2 text-xs text-ink-500">
               {market.category && (
                 <span className="inline-flex items-center gap-1">
-                  <span>{market.category.icon}</span>
+                  <CategoryIcon slug={market.category.slug} className="h-3.5 w-3.5" />
                   <span>{market.category.name}</span>
                 </span>
               )}

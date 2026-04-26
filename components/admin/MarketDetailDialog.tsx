@@ -22,6 +22,7 @@ import {
   Copy,
   SquareArrowOutUpRight,
 } from 'lucide-react'
+import { CategoryIcon } from '@/lib/categoryIcon'
 
 export interface MarketOption {
   id: string
@@ -59,7 +60,7 @@ export interface MarketDetail {
   max_value: number | null
   unit: string | null
   creator: { id: string; username: string; display_name: string; avatar_url: string | null } | null
-  category: { id: number; name: string; icon: string } | null
+  category: { id: number; name: string; slug: string; icon: string } | null
   options: MarketOption[]
 }
 
@@ -283,7 +284,7 @@ export default function MarketDetailDialog({
 
   return (
     <Dialog open={!!marketId} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-0">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto p-0">
         <DialogHeader className="px-6 pt-5 pb-3 border-b border-ink-200 sticky top-0 bg-canvas-0 z-10">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
@@ -347,7 +348,12 @@ export default function MarketDetailDialog({
               <Section title="기본 정보">
                 <Row label="ID" value={<CopyValue value={detail.id} />} />
                 <Row label="슬러그" value={<CopyValue value={detail.slug} />} />
-                <Row label="카테고리" value={detail.category ? `${detail.category.icon} ${detail.category.name}` : null} />
+                <Row label="카테고리" value={detail.category ? (
+                  <span className="flex items-center gap-1.5">
+                    <CategoryIcon slug={detail.category.slug} className="h-3 w-3" />
+                    <span>{detail.category.name}</span>
+                  </span>
+                ) : null} />
                 <Row label="태그" value={detail.tags?.length ? detail.tags.join(', ') : null} />
                 <Row label="마감일" value={fmt(detail.close_date)} />
                 <Row label="생성일" value={fmt(detail.created_at)} />

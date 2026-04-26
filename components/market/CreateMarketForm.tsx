@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, Trash2, BarChart2, List, Hash } from 'lucide-react'
+import { CategoryIcon } from '@/lib/categoryIcon'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -322,7 +323,10 @@ export default function CreateMarketForm({ categories }: Props) {
                 <SelectContent>
                   {categories.map(cat => (
                     <SelectItem key={cat.id} value={String(cat.id)}>
-                      {cat.icon} {cat.name}
+                      <span className="flex items-center gap-1.5">
+                        <CategoryIcon slug={cat.slug} className="h-3.5 w-3.5 shrink-0" />
+                        <span>{cat.name}</span>
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
