@@ -39,6 +39,9 @@ export async function generateMetadata({ params }: Props) {
 export default async function MarketDetailPage({ params }: Props) {
   const { slug } = await params
 
+  // cookies() 접근이 필요한 서버 클라이언트는 Promise.all 밖에서 초기화
+  const supabase = await createServerSupabaseClient()
+
   const [marketResult, authResult] = await Promise.all([
     adminSupabase
       .from('markets')
@@ -58,7 +61,7 @@ export default async function MarketDetailPage({ params }: Props) {
       )
       .eq('slug', slug)
       .single(),
-    createServerSupabaseClient().then((s) => s.auth.getUser()),
+    supabase.auth.getUser(),
   ])
 
   const { data, error } = marketResult
