@@ -318,15 +318,21 @@ export default function CreateMarketForm({ categories }: Props) {
                 onValueChange={val => update('category_id', val ?? '')}
               >
                 <SelectTrigger className="h-10 w-full">
-                  <SelectValue placeholder="카테고리를 선택하세요" />
+                  {form.category_id ? (() => {
+                    const selected = categories.find(c => String(c.id) === form.category_id)
+                    return selected ? (
+                      <span className="flex items-center gap-1.5 text-sm flex-1">
+                        <CategoryIcon slug={selected.slug} className="h-3.5 w-3.5 shrink-0" />
+                        <span>{selected.name}</span>
+                      </span>
+                    ) : <SelectValue placeholder="카테고리를 선택하세요" />
+                  })() : <SelectValue placeholder="카테고리를 선택하세요" />}
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map(cat => (
                     <SelectItem key={cat.id} value={String(cat.id)}>
-                      <span className="flex items-center gap-1.5">
-                        <CategoryIcon slug={cat.slug} className="h-3.5 w-3.5 shrink-0" />
-                        <span>{cat.name}</span>
-                      </span>
+                      <CategoryIcon slug={cat.slug} className="h-3.5 w-3.5 shrink-0" />
+                      {cat.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
