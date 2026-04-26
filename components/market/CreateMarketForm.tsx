@@ -209,7 +209,7 @@ export default function CreateMarketForm({ categories }: Props) {
         return
       }
 
-      router.push(`/market/${json.data.slug}`)
+      router.push(`/market/${json.data.id}`)
     } catch {
       setError('네트워크 오류가 발생했습니다. 다시 시도해주세요.')
     } finally {

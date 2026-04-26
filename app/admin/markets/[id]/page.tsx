@@ -158,7 +158,7 @@ export default function AdminMarketDetailPage({ params }: { params: Promise<{ id
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <Link
-              href={`/market/${market.slug ?? market.id}`}
+              href={`/market/${market.id}`}
               className="text-xs text-brand-600 hover:underline"
               target="_blank"
             >

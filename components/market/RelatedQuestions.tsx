@@ -46,7 +46,7 @@ export default async function RelatedQuestions({
           return (
             <Link
               key={m.id}
-              href={`/market/${m.slug}`}
+              href={`/market/${m.id}`}
               className="flex items-start gap-3 py-3 hover:bg-canvas-50 rounded-lg px-2 -mx-2 transition-colors group"
             >
               {/* 생성자 아바타 */}

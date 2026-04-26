@@ -233,7 +233,7 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
                     <TableCell>
                       {bet.market ? (
                         <Link
-                          href={`/market/${bet.market.slug ?? bet.market.id}`}
+                          href={`/market/${bet.market.id}`}
                           className="text-sm text-ink-700 hover:text-brand-600 line-clamp-1"
                         >
                           {bet.market.title}

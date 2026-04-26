@@ -16,15 +16,15 @@ import Link from 'next/link'
 import { ReportButton } from '@/components/common/ReportButton'
 
 interface Props {
-  params: Promise<{ slug: string }>
+  params: Promise<{ id: string }>
 }
 
 export async function generateMetadata({ params }: Props) {
-  const { slug } = await params
+  const { id } = await params
   const { data } = await adminSupabase
     .from('markets')
     .select('title, description, status')
-    .eq('slug', slug)
+    .eq('id', id)
     .single()
   if (!data) return { title: '마켓을 찾을 수 없습니다 — 예견' }
   if (data.status === 'pending' || data.status === 'rejected') {
@@ -37,9 +37,8 @@ export async function generateMetadata({ params }: Props) {
 }
 
 export default async function MarketDetailPage({ params }: Props) {
-  const { slug } = await params
+  const { id } = await params
 
-  // cookies() 접근이 필요한 서버 클라이언트는 Promise.all 밖에서 초기화
   const supabase = await createServerSupabaseClient()
 
   const [marketResult, authResult] = await Promise.all([
@@ -59,7 +58,7 @@ export default async function MarketDetailPage({ params }: Props) {
         options:market_options(id, market_id, text, color, probability, total_amount, sort_order)
         `
       )
-      .eq('slug', slug)
+      .eq('id', id)
       .single(),
     supabase.auth.getUser(),
   ])
@@ -69,7 +68,6 @@ export default async function MarketDetailPage({ params }: Props) {
 
   const market = data as unknown as Market & { options?: MarketOption[] }
 
-  // 인증 사용자 정보
   const authUser = authResult.data.user
   let dbUser: { id: string; role: string; points: number } | null = null
   if (authUser) {
@@ -86,16 +84,12 @@ export default async function MarketDetailPage({ params }: Props) {
   const isPending = market.status === 'pending'
   const isRejected = market.status === 'rejected'
 
-  // 숨김 마켓: 관리자 외 notFound
   if (market.is_hidden && !isAdmin) notFound()
-
-  // pending/rejected: 본인·관리자 외 notFound
   if ((isPending || isRejected) && !isCreator && !isAdmin) notFound()
 
   const userPoints = dbUser?.points ?? null
   const isLoggedIn = !!authUser
 
-  // 확률 히스토리 (bets.probability_at_bet 이용)
   const { data: betRows } = await adminSupabase
     .from('bets')
     .select('created_at, probability_at_bet')

@@ -53,7 +53,7 @@ export default function MarketCard({ market }: MarketCardProps) {
   const categoryColor = market.category?.color ?? '#6366f1'
 
   return (
-    <Link href={`/market/${market.slug}`} className="group block">
+    <Link href={`/market/${market.id}`} className="group block">
       <div className="relative flex items-start gap-3 px-4 py-4 hover:bg-canvas-50 rounded-xl transition-colors cursor-pointer">
         {/* 카테고리 컬러 인디케이터 */}
         <div

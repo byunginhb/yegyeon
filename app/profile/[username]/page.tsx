@@ -282,7 +282,7 @@ export default async function ProfilePage({ params }: Props) {
                               <div className="flex-1 min-w-0">
                                 {market ? (
                                   <Link
-                                    href={`/market/${market.slug ?? market.id}`}
+                                    href={`/market/${market.id}`}
                                     className="text-sm font-medium text-ink-900 hover:text-primary line-clamp-2 transition-colors"
                                   >
                                     {market.title}
@@ -370,7 +370,7 @@ export default async function ProfilePage({ params }: Props) {
                               <div className="flex-1 min-w-0">
                                 {market ? (
                                   <Link
-                                    href={`/market/${market.slug ?? market.id}`}
+                                    href={`/market/${market.id}`}
                                     className="text-sm font-medium text-ink-900 hover:text-primary line-clamp-2 transition-colors"
                                   >
                                     {market.title}
@@ -462,7 +462,7 @@ export default async function ProfilePage({ params }: Props) {
                 {markets.map((market) => (
                   <li key={market.id}>
                     <Link
-                      href={`/market/${(market as Market & { slug?: string }).slug ?? market.id}`}
+                      href={`/market/${market.id}`}
                       className="block bg-canvas-0 rounded-xl border border-ink-200 p-4 hover:border-primary/50 transition-colors"
                     >
                       <div className="flex items-start justify-between gap-3">

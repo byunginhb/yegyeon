@@ -167,7 +167,7 @@ export default function AdminPendingMarketsPage() {
                   <p className="text-xs text-ink-400 mt-1">마감일: {formatDate(market.close_date)}</p>
                 </div>
                 <Link
-                  href={`/market/${market.slug}`}
+                  href={`/market/${market.id}`}
                   target="_blank"
                   className="shrink-0 text-ink-400 hover:text-ink-700 transition-colors"
                   title="마켓 상세 보기"

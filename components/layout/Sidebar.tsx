@@ -47,7 +47,7 @@ export default async function Sidebar() {
             trendingMarkets.map((market) => (
               <Link
                 key={market.id}
-                href={`/market/${market.slug}`}
+                href={`/market/${market.id}`}
                 className="block group"
               >
                 <p className="text-xs text-ink-800 group-hover:text-primary line-clamp-2 leading-snug">

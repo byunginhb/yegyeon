@@ -93,7 +93,7 @@ export default async function RightSidebar() {
             trending.map((m, idx) => (
               <li key={m.id}>
                 <Link
-                  href={`/market/${m.slug ?? m.id}`}
+                  href={`/market/${m.id}`}
                   className="group flex items-start gap-2 text-xs text-ink-700 hover:text-primary"
                 >
                   <span className="shrink-0 w-4 h-4 rounded-md bg-ink-200/50 text-ink-500 text-[10px] font-bold flex items-center justify-center mt-0.5">

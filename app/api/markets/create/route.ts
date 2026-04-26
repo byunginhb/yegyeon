@@ -161,14 +161,14 @@ export async function POST(req: NextRequest) {
     }
 
     // slug 충돌 시 자동 재시도 (DB unique violation을 catch)
-    let market: { id: string; slug: string } | null = null
+    let market: { id: string } | null = null
     let lastError: { code?: string; message?: string } | null = null
     for (let attempt = 0; attempt < 5; attempt++) {
       marketInsert.slug = generateSlug(data.title)
       const { data: inserted, error } = await adminSupabase
         .from('markets')
         .insert(marketInsert)
-        .select('id, slug')
+        .select('id')
         .single()
       if (!error && inserted) {
         market = inserted
@@ -206,7 +206,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({ success: true, data: { id: market.id, slug: market.slug } })
+    return NextResponse.json({ success: true, data: { id: market.id } })
   } catch (err) {
     console.error('markets create error:', err)
     return NextResponse.json({ success: false, error: '서버 오류가 발생했습니다.' }, { status: 500 })
