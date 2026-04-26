@@ -1,7 +1,29 @@
 import Link from 'next/link'
-import { TrendingUp, Flame, Trophy } from 'lucide-react'
+import { TrendingUp, Flame, Trophy, Landmark, BarChart2, Zap, Cpu, Film, Globe, Tag, Mic2, type LucideIcon } from 'lucide-react'
 import { adminSupabase } from '@/lib/supabase/admin'
 import PointIcon from '@/components/ui/PointIcon'
+
+const CATEGORY_ICON_MAP: Record<string, LucideIcon> = {
+  politics: Landmark,
+  economy: BarChart2,
+  sports: Zap,
+  tech: Cpu,
+  entertainment: Film,
+  other: Tag,
+  // DB에 추가된 카테고리 slug 패턴
+  'politics-society': Landmark,
+  'it-ai': Cpu,
+  kpop: Mic2,
+  'economy-finance': BarChart2,
+  international: Globe,
+  global: Globe,
+  fun: Tag,
+}
+
+function CategoryIcon({ slug, color }: { slug: string; color: string }) {
+  const Icon = CATEGORY_ICON_MAP[slug] ?? Tag
+  return <Icon className="h-3 w-3 shrink-0" style={{ color }} />
+}
 
 interface TrendingMarket {
   id: string
@@ -141,7 +163,7 @@ export default async function RightSidebar() {
               className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full transition-colors hover:scale-[1.02]"
               style={{ backgroundColor: `${c.color}15`, color: c.color }}
             >
-              <span>{c.icon}</span>
+              <CategoryIcon slug={c.slug} color={c.color} />
               <span className="font-medium">{c.name}</span>
               {c.count > 0 && (
                 <span className="text-[10px] opacity-70">{c.count}</span>
