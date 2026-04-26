@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { toast } from 'sonner'
-import { Clock, CheckCircle, XCircle, ExternalLink } from 'lucide-react'
+import { Clock, CheckCircle, XCircle, Search } from 'lucide-react'
+import MarketDetailDialog from '@/components/admin/MarketDetailDialog'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -11,7 +12,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import Link from 'next/link'
 
 interface PendingMarket {
   id: string
@@ -45,6 +45,7 @@ export default function AdminPendingMarketsPage() {
 
   const [rejectTarget, setRejectTarget] = useState<PendingMarket | null>(null)
   const [reason, setReason] = useState('')
+  const [selectedMarketId, setSelectedMarketId] = useState<string | null>(null)
 
   const limit = 20
 
@@ -160,20 +161,26 @@ export default function AdminPendingMarketsPage() {
                       {market.creator?.display_name ?? '알 수 없음'} · {formatDate(market.created_at)} 생성
                     </span>
                   </div>
-                  <h3 className="font-semibold text-ink-900 line-clamp-2">{market.title}</h3>
+                  <button
+                    onClick={() => setSelectedMarketId(market.id)}
+                    className="text-left font-semibold text-ink-900 hover:text-primary transition-colors line-clamp-2 w-full"
+                  >
+                    {market.title}
+                  </button>
                   {market.description && (
                     <p className="text-sm text-ink-500 mt-1 line-clamp-2">{market.description}</p>
                   )}
                   <p className="text-xs text-ink-400 mt-1">마감일: {formatDate(market.close_date)}</p>
                 </div>
-                <Link
-                  href={`/market/${market.id}`}
-                  target="_blank"
-                  className="shrink-0 text-ink-400 hover:text-ink-700 transition-colors"
-                  title="마켓 상세 보기"
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="shrink-0 h-7 px-2 text-xs text-ink-500 hover:text-ink-800 gap-1"
+                  onClick={() => setSelectedMarketId(market.id)}
                 >
-                  <ExternalLink className="h-4 w-4" />
-                </Link>
+                  <Search className="h-3.5 w-3.5" />
+                  상세
+                </Button>
               </div>
 
               <div className="flex items-center gap-2 pt-1 border-t border-border">
@@ -196,6 +203,14 @@ export default function AdminPendingMarketsPage() {
                 >
                   <XCircle className="h-3.5 w-3.5" />
                   거절
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 gap-1.5 text-ink-400 ml-auto"
+                  onClick={() => setSelectedMarketId(market.id)}
+                >
+                  전체 정보 보기
                 </Button>
               </div>
             </div>
@@ -249,6 +264,14 @@ export default function AdminPendingMarketsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <MarketDetailDialog
+        marketId={selectedMarketId}
+        marketIds={markets.map((m) => m.id)}
+        onClose={() => setSelectedMarketId(null)}
+        onActionSuccess={fetchMarkets}
+        onNavigate={setSelectedMarketId}
+      />
     </div>
   )
 }

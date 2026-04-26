@@ -27,6 +27,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
+import { Search } from 'lucide-react'
+import MarketDetailDialog from '@/components/admin/MarketDetailDialog'
 
 interface Market {
   id: string
@@ -244,6 +246,7 @@ export default function AdminMarketsPage() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [loading, setLoading] = useState(true)
 
+  const [selectedMarketId, setSelectedMarketId] = useState<string | null>(null)
   const [resolveTarget, setResolveTarget] = useState<Market | null>(null)
   const [closeTarget, setCloseTarget] = useState<Market | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Market | null>(null)
@@ -451,9 +454,12 @@ export default function AdminMarketsPage() {
               markets.map((market) => (
                 <TableRow key={market.id}>
                   <TableCell>
-                    <span className="text-sm font-medium text-ink-900 line-clamp-1">
+                    <button
+                      onClick={() => setSelectedMarketId(market.id)}
+                      className="text-left text-sm font-medium text-ink-900 hover:text-primary transition-colors line-clamp-1 w-full"
+                    >
                       {market.title}
-                    </span>
+                    </button>
                   </TableCell>
                   <TableCell>
                     <span className="text-xs text-ink-500">
@@ -480,6 +486,15 @@ export default function AdminMarketsPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1 flex-wrap">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 text-xs px-2 text-ink-400 hover:text-ink-700 gap-1"
+                        onClick={() => setSelectedMarketId(market.id)}
+                      >
+                        <Search className="h-3 w-3" />
+                        상세
+                      </Button>
                       {market.status === 'pending' && (
                         <>
                           <Button
@@ -633,6 +648,14 @@ export default function AdminMarketsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <MarketDetailDialog
+        marketId={selectedMarketId}
+        marketIds={markets.map((m) => m.id)}
+        onClose={() => setSelectedMarketId(null)}
+        onActionSuccess={fetchMarkets}
+        onNavigate={setSelectedMarketId}
+      />
     </div>
   )
 }
