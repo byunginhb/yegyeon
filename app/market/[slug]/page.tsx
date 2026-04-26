@@ -1,5 +1,7 @@
 import { notFound } from 'next/navigation'
 import { adminSupabase } from '@/lib/supabase/admin'
+
+export const dynamic = 'force-dynamic'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { Users, Calendar, TrendingUp, ArrowLeft } from 'lucide-react'
 import type { Market, MarketOption } from '@/types'
