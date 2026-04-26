@@ -20,6 +20,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
+import { AVAILABLE_ICONS, getCategoryIcon, getCategoryIconByName } from '@/lib/categoryIcon'
 
 interface Category {
   id: number
@@ -43,10 +44,32 @@ interface CategoryFormState {
 const EMPTY_FORM: CategoryFormState = {
   name: '',
   slug: '',
-  icon: '',
+  icon: 'Tag',
   color: '#6366f1',
   sort_order: '0',
   is_active: true,
+}
+
+function IconPicker({ value, onChange }: { value: string; onChange: (name: string) => void }) {
+  return (
+    <div className="grid grid-cols-7 gap-1 p-2 rounded-lg border border-input bg-background max-h-40 overflow-y-auto">
+      {AVAILABLE_ICONS.map(({ name, Icon, label }) => (
+        <button
+          key={name}
+          type="button"
+          title={label}
+          onClick={() => onChange(name)}
+          className={`flex flex-col items-center justify-center gap-0.5 p-1.5 rounded-md transition-colors text-[10px] leading-tight ${
+            value === name
+              ? 'bg-primary text-primary-foreground'
+              : 'hover:bg-ink-100 text-ink-600'
+          }`}
+        >
+          <Icon className="h-4 w-4 shrink-0" />
+        </button>
+      ))}
+    </div>
+  )
 }
 
 function CategoryDialog({
@@ -84,7 +107,7 @@ function CategoryDialog({
       const payload = {
         name: form.name.trim(),
         slug: form.slug.trim(),
-        icon: form.icon.trim(),
+        icon: form.icon,
         color: form.color.trim(),
         sort_order: Number(form.sort_order) || 0,
         is_active: form.is_active,
@@ -111,11 +134,12 @@ function CategoryDialog({
     }
   }
 
-  const isValid = form.name.trim() && form.slug.trim() && form.icon.trim() && form.color.trim()
+  const isValid = form.name.trim() && form.slug.trim() && form.icon && form.color.trim()
+  const SelectedIcon = getCategoryIconByName(form.icon)
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{initial ? '카테고리 수정' : '카테고리 추가'}</DialogTitle>
         </DialogHeader>
@@ -137,32 +161,36 @@ function CategoryDialog({
               disabled={!!initial}
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
+
+          {/* 아이콘 피커 */}
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
               <Label>아이콘</Label>
+              <span className="flex items-center gap-1 text-xs text-ink-500 bg-ink-100 px-2 py-0.5 rounded-full">
+                <SelectedIcon className="h-3 w-3" />
+                {form.icon}
+              </span>
+            </div>
+            <IconPicker value={form.icon} onChange={(name) => setForm({ ...form, icon: name })} />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>색상</Label>
+            <div className="flex items-center gap-2">
               <Input
-                value={form.icon}
-                onChange={(e) => setForm({ ...form, icon: e.target.value })}
-                placeholder="아이콘 (이모지 또는 문자열)"
+                type="color"
+                value={form.color}
+                onChange={(e) => setForm({ ...form, color: e.target.value })}
+                className="w-14 h-9 p-1"
+              />
+              <Input
+                value={form.color}
+                onChange={(e) => setForm({ ...form, color: e.target.value })}
+                className="flex-1"
               />
             </div>
-            <div className="space-y-1.5">
-              <Label>색상</Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  type="color"
-                  value={form.color}
-                  onChange={(e) => setForm({ ...form, color: e.target.value })}
-                  className="w-14 h-9 p-1"
-                />
-                <Input
-                  value={form.color}
-                  onChange={(e) => setForm({ ...form, color: e.target.value })}
-                  className="flex-1"
-                />
-              </div>
-            </div>
           </div>
+
           <div className="grid grid-cols-2 gap-3 items-end">
             <div className="space-y-1.5">
               <Label>정렬 순서</Label>
@@ -172,7 +200,7 @@ function CategoryDialog({
                 onChange={(e) => setForm({ ...form, sort_order: e.target.value })}
               />
             </div>
-            <label className="flex items-center gap-2 text-sm text-ink-700 pb-2">
+            <label className="flex items-center gap-2 text-sm text-ink-700 pb-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={form.is_active}
@@ -280,57 +308,70 @@ export default function AdminCategoriesPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              categories.map((c) => (
-                <TableRow key={c.id}>
-                  <TableCell className="text-xl leading-none">{c.icon}</TableCell>
-                  <TableCell className="text-sm font-medium text-ink-900">{c.name}</TableCell>
-                  <TableCell className="text-xs text-ink-500 font-mono">{c.slug}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1.5">
+              categories.map((c) => {
+                // icon 필드가 아이콘 이름이면 name-based 조회, 아니면(이모지 등) slug 폴백
+                const IconComp = AVAILABLE_ICONS.some(a => a.name === c.icon)
+                  ? getCategoryIconByName(c.icon)
+                  : getCategoryIcon(c.slug)
+                return (
+                  <TableRow key={c.id}>
+                    <TableCell>
                       <span
-                        className="inline-block w-4 h-4 rounded-sm border border-border"
-                        style={{ backgroundColor: c.color }}
-                      />
-                      <span className="text-xs text-ink-500 font-mono">{c.color}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right text-sm text-ink-600">{c.sort_order}</TableCell>
-                  <TableCell>
-                    <span
-                      className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                        c.is_active
-                          ? 'bg-teal-500/10 text-teal-700'
-                          : 'bg-ink-300/30 text-ink-500'
-                      }`}
-                    >
-                      {c.is_active ? '활성' : '비활성'}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-7 text-xs px-2"
-                        onClick={() => {
-                          setEditTarget(c)
-                          setDialogOpen(true)
-                        }}
+                        className="inline-flex items-center justify-center w-7 h-7 rounded-md"
+                        style={{ backgroundColor: `${c.color}20` }}
                       >
-                        수정
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-7 text-xs px-2 text-scarlet-500 hover:text-scarlet-600"
-                        onClick={() => setDeleteTarget(c)}
+                        <IconComp className="h-4 w-4" style={{ color: c.color }} />
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-sm font-medium text-ink-900">{c.name}</TableCell>
+                    <TableCell className="text-xs text-ink-500 font-mono">{c.slug}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className="inline-block w-4 h-4 rounded-sm border border-border"
+                          style={{ backgroundColor: c.color }}
+                        />
+                        <span className="text-xs text-ink-500 font-mono">{c.color}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right text-sm text-ink-600">{c.sort_order}</TableCell>
+                    <TableCell>
+                      <span
+                        className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                          c.is_active
+                            ? 'bg-teal-500/10 text-teal-700'
+                            : 'bg-ink-300/30 text-ink-500'
+                        }`}
                       >
-                        삭제
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+                        {c.is_active ? '활성' : '비활성'}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs px-2"
+                          onClick={() => {
+                            setEditTarget(c)
+                            setDialogOpen(true)
+                          }}
+                        >
+                          수정
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs px-2 text-scarlet-500 hover:text-scarlet-600"
+                          onClick={() => setDeleteTarget(c)}
+                        >
+                          삭제
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )
+              })
             )}
           </TableBody>
         </Table>
