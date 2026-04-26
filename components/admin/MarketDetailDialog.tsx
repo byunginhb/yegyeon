@@ -23,7 +23,7 @@ import {
   SquareArrowOutUpRight,
 } from 'lucide-react'
 
-interface MarketOption {
+export interface MarketOption {
   id: string
   text: string
   probability: number
@@ -31,7 +31,7 @@ interface MarketOption {
   sort_order: number
 }
 
-interface MarketDetail {
+export interface MarketDetail {
   id: string
   title: string
   description: string | null
@@ -66,6 +66,7 @@ interface MarketDetail {
 interface Props {
   marketId: string | null
   marketIds?: string[]
+  prefetchedData?: MarketDetail | null
   onClose: () => void
   onActionSuccess: () => void
   onNavigate?: (id: string) => void
@@ -139,6 +140,7 @@ function CopyValue({ value }: { value: string }) {
 export default function MarketDetailDialog({
   marketId,
   marketIds = [],
+  prefetchedData,
   onClose,
   onActionSuccess,
   onNavigate,
@@ -173,8 +175,16 @@ export default function MarketDetailDialog({
   }, [])
 
   useEffect(() => {
-    if (marketId) fetchDetail(marketId)
-  }, [marketId, fetchDetail])
+    if (!marketId) return
+    if (prefetchedData && prefetchedData.id === marketId) {
+      setDetail(prefetchedData)
+      setLoading(false)
+      setRejectMode(false)
+      setRejectReason('')
+    } else {
+      fetchDetail(marketId)
+    }
+  }, [marketId, prefetchedData, fetchDetail])
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -273,7 +283,7 @@ export default function MarketDetailDialog({
 
   return (
     <Dialog open={!!marketId} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-0">
         <DialogHeader className="px-6 pt-5 pb-3 border-b border-ink-200 sticky top-0 bg-canvas-0 z-10">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">

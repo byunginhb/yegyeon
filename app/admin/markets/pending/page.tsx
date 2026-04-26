@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { toast } from 'sonner'
 import { Clock, CheckCircle, XCircle, Search } from 'lucide-react'
-import MarketDetailDialog from '@/components/admin/MarketDetailDialog'
+import MarketDetailDialog, { type MarketDetail } from '@/components/admin/MarketDetailDialog'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -47,6 +47,8 @@ export default function AdminPendingMarketsPage() {
   const [reason, setReason] = useState('')
   const [selectedMarketId, setSelectedMarketId] = useState<string | null>(null)
 
+  const detailCache = useRef<Map<string, MarketDetail>>(new Map())
+
   const limit = 20
 
   const fetchMarkets = useCallback(async () => {
@@ -58,6 +60,17 @@ export default function AdminPendingMarketsPage() {
       if (data.success) {
         setMarkets(data.data)
         setTotal(data.meta.total)
+        // 백그라운드에서 마켓 상세 정보 사전 로딩
+        for (const m of data.data) {
+          if (!detailCache.current.has(m.id)) {
+            fetch(`/api/admin/markets/${m.id}`)
+              .then((r) => r.json())
+              .then((json) => {
+                if (json.success) detailCache.current.set(m.id, json.data.market)
+              })
+              .catch(() => {})
+          }
+        }
       } else {
         toast.error(data.error ?? '목록 로드 실패')
       }
@@ -268,6 +281,7 @@ export default function AdminPendingMarketsPage() {
       <MarketDetailDialog
         marketId={selectedMarketId}
         marketIds={markets.map((m) => m.id)}
+        prefetchedData={selectedMarketId ? detailCache.current.get(selectedMarketId) ?? null : null}
         onClose={() => setSelectedMarketId(null)}
         onActionSuccess={fetchMarkets}
         onNavigate={setSelectedMarketId}

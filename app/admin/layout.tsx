@@ -1,19 +1,38 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import {
+  LayoutDashboard,
+  TrendingUp,
+  Clock,
+  Users,
+  Coins,
+  Tag,
+  AlertTriangle,
+  Megaphone,
+  ScrollText,
+  Settings,
+  type LucideIcon,
+} from 'lucide-react'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { adminSupabase } from '@/lib/supabase/admin'
 
-const navItems = [
-  { href: '/admin', label: '대시보드', icon: '📊' },
-  { href: '/admin/markets', label: '마켓 관리', icon: '📈' },
-  { href: '/admin/markets/pending', label: '승인 대기', icon: '⏳' },
-  { href: '/admin/users', label: '유저 관리', icon: '👥' },
-  { href: '/admin/points', label: '포인트 관리', icon: '💰' },
-  { href: '/admin/categories', label: '카테고리', icon: '🏷️' },
-  { href: '/admin/reports', label: '신고 관리', icon: '🚨' },
-  { href: '/admin/announcements', label: '공지사항', icon: '📢' },
-  { href: '/admin/logs', label: '관리 로그', icon: '📜' },
-  { href: '/admin/settings', label: '서비스 설정', icon: '⚙️' },
+interface NavItem {
+  href: string
+  label: string
+  icon: LucideIcon
+}
+
+const navItems: NavItem[] = [
+  { href: '/admin', label: '대시보드', icon: LayoutDashboard },
+  { href: '/admin/markets', label: '마켓 관리', icon: TrendingUp },
+  { href: '/admin/markets/pending', label: '승인 대기', icon: Clock },
+  { href: '/admin/users', label: '유저 관리', icon: Users },
+  { href: '/admin/points', label: '포인트 관리', icon: Coins },
+  { href: '/admin/categories', label: '카테고리', icon: Tag },
+  { href: '/admin/reports', label: '신고 관리', icon: AlertTriangle },
+  { href: '/admin/announcements', label: '공지사항', icon: Megaphone },
+  { href: '/admin/logs', label: '관리 로그', icon: ScrollText },
+  { href: '/admin/settings', label: '서비스 설정', icon: Settings },
 ]
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -50,7 +69,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               href={item.href}
               className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-ink-700 hover:bg-canvas-100 hover:text-ink-900 transition-colors"
             >
-              <span className="text-base leading-none">{item.icon}</span>
+              <item.icon className="h-4 w-4 shrink-0" />
               {item.label}
             </Link>
           ))}

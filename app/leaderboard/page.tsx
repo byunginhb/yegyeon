@@ -80,9 +80,9 @@ async function fetchLeaderboard(type: string) {
 }
 
 function RankBadge({ rank }: { rank: number }) {
-  if (rank === 1) return <span className="text-lg">🥇</span>
-  if (rank === 2) return <span className="text-lg">🥈</span>
-  if (rank === 3) return <span className="text-lg">🥉</span>
+  if (rank === 1) return <Trophy className="h-4 w-4 text-amber-500" />
+  if (rank === 2) return <Trophy className="h-4 w-4 text-ink-400" />
+  if (rank === 3) return <Trophy className="h-4 w-4 text-orange-400" />
   return <span className="text-sm font-medium text-ink-500 w-6 text-center">{rank}</span>
 }
 

@@ -2,16 +2,32 @@
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { useCallback } from 'react'
+import {
+  Globe,
+  Landmark,
+  TrendingUp,
+  Trophy,
+  Monitor,
+  Film,
+  Tag,
+  type LucideIcon,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-const CATEGORIES = [
-  { slug: 'all', label: '전체', icon: '🌐' },
-  { slug: 'politics', label: '정치', icon: '🏛️' },
-  { slug: 'economy', label: '경제', icon: '📈' },
-  { slug: 'sports', label: '스포츠', icon: '⚽' },
-  { slug: 'tech', label: '테크', icon: '💻' },
-  { slug: 'entertainment', label: '엔터', icon: '🎬' },
-  { slug: 'other', label: '기타', icon: '📌' },
+interface CategoryItem {
+  slug: string
+  label: string
+  icon: LucideIcon
+}
+
+const CATEGORIES: CategoryItem[] = [
+  { slug: 'all', label: '전체', icon: Globe },
+  { slug: 'politics', label: '정치', icon: Landmark },
+  { slug: 'economy', label: '경제', icon: TrendingUp },
+  { slug: 'sports', label: '스포츠', icon: Trophy },
+  { slug: 'tech', label: '테크', icon: Monitor },
+  { slug: 'entertainment', label: '엔터', icon: Film },
+  { slug: 'other', label: '기타', icon: Tag },
 ]
 
 interface CategoryTabsProps {
@@ -41,12 +57,12 @@ export default function CategoryTabs({ className }: CategoryTabsProps) {
 
   return (
     <div className={cn('flex gap-1 overflow-x-auto pb-1 scrollbar-none', className)}>
-      {CATEGORIES.map(({ slug, label, icon }) => {
-        const isActive = activeCategory === slug
+      {CATEGORIES.map((item) => {
+        const isActive = activeCategory === item.slug
         return (
           <button
-            key={slug}
-            onClick={() => handleSelect(slug)}
+            key={item.slug}
+            onClick={() => handleSelect(item.slug)}
             className={cn(
               'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-150',
               isActive
@@ -54,8 +70,8 @@ export default function CategoryTabs({ className }: CategoryTabsProps) {
                 : 'bg-canvas-0 text-ink-600 border border-ink-200 hover:border-ink-400 hover:text-ink-900'
             )}
           >
-            <span>{icon}</span>
-            <span>{label}</span>
+            <item.icon className="h-3.5 w-3.5" />
+            <span>{item.label}</span>
           </button>
         )
       })}

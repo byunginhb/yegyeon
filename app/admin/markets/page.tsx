@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { toast } from 'sonner'
 import {
   Table,
@@ -27,8 +27,15 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
-import { Search } from 'lucide-react'
-import MarketDetailDialog from '@/components/admin/MarketDetailDialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { MoreHorizontal, Search } from 'lucide-react'
+import MarketDetailDialog, { type MarketDetail } from '@/components/admin/MarketDetailDialog'
 
 interface Market {
   id: string
@@ -255,6 +262,8 @@ export default function AdminMarketsPage() {
   const [rejectReason, setRejectReason] = useState('')
   const [actionLoading, setActionLoading] = useState(false)
 
+  const detailCache = useRef<Map<string, MarketDetail>>(new Map())
+
   const limit = 20
 
   const fetchMarkets = useCallback(async () => {
@@ -271,6 +280,17 @@ export default function AdminMarketsPage() {
       if (data.success) {
         setMarkets(data.data)
         setTotal(data.meta.total)
+        // 백그라운드에서 마켓 상세 정보 사전 로딩
+        for (const m of data.data) {
+          if (!detailCache.current.has(m.id)) {
+            fetch(`/api/admin/markets/${m.id}`)
+              .then((r) => r.json())
+              .then((json) => {
+                if (json.success) detailCache.current.set(m.id, json.data.market)
+              })
+              .catch(() => {})
+          }
+        }
       } else {
         toast.error(data.error ?? '마켓 목록 로드 실패')
       }
@@ -430,7 +450,7 @@ export default function AdminMarketsPage() {
               <TableHead className="w-28 text-right">거래량</TableHead>
               <TableHead className="w-28">생성자</TableHead>
               <TableHead className="w-24">마감일</TableHead>
-              <TableHead className="w-40">액션</TableHead>
+              <TableHead className="w-24">액션</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -485,64 +505,70 @@ export default function AdminMarketsPage() {
                     <span className="text-xs text-ink-500">{formatDate(market.close_date)}</span>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-1 flex-wrap">
+                    <div className="flex items-center gap-1">
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="h-7 text-xs px-2 text-ink-400 hover:text-ink-700 gap-1"
+                        className="h-7 px-2 text-xs gap-1 text-ink-500 hover:text-ink-800"
                         onClick={() => setSelectedMarketId(market.id)}
                       >
                         <Search className="h-3 w-3" />
                         상세
                       </Button>
-                      {market.status === 'pending' && (
-                        <>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-7 text-xs px-2 border-teal-400 text-teal-600 hover:bg-teal-50"
-                            onClick={() => setApproveTarget(market)}
-                          >
-                            승인
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-7 text-xs px-2 border-scarlet-400 text-scarlet-500 hover:bg-scarlet-50"
-                            onClick={() => { setRejectTarget(market); setRejectReason('') }}
-                          >
-                            거절
-                          </Button>
-                        </>
-                      )}
-                      {market.status === 'open' && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 text-xs px-2"
-                          onClick={() => setCloseTarget(market)}
+
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          className="inline-flex items-center justify-center h-7 w-7 p-0 rounded-md text-ink-400 hover:bg-accent hover:text-accent-foreground outline-none"
+                          aria-label="더보기"
                         >
-                          종료
-                        </Button>
-                      )}
-                      {(market.status === 'open' || market.status === 'closed') && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 text-xs px-2"
-                          onClick={() => setResolveTarget(market)}
-                        >
-                          결과 입력
-                        </Button>
-                      )}
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-7 text-xs px-2 text-scarlet-500 hover:text-scarlet-600 hover:border-scarlet-300"
-                        onClick={() => setDeleteTarget(market)}
-                      >
-                        삭제
-                      </Button>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-36">
+                          {market.status === 'pending' && (
+                            <>
+                              <DropdownMenuItem
+                                className="text-teal-600 focus:text-teal-700 focus:bg-teal-50 cursor-pointer"
+                                onClick={() => setApproveTarget(market)}
+                              >
+                                승인
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="text-scarlet-600 focus:text-scarlet-700 focus:bg-scarlet-50 cursor-pointer"
+                                onClick={() => {
+                                  setRejectTarget(market)
+                                  setRejectReason('')
+                                }}
+                              >
+                                거절
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                            </>
+                          )}
+                          {market.status === 'open' && (
+                            <DropdownMenuItem
+                              className="cursor-pointer"
+                              onClick={() => setCloseTarget(market)}
+                            >
+                              마켓 종료
+                            </DropdownMenuItem>
+                          )}
+                          {(market.status === 'open' || market.status === 'closed') && (
+                            <DropdownMenuItem
+                              className="cursor-pointer"
+                              onClick={() => setResolveTarget(market)}
+                            >
+                              결과 입력
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            className="text-scarlet-600 focus:text-scarlet-700 focus:bg-scarlet-50 cursor-pointer"
+                            onClick={() => setDeleteTarget(market)}
+                          >
+                            삭제
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -652,6 +678,7 @@ export default function AdminMarketsPage() {
       <MarketDetailDialog
         marketId={selectedMarketId}
         marketIds={markets.map((m) => m.id)}
+        prefetchedData={selectedMarketId ? detailCache.current.get(selectedMarketId) ?? null : null}
         onClose={() => setSelectedMarketId(null)}
         onActionSuccess={fetchMarkets}
         onNavigate={setSelectedMarketId}

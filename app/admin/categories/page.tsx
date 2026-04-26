@@ -143,7 +143,7 @@ function CategoryDialog({
               <Input
                 value={form.icon}
                 onChange={(e) => setForm({ ...form, icon: e.target.value })}
-                placeholder="🏛️"
+                placeholder="아이콘 (이모지 또는 문자열)"
               />
             </div>
             <div className="space-y-1.5">
