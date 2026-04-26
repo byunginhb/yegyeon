@@ -146,7 +146,10 @@ export default function MarketDetailDialog({
   onActionSuccess,
   onNavigate,
 }: Props) {
-  const [detail, setDetail] = useState<MarketDetail | null>(null)
+  const [fetchedDetail, setFetchedDetail] = useState<MarketDetail | null>(null)
+  const [detailOverride, setDetailOverride] = useState<MarketDetail | null>(null)
+  const detail = detailOverride ?? (prefetchedData?.id === marketId ? prefetchedData : fetchedDetail)
+
   const [loading, setLoading] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
 
@@ -157,14 +160,15 @@ export default function MarketDetailDialog({
 
   const fetchDetail = useCallback(async (id: string) => {
     setLoading(true)
-    setDetail(null)
+    setFetchedDetail(null)
+    setDetailOverride(null)
     setRejectMode(false)
     setRejectReason('')
     try {
       const res = await fetch(`/api/admin/markets/${id}`)
       const json = await res.json()
       if (json.success) {
-        setDetail(json.data.market)
+        setFetchedDetail(json.data.market)
       } else {
         toast.error(json.error ?? '마켓 정보를 불러오지 못했습니다.')
       }
@@ -177,8 +181,8 @@ export default function MarketDetailDialog({
 
   useEffect(() => {
     if (!marketId) return
-    if (prefetchedData && prefetchedData.id === marketId) {
-      setDetail(prefetchedData)
+    setDetailOverride(null)
+    if (prefetchedData?.id === marketId) {
       setLoading(false)
       setRejectMode(false)
       setRejectReason('')
@@ -270,7 +274,7 @@ export default function MarketDetailDialog({
       const json = await res.json()
       if (json.success) {
         toast.success(detail.is_hidden ? '숨김이 해제되었습니다.' : '마켓이 숨겨졌습니다.')
-        setDetail({ ...detail, is_hidden: !detail.is_hidden })
+        setDetailOverride({ ...detail, is_hidden: !detail.is_hidden })
         onActionSuccess()
       } else {
         toast.error(json.error ?? '처리 실패')
@@ -284,7 +288,7 @@ export default function MarketDetailDialog({
 
   return (
     <Dialog open={!!marketId} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto p-0">
+      <DialogContent className="w-[90vw] max-w-5xl sm:max-w-5xl max-h-[90vh] overflow-y-auto p-0">
         <DialogHeader className="px-6 pt-5 pb-3 border-b border-ink-200 sticky top-0 bg-canvas-0 z-10">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
