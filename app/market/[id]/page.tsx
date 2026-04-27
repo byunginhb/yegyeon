@@ -122,7 +122,7 @@ export default async function MarketDetailPage({ params }: Props) {
   const closeDate = new Date(market.close_date)
 
   return (
-    <div className="max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="flex gap-8">
 
         {/* ── 메인 콘텐츠 ─────────────────────────────── */}
