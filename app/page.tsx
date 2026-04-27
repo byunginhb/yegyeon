@@ -134,7 +134,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       </Suspense>
 
       {/* 마켓 목록 */}
-      <div className="rounded-2xl bg-canvas-0/40 backdrop-blur-sm overflow-hidden">
+      <div className="rounded-xl border border-ink-200/60 bg-canvas-0 overflow-hidden">
         <Suspense fallback={<MarketListSkeleton count={8} />}>
           <MarketsSection
             category={params.category}
