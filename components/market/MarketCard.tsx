@@ -116,7 +116,7 @@ export default function MarketCard({ market }: MarketCardProps) {
           <p className="text-sm font-semibold text-ink-900 group-hover:text-primary line-clamp-2 leading-snug">
             {market.title}
           </p>
-          <div className="flex items-center gap-1.5 mt-1 text-xs text-ink-400 flex-wrap">
+          <div className="flex items-center gap-1.5 mt-1 text-xs text-ink-500 flex-wrap">
             {market.category && (
               <>
                 <span className="font-medium" style={{ color: categoryColor }}>
