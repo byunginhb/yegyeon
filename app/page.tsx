@@ -11,27 +11,38 @@ export const metadata: Metadata = {
   },
 }
 
-import CategoryTabs from '@/components/market/CategoryTabs'
-import SortTabs from '@/components/market/SortTabs'
+import FilterBar from '@/components/market/FilterBar'
 import MarketList from '@/components/market/MarketList'
 import MarketListSkeleton from '@/components/market/MarketListSkeleton'
 import HomeHeader from '@/components/home/HomeHeader'
 import PageShell from '@/components/layout/PageShell'
 import { adminSupabase } from '@/lib/supabase/admin'
-import type { Market } from '@/types/index'
+import type { Category, Market } from '@/types/index'
 
 interface HomePageProps {
   searchParams: Promise<{
     category?: string
     sort?: string
     page?: string
+    q?: string
   }>
+}
+
+async function fetchCategories(): Promise<Category[]> {
+  const { data } = await adminSupabase
+    .from('categories')
+    .select('id, name, slug, icon, color, sort_order, is_active')
+    .eq('is_active', true)
+    .order('sort_order', { ascending: true })
+
+  return (data as Category[]) ?? []
 }
 
 async function fetchMarkets(params: {
   category?: string
   sort?: string
   page?: string
+  q?: string
 }): Promise<Market[]> {
   const sort = params.sort || 'trending'
   const page = Math.max(1, parseInt(params.page || '1', 10))
@@ -63,6 +74,12 @@ async function fetchMarkets(params: {
     }
   }
 
+  // 검색어 필터 (title ilike)
+  if (params.q && params.q.trim()) {
+    const searchTerm = params.q.trim().replace(/[%_]/g, (m) => `\\${m}`)
+    query = query.ilike('title', `%${searchTerm}%`)
+  }
+
   switch (sort) {
     case 'newest':
       query = query.order('created_at', { ascending: false })
@@ -87,17 +104,23 @@ async function MarketsSection({
   category,
   sort,
   page,
+  q,
 }: {
   category?: string
   sort?: string
   page?: string
+  q?: string
 }) {
-  const markets = await fetchMarkets({ category, sort, page })
-  return <MarketList markets={markets} emptyMessage="열린 마켓이 없습니다." />
+  const markets = await fetchMarkets({ category, sort, page, q })
+  const emptyMessage = q
+    ? `"${q}" 검색 결과가 없습니다.`
+    : '열린 마켓이 없습니다.'
+  return <MarketList markets={markets} emptyMessage={emptyMessage} />
 }
 
 export default async function HomePage({ searchParams }: HomePageProps) {
   const params = await searchParams
+  const categories = await fetchCategories()
 
   return (
     <PageShell>
@@ -105,15 +128,10 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <HomeHeader />
       </Suspense>
 
-      {/* 필터 탭 */}
-      <div className="flex flex-col gap-2 mb-3">
-        <Suspense>
-          <CategoryTabs />
-        </Suspense>
-        <Suspense>
-          <SortTabs />
-        </Suspense>
-      </div>
+      {/* 통합 필터 바: 검색 + 카테고리 + 정렬 */}
+      <Suspense fallback={null}>
+        <FilterBar categories={categories} />
+      </Suspense>
 
       {/* 마켓 목록 */}
       <div className="rounded-2xl bg-canvas-0/40 backdrop-blur-sm overflow-hidden">
@@ -122,6 +140,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             category={params.category}
             sort={params.sort}
             page={params.page}
+            q={params.q}
           />
         </Suspense>
       </div>

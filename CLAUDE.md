@@ -15,6 +15,7 @@
 |------|----------|------|------|
 | 2026-04-21 | 초기 하네스 구성 | 전체 | 예견 프로젝트 시작 |
 | 2026-04-21 | 관리자 페이지 계획 추가 | docs/Plans.md | 관리자 기능 요구사항 추가 |
+| 2026-04-26 | 메인 페이지 UI 개선 (FilterBar, MarketCard) | frontend-dev.md, design-system SKILL | Manifold Markets 스타일 적용 |
 
 ## 작업 규칙 (필수 준수)
 

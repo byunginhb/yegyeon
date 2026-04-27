@@ -1,12 +1,15 @@
 import Link from 'next/link'
-import { Users, MessageCircle } from 'lucide-react'
+import { Users, MessageCircle, ChevronRight } from 'lucide-react'
 import PointIcon from '@/components/ui/PointIcon'
 import { CategoryIcon } from '@/lib/categoryIcon'
+import { cn } from '@/lib/utils'
 import type { Market } from '@/types/index'
 
 interface MarketCardProps {
   market: Market
 }
+
+const CLOSING_SOON_DAYS = 3
 
 function VolumeDisplay({ volume }: { volume: number }) {
   const label =
@@ -21,15 +24,39 @@ function VolumeDisplay({ volume }: { volume: number }) {
   )
 }
 
-function formatCloseDate(dateStr: string): string {
+interface CloseDateInfo {
+  label: string
+  isClosingSoon: boolean
+  isClosed: boolean
+}
+
+function getCloseDateInfo(dateStr: string): CloseDateInfo {
   const date = new Date(dateStr)
   const now = new Date()
-  const diffDays = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-  if (diffDays < 0) return '마감됨'
-  if (diffDays === 0) return '오늘 마감'
-  if (diffDays === 1) return '내일 마감'
-  if (diffDays <= 7) return `${diffDays}일 후`
-  return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })
+  const diffDays = Math.ceil(
+    (date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+  )
+
+  if (diffDays < 0) {
+    return { label: '마감됨', isClosingSoon: false, isClosed: true }
+  }
+  if (diffDays === 0) {
+    return { label: '오늘 마감', isClosingSoon: true, isClosed: false }
+  }
+  if (diffDays === 1) {
+    return { label: '내일 마감', isClosingSoon: true, isClosed: false }
+  }
+  if (diffDays <= CLOSING_SOON_DAYS) {
+    return { label: `${diffDays}일 후`, isClosingSoon: true, isClosed: false }
+  }
+  if (diffDays <= 7) {
+    return { label: `${diffDays}일 후`, isClosingSoon: false, isClosed: false }
+  }
+  return {
+    label: date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }),
+    isClosingSoon: false,
+    isClosed: false,
+  }
 }
 
 function ProbabilityBar({ percent }: { percent: number }) {
@@ -52,9 +79,12 @@ export default function MarketCard({ market }: MarketCardProps) {
   const isHigh = yesPercent >= 60
   const isLow = yesPercent <= 40
   const categoryColor = market.category?.color ?? '#6366f1'
+  const closeInfo = getCloseDateInfo(market.close_date)
+
+  const marketHref = `/market/${market.id}`
 
   return (
-    <Link href={`/market/${market.id}`} className="group block">
+    <Link href={marketHref} className="group block">
       <div className="relative flex items-start gap-3 px-4 py-4 hover:bg-canvas-50 rounded-xl transition-colors cursor-pointer">
         {/* 카테고리 컬러 인디케이터 */}
         <div
@@ -104,7 +134,14 @@ export default function MarketCard({ market }: MarketCardProps) {
             <span>·</span>
             <VolumeDisplay volume={market.total_volume} />
             <span>·</span>
-            <span>{formatCloseDate(market.close_date)}</span>
+            <span
+              className={cn(
+                closeInfo.isClosingSoon && 'text-scarlet-500 font-semibold',
+                closeInfo.isClosed && 'text-ink-400'
+              )}
+            >
+              {closeInfo.label}
+            </span>
             {(market.comment_count ?? 0) > 0 && (
               <>
                 <span>·</span>
@@ -125,7 +162,7 @@ export default function MarketCard({ market }: MarketCardProps) {
 
           {/* Multiple Choice: 상위 옵션 미리보기 */}
           {market.type === 'multiple_choice' && market.options && market.options.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-1">
+            <div className="mt-2 flex flex-wrap gap-1.5">
               {market.options
                 .slice()
                 .sort((a, b) => b.probability - a.probability)
@@ -133,44 +170,64 @@ export default function MarketCard({ market }: MarketCardProps) {
                 .map((opt) => (
                   <span
                     key={opt.id}
-                    className="inline-flex items-center gap-1 text-[11px] text-ink-600 px-1.5 py-0.5 rounded-md bg-ink-200/30"
+                    className="inline-flex items-center gap-1.5 text-[11px] text-ink-700 px-2 py-0.5 rounded-md bg-ink-200/40"
                   >
                     <span
                       className="inline-block h-1.5 w-1.5 rounded-full"
                       style={{ backgroundColor: opt.color }}
                     />
-                    <span className="truncate max-w-[7rem]">{opt.text}</span>
-                    <span className="font-medium text-ink-700">
+                    <span className="truncate max-w-[8rem] font-medium">{opt.text}</span>
+                    <span className="font-bold text-ink-900 tabular-nums">
                       {Math.round(opt.probability * 100)}%
                     </span>
                   </span>
                 ))}
             </div>
           )}
+
+          {/* 베팅 버튼 영역 */}
+          <div className="mt-3 flex items-center justify-end">
+            <span
+              className={cn(
+                'inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold',
+                'border border-ink-200 bg-canvas-0 text-ink-700',
+                'group-hover:border-primary group-hover:bg-primary group-hover:text-white',
+                'transition-colors'
+              )}
+            >
+              베팅
+              <ChevronRight className="h-3 w-3" />
+            </span>
+          </div>
         </div>
 
         {/* 우측 확률/유형 라벨 */}
         {market.type === 'binary' && (
-          <div className="shrink-0 text-right min-w-[52px]">
+          <div className="shrink-0 text-right min-w-[56px]">
             <p
-              className={`text-xl font-bold tabular-nums leading-tight ${
-                isHigh ? 'text-teal-500' : isLow ? 'text-scarlet-500' : 'text-ink-700'
-              }`}
+              className={cn(
+                'text-2xl font-extrabold tabular-nums leading-tight',
+                isHigh && 'text-teal-500',
+                isLow && 'text-scarlet-500',
+                !isHigh && !isLow && 'text-ink-700'
+              )}
             >
               {yesPercent}%
             </p>
-            <p className="text-[10px] text-ink-400 font-medium tracking-wide">YES 확률</p>
+            <p className="text-[10px] text-ink-400 font-medium tracking-wide mt-0.5">
+              YES 확률
+            </p>
           </div>
         )}
         {market.type === 'multiple_choice' && (
-          <div className="shrink-0 text-right min-w-[52px]">
+          <div className="shrink-0 text-right min-w-[56px]">
             <p className="text-xs text-ink-500 font-medium px-1.5 py-0.5 bg-ink-200/30 rounded-md inline-block">
               선택형
             </p>
           </div>
         )}
         {market.type === 'numeric' && (
-          <div className="shrink-0 text-right min-w-[52px]">
+          <div className="shrink-0 text-right min-w-[56px]">
             <p className="text-xs text-ink-500 font-medium px-1.5 py-0.5 bg-ink-200/30 rounded-md inline-block">
               수치형
             </p>
