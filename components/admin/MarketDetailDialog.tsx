@@ -567,7 +567,7 @@ export default function MarketDetailDialog({
                               ? v === 'YES'
                                 ? 'bg-teal-600 text-white border-teal-600'
                                 : 'bg-scarlet-600 text-white border-scarlet-600'
-                              : 'bg-white text-ink-700 border-ink-300 hover:border-ink-400'
+                              : 'bg-background text-ink-700 border-ink-300 hover:border-ink-400'
                           }`}
                         >
                           {v}
