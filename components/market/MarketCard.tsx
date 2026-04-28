@@ -152,28 +152,38 @@ export default function MarketCard({ market }: MarketCardProps) {
           </div>
         </div>
 
-        {/* 우측: 확률 표시 */}
+        {/* 우측: 확률 표시 또는 결과 */}
         <div className="shrink-0 flex items-center gap-2.5">
-          {market.type === 'binary' && (
-            <span
-              className={cn(
-                'text-lg font-bold tabular-nums leading-none',
-                isHigh && 'text-teal-500',
-                isLow && 'text-scarlet-500',
-                !isHigh && !isLow && 'text-ink-600'
-              )}
-            >
-              {yesPercent}%
+          {market.status === 'resolved' && market.resolution ? (
+            <span className="text-xs font-semibold px-2 py-1 rounded-full bg-teal-500/10 text-teal-600 whitespace-nowrap">
+              {market.resolution.toUpperCase()}
             </span>
-          )}
-          {market.type === 'multiple_choice' && market.options && market.options.length > 0 && (
-            <MCStackedBar options={market.options} />
-          )}
-          {market.type === 'numeric' && (
-            <span className="text-xs text-ink-400 font-medium px-2">수치형</span>
+          ) : market.status === 'closed' ? (
+            <span className="text-xs font-medium text-ink-400 whitespace-nowrap">마감됨</span>
+          ) : (
+            <>
+              {market.type === 'binary' && (
+                <span
+                  className={cn(
+                    'text-lg font-bold tabular-nums leading-none',
+                    isHigh && 'text-teal-500',
+                    isLow && 'text-scarlet-500',
+                    !isHigh && !isLow && 'text-ink-600'
+                  )}
+                >
+                  {yesPercent}%
+                </span>
+              )}
+              {market.type === 'multiple_choice' && market.options && market.options.length > 0 && (
+                <MCStackedBar options={market.options} />
+              )}
+              {market.type === 'numeric' && (
+                <span className="text-xs text-ink-400 font-medium px-2">수치형</span>
+              )}
+            </>
           )}
 
-          {/* 베팅 버튼 */}
+          {/* 베팅/보기 버튼 */}
           <span
             className={cn(
               'px-3 py-1.5 rounded-full text-xs font-semibold border whitespace-nowrap',
@@ -182,7 +192,7 @@ export default function MarketCard({ market }: MarketCardProps) {
               'transition-colors'
             )}
           >
-            베팅
+            {market.status === 'open' ? '베팅' : '보기'}
           </span>
         </div>
       </div>
