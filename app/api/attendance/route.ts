@@ -44,49 +44,36 @@ function getYesterdayDate(): string {
 export async function GET() {
   try {
     const supabase = await createServerSupabaseClient()
-    const {
-      data: { user: authUser },
-    } = await supabase.auth.getUser()
+    // getSession()은 쿠키에서 읽으므로 Auth 서버 HTTP 왕복 없음 (~0ms)
+    const { data: { session } } = await supabase.auth.getSession()
 
-    if (!authUser) {
+    if (!session?.user) {
       return NextResponse.json(
         { success: false, error: '로그인이 필요합니다.' },
         { status: 401 }
       )
     }
 
-    const { data: dbUser, error: userError } = await adminSupabase
+    const today = getTodayDate()
+    const yesterday = getYesterdayDate()
+
+    // users + attendance 최근 1건을 단일 JOIN 쿼리로 통합
+    const { data: userData, error: userError } = await adminSupabase
       .from('users')
-      .select('id')
-      .eq('auth_id', authUser.id)
+      .select('id, attendance(checked_date, streak_count, points_earned)')
+      .eq('auth_id', session.user.id)
+      .order('checked_date', { referencedTable: 'attendance', ascending: false })
+      .limit(1, { referencedTable: 'attendance' })
       .single()
 
-    if (userError || !dbUser) {
+    if (userError || !userData) {
       return NextResponse.json(
         { success: false, error: '사용자를 찾을 수 없습니다.' },
         { status: 404 }
       )
     }
 
-    const today = getTodayDate()
-    const yesterday = getYesterdayDate()
-
-    // 최근 출석 기록 (오늘/어제 확인 + 현재 스트릭 산출용)
-    const { data: recent, error: recentError } = await adminSupabase
-      .from('attendance')
-      .select('checked_date, streak_count, points_earned')
-      .eq('user_id', dbUser.id)
-      .order('checked_date', { ascending: false })
-      .limit(1)
-
-    if (recentError) {
-      console.error('attendance GET error', recentError)
-      return NextResponse.json(
-        { success: false, error: '출석 정보를 불러오지 못했습니다.' },
-        { status: 500 }
-      )
-    }
-
+    const recent = (userData.attendance ?? []) as AttendanceRow[]
     const last = (recent?.[0] ?? null) as AttendanceRow | null
     const checkedToday = last?.checked_date === today
 
@@ -130,29 +117,35 @@ export async function GET() {
 export async function POST() {
   try {
     const supabase = await createServerSupabaseClient()
-    const {
-      data: { user: authUser },
-    } = await supabase.auth.getUser()
+    const { data: { session } } = await supabase.auth.getSession()
 
-    if (!authUser) {
+    if (!session?.user) {
       return NextResponse.json(
         { success: false, error: '로그인이 필요합니다.' },
         { status: 401 }
       )
     }
 
-    const { data: dbUser, error: userError } = await adminSupabase
+    const today = getTodayDate()
+    const yesterday = getYesterdayDate()
+
+    // users + 최근 출석 1건을 단일 JOIN 쿼리로 통합
+    const { data: userData, error: userError } = await adminSupabase
       .from('users')
-      .select('id, points, is_banned')
-      .eq('auth_id', authUser.id)
+      .select('id, points, is_banned, attendance(id, checked_date, streak_count)')
+      .eq('auth_id', session.user.id)
+      .order('checked_date', { referencedTable: 'attendance', ascending: false })
+      .limit(1, { referencedTable: 'attendance' })
       .single()
 
-    if (userError || !dbUser) {
+    if (userError || !userData) {
       return NextResponse.json(
         { success: false, error: '사용자를 찾을 수 없습니다.' },
         { status: 404 }
       )
     }
+
+    const dbUser = { id: userData.id, points: userData.points, is_banned: userData.is_banned }
 
     if (dbUser.is_banned) {
       return NextResponse.json(
@@ -161,46 +154,14 @@ export async function POST() {
       )
     }
 
-    const today = getTodayDate()
-    const yesterday = getYesterdayDate()
+    const lastRows = (userData.attendance ?? []) as Array<{ id: string; checked_date: string; streak_count: number }>
+    const lastRow = lastRows[0] ?? null
 
-    // 이미 오늘 체크인 했는지 확인
-    const { data: todayRow, error: todayError } = await adminSupabase
-      .from('attendance')
-      .select('id')
-      .eq('user_id', dbUser.id)
-      .eq('checked_date', today)
-      .maybeSingle()
-
-    if (todayError) {
-      console.error('attendance POST today check error', todayError)
-      return NextResponse.json(
-        { success: false, error: '출석 정보를 확인하지 못했습니다.' },
-        { status: 500 }
-      )
-    }
-
-    if (todayRow) {
+    // 이미 오늘 체크인했는지 확인
+    if (lastRow?.checked_date === today) {
       return NextResponse.json(
         { success: false, error: '오늘은 이미 출석했습니다.' },
         { status: 409 }
-      )
-    }
-
-    // 어제 출석 여부로 streak 계산
-    const { data: lastRow, error: lastError } = await adminSupabase
-      .from('attendance')
-      .select('checked_date, streak_count')
-      .eq('user_id', dbUser.id)
-      .order('checked_date', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-
-    if (lastError) {
-      console.error('attendance POST last check error', lastError)
-      return NextResponse.json(
-        { success: false, error: '출석 정보를 확인하지 못했습니다.' },
-        { status: 500 }
       )
     }
 

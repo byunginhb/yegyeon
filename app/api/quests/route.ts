@@ -16,45 +16,34 @@ interface QuestProgressRow {
 export async function GET() {
   try {
     const supabase = await createServerSupabaseClient()
-    const {
-      data: { user: authUser },
-    } = await supabase.auth.getUser()
+    // getSession()으로 Auth 서버 HTTP 왕복 제거
+    const { data: { session } } = await supabase.auth.getSession()
 
-    if (!authUser) {
+    if (!session?.user) {
       return NextResponse.json(
         { success: false, error: '로그인이 필요합니다.' },
         { status: 401 }
       )
     }
 
-    const { data: dbUser, error: userError } = await adminSupabase
+    const today = getTodayDate()
+
+    // users + 오늘 퀘스트 진행 현황을 단일 JOIN 쿼리로 통합
+    const { data: userData, error: userError } = await adminSupabase
       .from('users')
-      .select('id')
-      .eq('auth_id', authUser.id)
+      .select('id, user_quest_progress(quest_type, completed_at, points_earned)')
+      .eq('auth_id', session.user.id)
+      .eq('user_quest_progress.quest_date', today)
       .single()
 
-    if (userError || !dbUser) {
+    if (userError || !userData) {
       return NextResponse.json(
         { success: false, error: '사용자를 찾을 수 없습니다.' },
         { status: 404 }
       )
     }
 
-    const today = getTodayDate()
-
-    const { data: progress, error: progressError } = await adminSupabase
-      .from('user_quest_progress')
-      .select('quest_type, completed_at, points_earned')
-      .eq('user_id', dbUser.id)
-      .eq('quest_date', today)
-
-    if (progressError) {
-      console.error('quests GET progress error', progressError)
-      return NextResponse.json(
-        { success: false, error: '퀘스트 정보를 불러오지 못했습니다.' },
-        { status: 500 }
-      )
-    }
+    const progress = (userData.user_quest_progress ?? []) as QuestProgressRow[]
 
     const progressMap = new Map<string, QuestProgressRow>()
     for (const row of (progress ?? []) as QuestProgressRow[]) {
