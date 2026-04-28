@@ -8,6 +8,57 @@ export type PointTxType =
   | 'bet_refund'
   | 'admin_adjust'
   | 'market_created'
+  | 'resolution'
+  | 'attendance_bonus'
+  | 'quest_reward'
+
+export interface AttendanceRecord {
+  id: string
+  user_id: string
+  checked_date: string
+  streak_count: number
+  points_earned: number
+  created_at: string
+}
+
+export type DailyQuestType =
+  | 'daily_checkin'
+  | 'daily_bet'
+  | 'daily_comment'
+  | 'daily_share'
+
+export interface UserQuestProgress {
+  id: string
+  user_id: string
+  quest_type: DailyQuestType | string
+  quest_date: string
+  completed_at: string | null
+  points_earned: number
+  created_at: string
+}
+
+export interface AttendanceStatus {
+  checked_today: boolean
+  streak_count: number
+  points_earned_today: number | null
+  next_reward: number
+}
+
+export interface DailyQuest {
+  type: DailyQuestType | string
+  title: string
+  description: string
+  points: number
+  icon: string
+  completed: boolean
+  completed_at: string | null
+}
+
+export interface DailyQuestStatus {
+  quests: DailyQuest[]
+  total_points_today: number
+  all_completed: boolean
+}
 
 export interface User {
   id: string

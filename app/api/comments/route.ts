@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminSupabase } from '@/lib/supabase/admin'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { triggerQuestComplete } from '@/lib/quest'
 import type { Comment } from '@/types'
 
 export async function GET(request: NextRequest) {
@@ -80,6 +81,13 @@ export async function POST(request: NextRequest) {
     await adminSupabase.rpc('increment_comment_count', { p_market_id: market_id })
   } catch {
     // 무시
+  }
+
+  // daily_comment 퀘스트 자동 완료 (실패해도 본 동작에 영향 없음)
+  try {
+    await triggerQuestComplete(dbUser.id, 'daily_comment')
+  } catch (e) {
+    console.error('daily_comment quest trigger failed', e)
   }
 
   return NextResponse.json({ success: true, data: data as unknown as Comment }, { status: 201 })

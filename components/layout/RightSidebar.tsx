@@ -3,6 +3,8 @@ import { TrendingUp, Flame, Trophy } from 'lucide-react'
 import { adminSupabase } from '@/lib/supabase/admin'
 import PointIcon from '@/components/ui/PointIcon'
 import { getCategoryIcon } from '@/lib/categoryIcon'
+import AttendanceWidget from '@/components/gamification/AttendanceWidget'
+import QuestPanel from '@/components/gamification/QuestPanel'
 
 function CategoryIcon({ slug, color }: { slug: string; color: string }) {
   const Icon = getCategoryIcon(slug)
@@ -86,6 +88,12 @@ export default async function RightSidebar() {
 
   return (
     <aside className="hidden xl:block w-72 shrink-0 space-y-4 pl-4">
+      {/* 출석 위젯 (로그인 시에만 노출) */}
+      <AttendanceWidget />
+
+      {/* 일일 퀘스트 (로그인 시에만 노출) */}
+      <QuestPanel />
+
       {/* 인기 마켓 */}
       <section className="rounded-2xl bg-canvas-0/50 backdrop-blur-sm p-4">
         <h2 className="flex items-center gap-2 text-sm font-semibold text-ink-900 mb-3">

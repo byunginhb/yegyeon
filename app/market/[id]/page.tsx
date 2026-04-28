@@ -11,6 +11,7 @@ import RelatedQuestions from '@/components/market/RelatedQuestions'
 import PendingBanner from '@/components/market/PendingBanner'
 import RejectedBanner from '@/components/market/RejectedBanner'
 import AdminApprovalBar from '@/components/market/AdminApprovalBar'
+import ShareButton from '@/components/market/ShareButton'
 import type { ChartPoint } from '@/components/market/ProbabilityChart'
 import Link from 'next/link'
 import { ReportButton } from '@/components/common/ReportButton'
@@ -97,13 +98,14 @@ export default async function MarketDetailPage({ params }: Props) {
     .not('probability_at_bet', 'is', null)
     .order('created_at', { ascending: true })
 
+  const renderedAt = new Date().getTime()
   const chartData: ChartPoint[] = [
     { t: new Date(market.created_at).getTime(), p: 50 },
     ...(betRows ?? []).map((b) => ({
       t: new Date(b.created_at).getTime(),
       p: Math.round((b.probability_at_bet as number) * 100),
     })),
-    { t: Date.now(), p: Math.round(market.yes_probability * 100) },
+    { t: renderedAt, p: Math.round(market.yes_probability * 100) },
   ]
 
   const isOpen = market.status === 'open'
@@ -198,15 +200,22 @@ export default async function MarketDetailPage({ params }: Props) {
               <Calendar className="h-3.5 w-3.5" />
               {closeDate.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })} 마감
             </span>
-            {isLoggedIn && isOpen && (
-              <ReportButton
-                type="market"
-                targetId={market.id}
-                targetLabel={market.title}
-                variant="text"
-                className="ml-auto"
-              />
-            )}
+            <div className="ml-auto flex items-center gap-1">
+              {!isPending && !isRejected && (
+                <ShareButton
+                  marketId={market.id}
+                  marketTitle={market.title}
+                />
+              )}
+              {isLoggedIn && isOpen && (
+                <ReportButton
+                  type="market"
+                  targetId={market.id}
+                  targetLabel={market.title}
+                  variant="text"
+                />
+              )}
+            </div>
           </div>
 
           {/* 종료 결과 */}

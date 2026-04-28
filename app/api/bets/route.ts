@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { adminSupabase } from '@/lib/supabase/admin'
+import { triggerQuestComplete } from '@/lib/quest'
 
 const BetSchema = z.object({
   market_id: z.string().uuid('마켓 ID가 잘못되었습니다.'),
@@ -69,6 +70,20 @@ export async function POST(req: NextRequest) {
       const mapped = mapRpcError(error.message)
       console.error('place_bet RPC error', { code: error.code, message: error.message })
       return NextResponse.json({ success: false, error: mapped.error }, { status: mapped.status })
+    }
+
+    // 베팅 성공 — daily_bet 퀘스트 자동 완료 (실패해도 본 동작에 영향 없음)
+    try {
+      const { data: dbUser } = await adminSupabase
+        .from('users')
+        .select('id')
+        .eq('auth_id', authUser.id)
+        .single()
+      if (dbUser?.id) {
+        await triggerQuestComplete(dbUser.id, 'daily_bet')
+      }
+    } catch (e) {
+      console.error('daily_bet quest trigger failed', e)
     }
 
     return NextResponse.json({ success: true, data })
