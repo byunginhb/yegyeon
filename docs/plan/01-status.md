@@ -65,7 +65,7 @@
 | 포인트 잔액 표시 | ✅ | Header, 프로필 |
 | 포인트 거래 내역 | ✅ | `point_transactions` 테이블 |
 | 포인트 수동 조정 (관리자) | ✅ | `api/admin/points` |
-| **출석 보상 (일일 로그인)** | ❌ | 미구현 |
+| **출석 보상 (일일 로그인)** | ✅ | `api/attendance`, `components/gamification/AttendanceWidget` |
 
 ### 댓글 / 신고
 
@@ -104,6 +104,14 @@
 | 팔로우 / 언팔로우 | ✅ | `components/market/FollowButton` |
 | 팔로우 목록 UI | ❌ | DB/API는 있음, 페이지 없음 |
 
+### 게이미피케이션
+
+| 기능 | 상태 | 파일 |
+|------|------|------|
+| 출석 보상 (일일 체크인 + streak) | ✅ | `api/attendance`, `components/gamification/AttendanceWidget` |
+| 일일 퀘스트 (4종) | ✅ | `api/quests`, `lib/quest.ts`, `components/gamification/QuestPanel` |
+| 마켓 공유 (URL복사/X/카카오) | ✅ | `components/market/ShareButton` |
+
 ### 기타 인프라
 
 | 기능 | 상태 | 파일 |
@@ -114,10 +122,11 @@
 | 다크 모드 | ✅ | Tailwind 테마 |
 | 모바일 반응형 | ✅ | |
 | Vercel 배포 | ✅ | `vercel.json` |
+| 마켓 자동 마감 Cron (1일 1회) | ✅ | `api/cron/close-expired-markets` |
 
 ---
 
-## P1 — 1차 오픈 직후 기능
+## P1 — 1차 오픈 직후 기능 (잔여)
 
 | 기능 | 상태 |
 |------|------|
@@ -126,7 +135,6 @@
 | 팔로우 목록 페이지 | ❌ |
 | 관련 마켓 추천 (RelatedQuestions 컴포넌트는 있음) | 🔶 |
 | 고급 검색 (전문 검색) | ❌ |
-| 마켓 공유 기능 (SNS) | ❌ |
 
 ---
 
