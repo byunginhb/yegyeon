@@ -19,12 +19,6 @@ function calculateAttendanceReward(streakCount: number): number {
   return 10
 }
 
-interface AttendanceRow {
-  checked_date: string
-  streak_count: number
-  points_earned: number
-}
-
 /**
  * 어제 날짜 문자열 (YYYY-MM-DD)
  */
@@ -44,7 +38,6 @@ function getYesterdayDate(): string {
 export async function GET() {
   try {
     const supabase = await createServerSupabaseClient()
-    // getSession()은 쿠키에서 읽으므로 Auth 서버 HTTP 왕복 없음 (~0ms)
     const { data: { session } } = await supabase.auth.getSession()
 
     if (!session?.user) {
@@ -57,30 +50,29 @@ export async function GET() {
     const today = getTodayDate()
     const yesterday = getYesterdayDate()
 
-    // users + attendance 최근 1건을 단일 JOIN 쿼리로 통합
-    const { data: userData, error: userError } = await adminSupabase
+    const { data: dbUser, error: userError } = await adminSupabase
       .from('users')
-      .select('id, attendance(checked_date, streak_count, points_earned)')
+      .select('id')
       .eq('auth_id', session.user.id)
-      .order('checked_date', { referencedTable: 'attendance', ascending: false })
-      .limit(1, { referencedTable: 'attendance' })
       .single()
 
-    if (userError || !userData) {
+    if (userError || !dbUser) {
       return NextResponse.json(
         { success: false, error: '사용자를 찾을 수 없습니다.' },
         { status: 404 }
       )
     }
 
-    const recent = (userData.attendance ?? []) as AttendanceRow[]
-    const last = (recent?.[0] ?? null) as AttendanceRow | null
+    const { data: last } = await adminSupabase
+      .from('attendance')
+      .select('checked_date, streak_count, points_earned')
+      .eq('user_id', dbUser.id)
+      .order('checked_date', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
     const checkedToday = last?.checked_date === today
 
-    // 현재 streak 계산
-    // - 오늘 체크인 했으면 last.streak_count
-    // - 어제 체크인 했으면 last.streak_count (오늘 체크인 시 +1 이 됨)
-    // - 그 외 (스트릭 끊김) 0
     let currentStreak = 0
     if (last) {
       if (last.checked_date === today || last.checked_date === yesterday) {
@@ -88,7 +80,6 @@ export async function GET() {
       }
     }
 
-    // 다음 보상: 오늘 체크인 안 했을 때 받게 될 포인트
     const nextStreak = checkedToday ? currentStreak : currentStreak + 1
     const nextReward = calculateAttendanceReward(nextStreak)
 
@@ -129,23 +120,18 @@ export async function POST() {
     const today = getTodayDate()
     const yesterday = getYesterdayDate()
 
-    // users + 최근 출석 1건을 단일 JOIN 쿼리로 통합
-    const { data: userData, error: userError } = await adminSupabase
+    const { data: dbUser, error: userError } = await adminSupabase
       .from('users')
-      .select('id, points, is_banned, attendance(id, checked_date, streak_count)')
+      .select('id, points, is_banned')
       .eq('auth_id', session.user.id)
-      .order('checked_date', { referencedTable: 'attendance', ascending: false })
-      .limit(1, { referencedTable: 'attendance' })
       .single()
 
-    if (userError || !userData) {
+    if (userError || !dbUser) {
       return NextResponse.json(
         { success: false, error: '사용자를 찾을 수 없습니다.' },
         { status: 404 }
       )
     }
-
-    const dbUser = { id: userData.id, points: userData.points, is_banned: userData.is_banned }
 
     if (dbUser.is_banned) {
       return NextResponse.json(
@@ -154,10 +140,14 @@ export async function POST() {
       )
     }
 
-    const lastRows = (userData.attendance ?? []) as Array<{ id: string; checked_date: string; streak_count: number }>
-    const lastRow = lastRows[0] ?? null
+    const { data: lastRow } = await adminSupabase
+      .from('attendance')
+      .select('id, checked_date, streak_count')
+      .eq('user_id', dbUser.id)
+      .order('checked_date', { ascending: false })
+      .limit(1)
+      .maybeSingle()
 
-    // 이미 오늘 체크인했는지 확인
     if (lastRow?.checked_date === today) {
       return NextResponse.json(
         { success: false, error: '오늘은 이미 출석했습니다.' },
@@ -182,7 +172,6 @@ export async function POST() {
     })
 
     if (insertError) {
-      // UNIQUE 위반 — 동시 호출 경합
       if (insertError.code === '23505') {
         return NextResponse.json(
           { success: false, error: '오늘은 이미 출석했습니다.' },
@@ -221,7 +210,6 @@ export async function POST() {
 
     if (txError) {
       console.error('attendance POST tx insert error', txError)
-      // 트랜잭션 로그 실패는 무시 (이미 보상은 지급됨)
     }
 
     // 4) daily_checkin 퀘스트 자동 완료 (실패해도 무시)
