@@ -41,13 +41,13 @@ const QUEST_LOOKUP = new Map(DAILY_QUESTS.map((q) => [q.type, q]))
 
 /**
  * 오늘 날짜 문자열 (YYYY-MM-DD)
- * Postgres 의 CURRENT_DATE 와 동일하게 서버 로컬 타임존을 사용한다.
+ * Vercel(UTC)과 로컬(KST) 환경 모두에서 일관되게 UTC 날짜를 사용한다.
  */
 export function getTodayDate(): string {
   const now = new Date()
-  const year = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, '0')
-  const day = String(now.getDate()).padStart(2, '0')
+  const year = now.getUTCFullYear()
+  const month = String(now.getUTCMonth() + 1).padStart(2, '0')
+  const day = String(now.getUTCDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
 }
 
