@@ -18,15 +18,18 @@ export async function GET() {
       { count: todayUsers },
       { count: totalMarkets },
       { count: activeMarkets },
+      { count: pendingMarkets },
       todayBetsResult,
       pointsResult,
       recentUsersResult,
       recentMarketsResult,
+      pendingMarketsResult,
     ] = await Promise.all([
       adminSupabase.from('users').select('*', { count: 'exact', head: true }),
       adminSupabase.from('users').select('*', { count: 'exact', head: true }).gte('created_at', todayISO),
       adminSupabase.from('markets').select('*', { count: 'exact', head: true }),
       adminSupabase.from('markets').select('*', { count: 'exact', head: true }).eq('status', 'open'),
+      adminSupabase.from('markets').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
       adminSupabase
         .from('point_transactions')
         .select('amount')
@@ -44,6 +47,12 @@ export async function GET() {
         .from('markets')
         .select('id, title, type, status, total_volume, created_at, creator:users!creator_id(username, display_name)')
         .order('created_at', { ascending: false })
+        .limit(5),
+      adminSupabase
+        .from('markets')
+        .select('id, title, type, created_at, creator:users!creator_id(username, display_name)')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: true })
         .limit(5),
     ])
 
@@ -63,10 +72,12 @@ export async function GET() {
         todayUsers: todayUsers ?? 0,
         totalMarkets: totalMarkets ?? 0,
         activeMarkets: activeMarkets ?? 0,
+        pendingMarkets: pendingMarkets ?? 0,
         todayBettingVolume,
         totalPointsCirculation,
         recentUsers: recentUsersResult.data ?? [],
         recentMarkets: recentMarketsResult.data ?? [],
+        pendingMarketsList: pendingMarketsResult.data ?? [],
       },
     })
   } catch (err) {

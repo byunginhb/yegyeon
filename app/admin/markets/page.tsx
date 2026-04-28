@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import {
   Table,
@@ -246,11 +247,14 @@ function ConfirmModal({
 }
 
 export default function AdminMarketsPage() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+
   const [markets, setMarkets] = useState<Market[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
+  const [statusFilter, setStatusFilter] = useState(() => searchParams.get('status') ?? 'all')
   const [loading, setLoading] = useState(true)
 
   const [selectedMarketId, setSelectedMarketId] = useState<string | null>(null)
@@ -420,8 +424,12 @@ export default function AdminMarketsPage() {
         <Select
           value={statusFilter}
           onValueChange={(v) => {
-            setStatusFilter(v ?? 'all')
+            const next = v ?? 'all'
+            setStatusFilter(next)
             setPage(1)
+            const params = new URLSearchParams()
+            if (next !== 'all') params.set('status', next)
+            router.replace(`/admin/markets${params.size ? `?${params}` : ''}`)
           }}
         >
           <SelectTrigger className="w-36">

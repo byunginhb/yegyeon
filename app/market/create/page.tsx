@@ -1,6 +1,7 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import CreateMarketForm from '@/components/market/CreateMarketForm'
+import { adminSupabase } from '@/lib/supabase/admin'
 import type { Category } from '@/types'
 
 export const metadata = {
@@ -15,20 +16,14 @@ export default async function CreateMarketPage() {
     redirect('/auth/login?next=/market/create')
   }
 
-  // 카테고리 사전 로드
-  let categories: Category[] = []
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'}/api/categories`,
-      { cache: 'no-store' }
-    )
-    if (res.ok) {
-      const json = await res.json()
-      if (json.success) categories = json.data
-    }
-  } catch {
-    // 카테고리 로드 실패 시 빈 배열로 진행
-  }
+  // 카테고리 직접 로드 (API Route HTTP 호출 대신 DB 직접 조회)
+  const { data: categoriesData } = await adminSupabase
+    .from('categories')
+    .select('id, name, slug, icon, color, sort_order, is_active')
+    .eq('is_active', true)
+    .order('sort_order', { ascending: true })
+
+  const categories = (categoriesData ?? []) as Category[]
 
   return (
     <main className="min-h-screen bg-canvas-100">
