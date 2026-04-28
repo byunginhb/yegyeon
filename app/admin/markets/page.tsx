@@ -425,7 +425,7 @@ export default function AdminMarketsPage() {
           }}
         >
           <SelectTrigger className="w-36">
-            <SelectValue />
+            <span>{STATUS_LABELS[statusFilter] ?? '전체'}</span>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">전체</SelectItem>
