@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/close-expired-markets",
-      "schedule": "0 * * * *"
+      "schedule": "0 15 * * *"
     }
   ]
 }
