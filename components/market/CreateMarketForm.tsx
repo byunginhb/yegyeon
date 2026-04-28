@@ -225,13 +225,12 @@ export default function CreateMarketForm({ categories }: Props) {
         {[1, 2, 3].map((s) => (
           <div key={s} className="flex items-center gap-2">
             <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${
-                step === s
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${step === s
                   ? 'bg-primary text-white'
                   : s < step
-                  ? 'bg-teal-500 text-white'
-                  : 'bg-canvas-100 text-ink-500 border border-ink-300'
-              }`}
+                    ? 'bg-teal-500 text-white'
+                    : 'bg-canvas-100 text-ink-500 border border-ink-300'
+                }`}
             >
               {s}
             </div>
@@ -256,11 +255,10 @@ export default function CreateMarketForm({ categories }: Props) {
                 key={value}
                 type="button"
                 onClick={() => update('type', value)}
-                className={`flex items-start gap-4 p-4 rounded-xl border-2 text-left transition-all ${
-                  form.type === value
+                className={`flex items-start gap-4 p-4 rounded-xl border-2 text-left transition-all ${form.type === value
                     ? 'border-primary bg-primary/5'
                     : 'border-ink-300 bg-canvas-0 hover:border-primary/50'
-                }`}
+                  }`}
               >
                 <span className={`mt-0.5 ${form.type === value ? 'text-primary' : 'text-ink-500'}`}>
                   {icon}
@@ -278,7 +276,7 @@ export default function CreateMarketForm({ categories }: Props) {
       {/* Step 2: 기본 정보 */}
       {step === 2 && (
         <div>
-          <h1 className="text-2xl font-bold text-ink-1000 mb-6">기본 정보를 입력하세요</h1>
+          <h1 className="text-2xl font-bold text-ink-1000 mb-6">기본 정보를 입력하세요.</h1>
           <div className="space-y-5">
             <div className="space-y-1.5">
               <Label htmlFor="title" className="text-ink-800 font-medium">
