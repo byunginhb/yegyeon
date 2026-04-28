@@ -48,18 +48,17 @@ export interface AdminContext {
 export async function verifyAdmin(): Promise<AdminContext | null> {
   const { createServerSupabaseClient } = await import('@/lib/supabase/server')
   const supabase = await createServerSupabaseClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return null
+  // getSession()은 쿠키에서 로컬 읽기 — auth 서버 HTTP 왕복 없음 (~150ms 절감)
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session?.user) return null
 
   const { data: profile } = await adminSupabase
     .from('users')
     .select('id, role')
-    .eq('auth_id', user.id)
+    .eq('auth_id', session.user.id)
     .single()
 
   if (!profile || profile.role !== 'admin') return null
 
-  return { authUserId: user.id, adminUserId: profile.id }
+  return { authUserId: session.user.id, adminUserId: profile.id }
 }

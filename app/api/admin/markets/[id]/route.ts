@@ -1,22 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { adminSupabase } from '@/lib/supabase/admin'
-
-async function verifyAdmin() {
-  const supabase = await createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-
-  const { data: profile } = await adminSupabase
-    .from('users')
-    .select('id, role')
-    .eq('auth_id', user.id)
-    .single()
-
-  if (profile?.role !== 'admin') return null
-  return { authUser: user, dbUserId: profile.id as string }
-}
+import { verifyAdmin } from '@/lib/admin-log'
 
 const PatchSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('approve') }),
@@ -99,56 +84,67 @@ export async function PATCH(
 
     const now = new Date().toISOString()
     const input = parsed.data
-    let updatePayload: Record<string, unknown>
 
     if (input.action === 'approve') {
-      const { data: current } = await adminSupabase
-        .from('markets').select('status').eq('id', id).single()
-      if (current?.status !== 'pending') {
+      // WHERE status = 'pending' 조건으로 SELECT + UPDATE를 1번 쿼리로 통합
+      const { data, error } = await adminSupabase
+        .from('markets')
+        .update({
+          status: 'open',
+          reviewed_by: admin.adminUserId,
+          reviewed_at: now,
+          rejection_reason: null,
+          updated_at: now,
+        })
+        .eq('id', id)
+        .eq('status', 'pending')
+        .select('id')
+
+      if (error) return NextResponse.json({ success: false, error: '마켓 상태 변경 실패' }, { status: 500 })
+      if (!data || data.length === 0) {
         return NextResponse.json({ success: false, error: '승인 대기 상태의 마켓만 승인할 수 있습니다.' }, { status: 409 })
       }
-      updatePayload = {
-        status: 'open',
-        reviewed_by: admin.dbUserId,
-        reviewed_at: now,
-        rejection_reason: null,
-        updated_at: now,
-      }
     } else if (input.action === 'reject') {
-      const { data: current } = await adminSupabase
-        .from('markets').select('status').eq('id', id).single()
-      if (current?.status !== 'pending') {
+      const { data, error } = await adminSupabase
+        .from('markets')
+        .update({
+          status: 'rejected',
+          rejection_reason: input.reason,
+          reviewed_by: admin.adminUserId,
+          reviewed_at: now,
+          updated_at: now,
+        })
+        .eq('id', id)
+        .eq('status', 'pending')
+        .select('id')
+
+      if (error) return NextResponse.json({ success: false, error: '마켓 상태 변경 실패' }, { status: 500 })
+      if (!data || data.length === 0) {
         return NextResponse.json({ success: false, error: '승인 대기 상태의 마켓만 거절할 수 있습니다.' }, { status: 409 })
       }
-      updatePayload = {
-        status: 'rejected',
-        rejection_reason: input.reason,
-        reviewed_by: admin.dbUserId,
-        reviewed_at: now,
-        updated_at: now,
-      }
     } else if (input.action === 'status') {
-      // pending 마켓은 approve/reject 액션으로만 상태 변경 가능 (우회 방지)
-      const { data: current } = await adminSupabase
-        .from('markets').select('status').eq('id', id).single()
-      if (current?.status === 'pending' || current?.status === 'rejected') {
+      // pending/rejected 마켓은 approve/reject 액션으로만 변경 가능
+      const { data, error } = await adminSupabase
+        .from('markets')
+        .update({ status: input.status, updated_at: now })
+        .eq('id', id)
+        .not('status', 'in', '("pending","rejected")')
+        .select('id')
+
+      if (error) return NextResponse.json({ success: false, error: '마켓 상태 변경 실패' }, { status: 500 })
+      if (!data || data.length === 0) {
         return NextResponse.json(
           { success: false, error: 'pending/rejected 마켓은 approve/reject 액션을 사용해주세요.' },
           { status: 400 }
         )
       }
-      updatePayload = { status: input.status, updated_at: now }
     } else {
-      updatePayload = { is_hidden: input.is_hidden, updated_at: now }
-    }
+      const { error } = await adminSupabase
+        .from('markets')
+        .update({ is_hidden: input.is_hidden, updated_at: now })
+        .eq('id', id)
 
-    const { error } = await adminSupabase
-      .from('markets')
-      .update(updatePayload)
-      .eq('id', id)
-
-    if (error) {
-      return NextResponse.json({ success: false, error: '마켓 상태 변경 실패' }, { status: 500 })
+      if (error) return NextResponse.json({ success: false, error: '마켓 상태 변경 실패' }, { status: 500 })
     }
 
     return NextResponse.json({ success: true })
