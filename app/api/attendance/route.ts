@@ -3,6 +3,8 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { adminSupabase } from '@/lib/supabase/admin'
 import { triggerQuestComplete, getTodayDate } from '@/lib/quest'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * 출석 보상 계산
  * streak 1-2일: 10p
@@ -90,6 +92,12 @@ export async function GET() {
         streak_count: currentStreak,
         points_earned_today: checkedToday ? last?.points_earned ?? null : null,
         next_reward: nextReward,
+      },
+      _debug: {
+        today,
+        yesterday,
+        last_checked_date: last?.checked_date ?? null,
+        user_id: dbUser.id,
       },
     })
   } catch (err) {
