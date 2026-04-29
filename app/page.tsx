@@ -16,6 +16,7 @@ import MarketList from '@/components/market/MarketList'
 import MarketListSkeleton from '@/components/market/MarketListSkeleton'
 import HomeHeader from '@/components/home/HomeHeader'
 import PageShell from '@/components/layout/PageShell'
+import MobileGamificationStrip from '@/components/gamification/MobileGamificationStrip'
 import { adminSupabase } from '@/lib/supabase/admin'
 import type { Category, Market } from '@/types/index'
 
@@ -127,6 +128,9 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       <Suspense fallback={null}>
         <HomeHeader />
       </Suspense>
+
+      {/* 모바일 전용: 출석·퀘스트 스트립 (xl 이상은 RightSidebar에서 표시) */}
+      <MobileGamificationStrip />
 
       {/* 통합 필터 바: 검색 + 카테고리 + 정렬 */}
       <Suspense fallback={null}>
