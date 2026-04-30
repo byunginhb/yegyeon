@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { adminSupabase } from '@/lib/supabase/admin'
-import { DAILY_QUESTS, getTodayDate } from '@/lib/quest'
+import { DAILY_QUESTS, getTodayDate, getYesterdayDate, calculateAttendanceReward } from '@/lib/quest'
 
 interface QuestProgressRow {
   quest_type: string
@@ -27,6 +27,7 @@ export async function GET() {
     }
 
     const today = getTodayDate()
+    const yesterday = getYesterdayDate()
 
     // users + 오늘 퀘스트 진행 현황을 단일 JOIN 쿼리로 통합
     const { data: userData, error: userError } = await adminSupabase
@@ -43,6 +44,24 @@ export async function GET() {
       )
     }
 
+    // 출석 스트릭으로 daily_checkin 퀘스트 포인트를 동적 계산
+    const { data: lastAttendance } = await adminSupabase
+      .from('attendance')
+      .select('checked_date, streak_count')
+      .eq('user_id', userData.id)
+      .order('checked_date', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    const checkedToday = lastAttendance?.checked_date === today
+    const currentStreak = lastAttendance
+      ? (lastAttendance.checked_date === today || lastAttendance.checked_date === yesterday
+          ? lastAttendance.streak_count
+          : 0)
+      : 0
+    const nextStreak = checkedToday ? currentStreak : currentStreak + 1
+    const attendanceNextReward = calculateAttendanceReward(nextStreak)
+
     const progress = (userData.user_quest_progress ?? []) as QuestProgressRow[]
 
     const progressMap = new Map<string, QuestProgressRow>()
@@ -53,11 +72,22 @@ export async function GET() {
     const quests = DAILY_QUESTS.map((q) => {
       const matched = progressMap.get(q.type)
       const completed = Boolean(matched?.completed_at)
+
+      // daily_checkin은 스트릭 기반 동적 포인트, 완료된 경우 실제 적립액 표시
+      let displayPoints: number
+      if (completed) {
+        displayPoints = matched?.points_earned ?? q.points
+      } else if (q.type === 'daily_checkin') {
+        displayPoints = attendanceNextReward
+      } else {
+        displayPoints = q.points
+      }
+
       return {
         type: q.type,
         title: q.title,
         description: q.description,
-        points: q.points,
+        points: displayPoints,
         icon: q.icon,
         completed,
         completed_at: matched?.completed_at ?? null,

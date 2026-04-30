@@ -108,7 +108,13 @@ export default function MobileGamificationStrip() {
         return
       }
       setAttendance(json.data)
+      // 퀘스트 목록 즉시 갱신
+      const questRes = await fetch('/api/quests', { cache: 'no-store' }).then(r => r.json()).catch(() => null)
+      if (questRes?.success) setQuests(questRes.data)
       toast.success(`+${json.data.points_earned_today ?? 0}포인트 획득! ${json.data.streak_count}일 연속`)
+    } catch (err) {
+      console.error('MobileGamificationStrip check-in error:', err)
+      toast.error('출석 처리 중 오류가 발생했습니다.')
     } finally {
       setCheckingIn(false)
     }

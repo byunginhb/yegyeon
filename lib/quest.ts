@@ -1,6 +1,30 @@
 import { adminSupabase } from '@/lib/supabase/admin'
 
 /**
+ * 출석 보상 계산 (streak → points)
+ * streak 1-2일: 10p / 3-6일: 20p / 7-13일: 50p / 14-29일: 100p / 30일+: 200p
+ */
+export function calculateAttendanceReward(streakCount: number): number {
+  if (streakCount >= 30) return 200
+  if (streakCount >= 14) return 100
+  if (streakCount >= 7) return 50
+  if (streakCount >= 3) return 20
+  return 10
+}
+
+/**
+ * 어제 날짜 문자열 (YYYY-MM-DD, UTC 기준)
+ */
+export function getYesterdayDate(): string {
+  const now = new Date()
+  now.setUTCDate(now.getUTCDate() - 1)
+  const year = now.getUTCFullYear()
+  const month = String(now.getUTCMonth() + 1).padStart(2, '0')
+  const day = String(now.getUTCDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+/**
  * 일일 퀘스트 정의 (DAILY_QUESTS)
  * 클라이언트와 서버에서 모두 참조 가능하도록 export
  */
@@ -61,19 +85,22 @@ export function getTodayDate(): string {
  * @param userId  users.id (auth_id 가 아님에 주의)
  * @param questType  DAILY_QUESTS 의 type 중 하나
  */
+/**
+ * @param options.pointsEarned - 실제 지급할 포인트 (미지정 시 quest.points 사용)
+ * @param options.skipPoints   - true 이면 포인트/잔액 업데이트 생략 (호출 측에서 이미 지급한 경우)
+ */
 export async function triggerQuestComplete(
   userId: string,
-  questType: DailyQuestType | string
+  questType: DailyQuestType | string,
+  options?: { pointsEarned?: number; skipPoints?: boolean }
 ): Promise<void> {
   const quest = QUEST_LOOKUP.get(questType as DailyQuestType)
-  if (!quest) {
-    // 정의되지 않은 퀘스트 타입은 조용히 무시
-    return
-  }
+  if (!quest) return
 
   const today = getTodayDate()
+  const earnedPoints = options?.pointsEarned ?? quest.points
+  const skipPoints = options?.skipPoints ?? false
 
-  // 이미 완료된 기록이 있는지 확인
   const { data: existing, error: selectError } = await adminSupabase
     .from('user_quest_progress')
     .select('id, completed_at')
@@ -87,12 +114,38 @@ export async function triggerQuestComplete(
     return
   }
 
-  if (existing?.completed_at) {
-    // 이미 완료됨 — 무시
-    return
+  if (existing?.completed_at) return
+
+  // 퀘스트 완료 기록
+  if (existing?.id) {
+    const { error } = await adminSupabase
+      .from('user_quest_progress')
+      .update({ completed_at: new Date().toISOString(), points_earned: earnedPoints })
+      .eq('id', existing.id)
+    if (error) {
+      console.error('triggerQuestComplete update error', { userId, questType, error })
+      return
+    }
+  } else {
+    const { error } = await adminSupabase
+      .from('user_quest_progress')
+      .insert({
+        user_id: userId,
+        quest_type: quest.type,
+        quest_date: today,
+        completed_at: new Date().toISOString(),
+        points_earned: earnedPoints,
+      })
+    if (error) {
+      if (error.code === '23505') return
+      console.error('triggerQuestComplete insert error', { userId, questType, error })
+      return
+    }
   }
 
-  // 사용자 잔액 확인 (포인트 누적용)
+  // skipPoints: 호출 측(출석 등)에서 이미 포인트를 지급했으므로 생략
+  if (skipPoints) return
+
   const { data: userRow, error: userError } = await adminSupabase
     .from('users')
     .select('id, points, is_banned')
@@ -104,46 +157,10 @@ export async function triggerQuestComplete(
     return
   }
 
-  if (userRow.is_banned) {
-    return
-  }
+  if (userRow.is_banned) return
 
-  const newBalance = (userRow.points ?? 0) + quest.points
+  const newBalance = (userRow.points ?? 0) + earnedPoints
 
-  if (existing?.id) {
-    // 같은 날짜에 row 가 있는데 completed_at 만 비어있는 경우 update
-    const { error: updateError } = await adminSupabase
-      .from('user_quest_progress')
-      .update({
-        completed_at: new Date().toISOString(),
-        points_earned: quest.points,
-      })
-      .eq('id', existing.id)
-
-    if (updateError) {
-      console.error('triggerQuestComplete update error', { userId, questType, updateError })
-      return
-    }
-  } else {
-    const { error: insertError } = await adminSupabase
-      .from('user_quest_progress')
-      .insert({
-        user_id: userId,
-        quest_type: quest.type,
-        quest_date: today,
-        completed_at: new Date().toISOString(),
-        points_earned: quest.points,
-      })
-
-    if (insertError) {
-      // UNIQUE 제약 위반 등은 동시 호출 경합으로 발생 가능 — 그냥 무시
-      if (insertError.code === '23505') return
-      console.error('triggerQuestComplete insert error', { userId, questType, insertError })
-      return
-    }
-  }
-
-  // 포인트 지급
   const { error: pointError } = await adminSupabase
     .from('users')
     .update({ points: newBalance })
@@ -154,11 +171,10 @@ export async function triggerQuestComplete(
     return
   }
 
-  // 트랜잭션 로그
   const { error: txError } = await adminSupabase.from('point_transactions').insert({
     user_id: userId,
     type: 'quest_reward',
-    amount: quest.points,
+    amount: earnedPoints,
     balance: newBalance,
     note: `${quest.title} 완료`,
   })

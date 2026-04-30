@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   Gift,
   CalendarCheck,
@@ -50,6 +50,7 @@ export default function QuestPanel() {
   const [authState, setAuthState] = useState<AuthState>('unknown')
   const [data, setData] = useState<QuestData | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
+  const fetchQuestsRef = useRef<(() => void) | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -72,6 +73,8 @@ export default function QuestPanel() {
         if (!cancelled) setLoading(false)
       }
     }
+
+    fetchQuestsRef.current = fetchQuests
 
     async function bootstrap() {
       try {
@@ -100,6 +103,13 @@ export default function QuestPanel() {
     return () => {
       cancelled = true
     }
+  }, [])
+
+  // 출석 체크인 완료 시 퀘스트 목록 즉시 갱신
+  useEffect(() => {
+    const handleRefresh = () => fetchQuestsRef.current?.()
+    window.addEventListener('refresh-quests', handleRefresh)
+    return () => window.removeEventListener('refresh-quests', handleRefresh)
   }, [])
 
   if (authState === 'signed_out') return null

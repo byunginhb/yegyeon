@@ -102,9 +102,11 @@ export default function AttendanceWidget() {
 
       const result = json.data as AttendanceData
       setData(result)
+      // 퀘스트 패널에 즉시 갱신 신호
+      window.dispatchEvent(new CustomEvent('refresh-quests'))
       const points = result.points_earned_today ?? 0
       const streak = result.streak_count
-      toast.success(`+${points}포인트 획득! 🔥 ${streak}일 연속`)
+      toast.success(`+${points}포인트 획득! ${streak}일 연속`)
     } catch (err) {
       console.error('AttendanceWidget check-in error:', err)
       toast.error('출석 처리 중 오류가 발생했습니다.')

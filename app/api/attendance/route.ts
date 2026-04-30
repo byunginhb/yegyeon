@@ -1,37 +1,9 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { adminSupabase } from '@/lib/supabase/admin'
-import { triggerQuestComplete, getTodayDate } from '@/lib/quest'
+import { triggerQuestComplete, getTodayDate, calculateAttendanceReward, getYesterdayDate } from '@/lib/quest'
 
 export const dynamic = 'force-dynamic'
-
-/**
- * 출석 보상 계산
- * streak 1-2일: 10p
- * streak 3-6일: 20p
- * streak 7-13일: 50p
- * streak 14-29일: 100p
- * streak 30일+: 200p
- */
-function calculateAttendanceReward(streakCount: number): number {
-  if (streakCount >= 30) return 200
-  if (streakCount >= 14) return 100
-  if (streakCount >= 7) return 50
-  if (streakCount >= 3) return 20
-  return 10
-}
-
-/**
- * 어제 날짜 문자열 (YYYY-MM-DD)
- */
-function getYesterdayDate(): string {
-  const now = new Date()
-  now.setUTCDate(now.getUTCDate() - 1)
-  const year = now.getUTCFullYear()
-  const month = String(now.getUTCMonth() + 1).padStart(2, '0')
-  const day = String(now.getUTCDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
 
 /**
  * GET /api/attendance
@@ -92,12 +64,6 @@ export async function GET() {
         streak_count: currentStreak,
         points_earned_today: checkedToday ? last?.points_earned ?? null : null,
         next_reward: nextReward,
-      },
-      _debug: {
-        today,
-        yesterday,
-        last_checked_date: last?.checked_date ?? null,
-        user_id: dbUser.id,
       },
     })
   } catch (err) {
@@ -220,9 +186,9 @@ export async function POST() {
       console.error('attendance POST tx insert error', txError)
     }
 
-    // 4) daily_checkin 퀘스트 자동 완료 (실패해도 무시)
+    // 4) daily_checkin 퀘스트 완료 기록 (포인트는 위에서 이미 지급했으므로 skipPoints: true)
     try {
-      await triggerQuestComplete(dbUser.id, 'daily_checkin')
+      await triggerQuestComplete(dbUser.id, 'daily_checkin', { skipPoints: true, pointsEarned: reward })
     } catch (e) {
       console.error('daily_checkin quest trigger failed', e)
     }
