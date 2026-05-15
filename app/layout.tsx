@@ -7,6 +7,7 @@ import AppShell from '@/components/layout/AppShell'
 import './globals.css'
 
 const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID || 'GTM-PHFX93KF'
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID || 'G-NWLN864FZE'
 
 const figtree = Figtree({
   subsets: ['latin'],
@@ -52,6 +53,24 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           }}
         />
         {/* End Google Tag Manager */}
+
+        {/* Google tag (gtag.js) */}
+        <Script
+          id="gtag-src"
+          strategy="afterInteractive"
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+        />
+        <Script
+          id="gtag-init"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${GA_ID}');`,
+          }}
+        />
+        {/* End Google tag */}
       </head>
       <body className={`${figtree.variable} font-sans min-h-screen antialiased bg-canvas-100 text-ink-900`}>
         {/* Google Tag Manager (noscript) */}
