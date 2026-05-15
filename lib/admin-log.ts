@@ -8,6 +8,7 @@ export type AdminLogTargetType =
   | 'report'
   | 'announcement'
   | 'setting'
+  | 'legal_document'
 
 export interface RecordAdminLogParams {
   adminId: string

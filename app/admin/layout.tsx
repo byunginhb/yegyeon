@@ -11,6 +11,7 @@ import {
   Megaphone,
   ScrollText,
   Settings,
+  FileText,
   type LucideIcon,
 } from 'lucide-react'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
@@ -31,6 +32,7 @@ const navItems: NavItem[] = [
   { href: '/admin/categories', label: '카테고리', icon: Tag },
   { href: '/admin/reports', label: '신고 관리', icon: AlertTriangle },
   { href: '/admin/announcements', label: '공지사항', icon: Megaphone },
+  { href: '/admin/legal', label: '약관 관리', icon: FileText },
   { href: '/admin/logs', label: '관리 로그', icon: ScrollText },
   { href: '/admin/settings', label: '서비스 설정', icon: Settings },
 ]

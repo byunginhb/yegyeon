@@ -124,6 +124,23 @@ export default function LeftSidebar() {
         </div>
       </nav>
 
+      {/* 약관 푸터 메뉴 */}
+      <div className="px-4 pt-2 pb-1">
+        <div className="flex flex-wrap gap-x-2 gap-y-1 text-[11px] text-ink-400">
+          <Link href="/legal/terms_of_service" className="hover:text-ink-700 transition-colors">
+            서비스 약관
+          </Link>
+          <span aria-hidden>·</span>
+          <Link href="/legal/privacy_policy" className="hover:text-ink-700 transition-colors">
+            개인정보 처리방침
+          </Link>
+          <span aria-hidden>·</span>
+          <Link href="/legal/terms_of_use" className="hover:text-ink-700 transition-colors">
+            이용 약관
+          </Link>
+        </div>
+      </div>
+
       {/* 하단: 다크모드 + 유저 */}
       <div className="px-3 py-3 space-y-1">
         {/* 다크모드 토글 */}
