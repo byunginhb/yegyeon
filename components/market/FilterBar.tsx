@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Search } from 'lucide-react'
+import { Search, TrendingUp, type LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Category } from '@/types/index'
 
@@ -10,8 +10,8 @@ interface FilterBarProps {
   categories: Category[]
 }
 
-const SORT_OPTIONS = [
-  { value: 'trending', label: '인기순' },
+const SORT_OPTIONS: Array<{ value: string; label: string; icon?: LucideIcon }> = [
+  { value: 'trending', label: '인기순', icon: TrendingUp },
   { value: 'newest', label: '최신순' },
   { value: 'closing_soon', label: '마감임박' },
   { value: 'volume', label: '거래량' },
@@ -127,7 +127,7 @@ export default function FilterBar({ categories }: FilterBarProps) {
 
       {/* 3. 정렬 필터 pills */}
       <div className="flex items-center gap-1.5 mt-3 flex-wrap">
-        {SORT_OPTIONS.map(({ value, label }) => {
+        {SORT_OPTIONS.map(({ value, label, icon: Icon }) => {
           const isActive = activeSort === value
           return (
             <button
@@ -135,12 +135,13 @@ export default function FilterBar({ categories }: FilterBarProps) {
               type="button"
               onClick={() => handleSelectSort(value)}
               className={cn(
-                'px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-150',
+                'inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-150',
                 isActive
                   ? 'bg-primary text-white shadow-sm'
                   : 'bg-canvas-0 text-ink-500 border border-ink-200 hover:border-ink-400 hover:text-ink-900'
               )}
             >
+              {Icon && <Icon className="h-3.5 w-3.5 shrink-0" />}
               {label}
             </button>
           )
