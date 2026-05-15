@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://yegyeon.kr'
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://yegyeon.com'
 
 export const revalidate = 3600 // 1시간마다 재생성
 

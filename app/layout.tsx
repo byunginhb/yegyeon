@@ -15,7 +15,7 @@ const figtree = Figtree({
   display: 'swap',
 })
 
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://yegyeon.kr'
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://yegyeon.com'
 const SITE_NAME = '예견 (YEGYEON)'
 const SITE_TITLE = '예견 — 한국 예측 시장 플랫폼 | YES/NO 베팅·확률 예측·미래 예측'
 const SITE_DESC =
