@@ -4,12 +4,21 @@ import { Search } from 'lucide-react'
 import PageShell from '@/components/layout/PageShell'
 
 export const metadata: Metadata = {
-  title: '마켓 탐색 — 예견',
-  description: '예견의 모든 예측 마켓을 탐색하세요.',
+  title: '마켓 탐색 — 정치·경제·스포츠·코인·연예·게임 예측 마켓 모음',
+  description:
+    '예견의 모든 예측 마켓을 카테고리·인기순·최신순·마감임박·거래량으로 탐색하세요. 정치(대선·선거), 경제(주식·환율), 스포츠(축구·야구·KBO), 연예, 코인(비트코인), 게임(LoL), 기술(AI) 분야의 YES/NO·다중 선택·수치 예측 마켓을 한 곳에서 검색·필터링·정렬할 수 있습니다.',
+  keywords: [
+    '마켓 탐색', '예측 마켓 검색', '카테고리별 예측', '인기 예측 마켓',
+    '마감임박 마켓', '신규 마켓', '거래량 마켓',
+    '정치 마켓', '스포츠 마켓', '코인 마켓', '경제 마켓', '연예 마켓', '게임 마켓',
+    '예견', 'YEGYEON', '한국 예측 시장',
+  ],
+  alternates: { canonical: '/browse' },
   openGraph: {
     title: '마켓 탐색 — 예견',
-    description: '예견의 모든 예측 마켓을 탐색하세요.',
+    description: '카테고리·정렬·검색으로 한국 예측 시장의 모든 마켓을 한 번에 둘러보세요.',
     type: 'website',
+    url: '/browse',
   },
 }
 

@@ -2,12 +2,24 @@ import type { Metadata } from 'next'
 import { Suspense } from 'react'
 
 export const metadata: Metadata = {
-  title: '예견 — 한국 예측 시장',
-  description: '예측으로 지식을 증명하세요. 정치, 경제, 스포츠, 테크 등 다양한 마켓에 참여하세요.',
+  title: '예견 — 한국 예측 시장 | 정치·경제·스포츠·코인 미래 예측 베팅',
+  description:
+    '예견(YEGYEON) 홈. 정치(대선·선거), 경제(주식·환율·금리), 스포츠(축구·야구·KBO·월드컵), 연예, 코인(비트코인·이더리움), 게임(LoL·롤드컵), 기술(AI) 등 다양한 분야의 예측 마켓에서 YES/NO·확률 베팅에 참여하고 집단지성으로 미래를 예측하세요. 가입 즉시 무료 포인트 지급.',
+  keywords: [
+    '예견', '예측 시장', '예측마켓', '한국 예측 시장', 'YEGYEON',
+    '정치 예측', '대선 예측', '경제 예측', '주식 예측',
+    '스포츠 예측', 'KBO 예측', '월드컵 예측',
+    '코인 예측', '비트코인 예측', '이더리움 예측',
+    '연예 예측', '게임 예측', 'LoL 예측',
+    'YES NO 베팅', '확률 베팅', '미래 예측', '집단지성',
+    'prediction market', 'Manifold', 'Polymarket',
+  ],
+  alternates: { canonical: '/' },
   openGraph: {
     title: '예견 — 한국 예측 시장',
-    description: '예측으로 지식을 증명하세요.',
+    description: '정치·경제·스포츠·코인·연예·게임 등 모든 미래를 예측하고 포인트로 베팅하는 한국형 예측 플랫폼.',
     type: 'website',
+    url: '/',
   },
 }
 
