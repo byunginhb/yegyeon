@@ -29,7 +29,7 @@ export async function GET(
           `*,
            creator:users!creator_id(id, username, display_name, avatar_url),
            category:categories!category_id(id, name, slug, icon, color),
-           options:market_options(id, text, color, probability, total_amount, sort_order)`
+           options:market_options(id, text, color, image_url, probability, total_amount, sort_order)`
         )
         .eq('id', id)
         .single(),

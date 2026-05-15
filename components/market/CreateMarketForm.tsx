@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, Trash2, BarChart2, List, Hash } from 'lucide-react'
 import { CategoryIcon } from '@/lib/categoryIcon'
+import MarketImagePicker from './MarketImagePicker'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -20,15 +21,21 @@ interface Props {
   categories: Category[]
 }
 
+interface OptionDraft {
+  text: string
+  image_url: string | null
+}
+
 interface FormState {
   type: MarketType | null
   title: string
   description: string
+  thumbnail_url: string | null
   category_id: string
   close_date: string
   resolution_criteria: string
   yes_probability: number
-  options: string[]
+  options: OptionDraft[]
   min_value: string
   max_value: string
   unit: string
@@ -79,11 +86,15 @@ export default function CreateMarketForm({ categories }: Props) {
     type: null,
     title: '',
     description: '',
+    thumbnail_url: null,
     category_id: '',
     close_date: getTomorrowDatetimeLocal(),
     resolution_criteria: '',
     yes_probability: 50,
-    options: ['', ''],
+    options: [
+      { text: '', image_url: null },
+      { text: '', image_url: null },
+    ],
     min_value: '',
     max_value: '',
     unit: '',
@@ -121,7 +132,7 @@ export default function CreateMarketForm({ categories }: Props) {
       }
     }
     if (form.type === 'multiple_choice') {
-      const filled = form.options.filter(o => o.trim().length > 0)
+      const filled = form.options.filter(o => o.text.trim().length > 0)
       if (filled.length < 2) return '선택지는 최소 2개 이상 입력해야 합니다.'
     }
     if (form.type === 'numeric') {
@@ -154,7 +165,7 @@ export default function CreateMarketForm({ categories }: Props) {
 
   function addOption() {
     if (form.options.length >= 8) return
-    update('options', [...form.options, ''])
+    update('options', [...form.options, { text: '', image_url: null }])
   }
 
   function removeOption(idx: number) {
@@ -162,8 +173,8 @@ export default function CreateMarketForm({ categories }: Props) {
     update('options', form.options.filter((_, i) => i !== idx))
   }
 
-  function updateOption(idx: number, value: string) {
-    const next = form.options.map((o, i) => (i === idx ? value : o))
+  function updateOption(idx: number, patch: Partial<OptionDraft>) {
+    const next = form.options.map((o, i) => (i === idx ? { ...o, ...patch } : o))
     update('options', next)
   }
 
@@ -178,6 +189,7 @@ export default function CreateMarketForm({ categories }: Props) {
       const body: Record<string, unknown> = {
         title: form.title.trim(),
         description: form.description.trim() || undefined,
+        thumbnail_url: form.thumbnail_url ?? undefined,
         category_id: form.category_id ? parseInt(form.category_id, 10) : undefined,
         type: form.type,
         close_date: form.close_date,
@@ -189,8 +201,11 @@ export default function CreateMarketForm({ categories }: Props) {
       }
       if (form.type === 'multiple_choice') {
         body.options = form.options
-          .filter(o => o.trim().length > 0)
-          .map(o => ({ text: o.trim() }))
+          .filter(o => o.text.trim().length > 0)
+          .map(o => ({
+            text: o.text.trim(),
+            image_url: o.image_url ?? null,
+          }))
       }
       if (form.type === 'numeric') {
         body.min_value = parseFloat(form.min_value)
@@ -309,6 +324,24 @@ export default function CreateMarketForm({ categories }: Props) {
 
             <div className="space-y-1.5">
               <Label className="text-ink-800 font-medium">
+                썸네일 이미지 <span className="text-ink-400 font-normal">(선택)</span>
+              </Label>
+              <div className="rounded-lg border border-ink-200 bg-canvas-0 p-3">
+                <MarketImagePicker
+                  value={form.thumbnail_url}
+                  onChange={(url) => update('thumbnail_url', url)}
+                  kind="thumbnail"
+                  size="lg"
+                  label="마켓 카드와 상세 페이지에 표시됩니다."
+                />
+                <p className="text-xs text-ink-400 mt-2">
+                  이미지를 넣지 않으면 예견 로고가 기본으로 표시됩니다.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-ink-800 font-medium">
                 카테고리 <span className="text-ink-400 font-normal">(선택)</span>
               </Label>
               <Select
@@ -406,25 +439,39 @@ export default function CreateMarketForm({ categories }: Props) {
           {/* Multiple Choice */}
           {form.type === 'multiple_choice' && (
             <div className="space-y-4">
-              <p className="text-ink-700">선택지를 2개 이상 입력하세요 (최대 8개).</p>
-              <div className="space-y-2">
+              <p className="text-ink-700">선택지를 2개 이상 입력하세요 (최대 8개). 각 선택지에 이미지를 추가할 수 있습니다.</p>
+              <div className="space-y-3">
                 {form.options.map((opt, idx) => (
-                  <div key={idx} className="flex gap-2 items-center">
-                    <span className="text-sm text-ink-500 w-6 text-right">{idx + 1}.</span>
-                    <Input
-                      value={opt}
-                      onChange={e => updateOption(idx, e.target.value)}
-                      placeholder={`선택지 ${idx + 1}`}
-                      className="h-10 flex-1"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeOption(idx)}
-                      disabled={form.options.length <= 2}
-                      className="p-2 text-ink-400 hover:text-scarlet-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                  <div
+                    key={idx}
+                    className="rounded-lg border border-ink-200 bg-canvas-0 p-3 space-y-3"
+                  >
+                    <div className="flex gap-2 items-center">
+                      <span className="text-sm text-ink-500 w-6 text-right">{idx + 1}.</span>
+                      <Input
+                        value={opt.text}
+                        onChange={e => updateOption(idx, { text: e.target.value })}
+                        placeholder={`선택지 ${idx + 1}`}
+                        className="h-10 flex-1"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeOption(idx)}
+                        disabled={form.options.length <= 2}
+                        className="p-2 text-ink-400 hover:text-scarlet-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <div className="pl-8">
+                      <MarketImagePicker
+                        value={opt.image_url}
+                        onChange={(url) => updateOption(idx, { image_url: url })}
+                        kind="option"
+                        size="md"
+                        label="선택지 이미지 (선택)"
+                      />
+                    </div>
                   </div>
                 ))}
               </div>

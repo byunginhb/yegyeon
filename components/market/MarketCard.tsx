@@ -95,20 +95,14 @@ export default function MarketCard({ market }: MarketCardProps) {
   return (
     <Link href={marketHref} className="group block">
       <div className="flex items-center gap-3 px-4 py-3.5 hover:bg-canvas-50 transition-colors cursor-pointer">
-        {/* 생성자 아바타 */}
-        <div className="h-9 w-9 rounded-full shrink-0 overflow-hidden bg-ink-200/40 flex items-center justify-center self-start mt-0.5">
-          {market.creator?.avatar_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={market.creator.avatar_url}
-              alt=""
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <span className="text-xs font-bold text-ink-500">
-              {(market.creator?.display_name ?? '?').slice(0, 1).toUpperCase()}
-            </span>
-          )}
+        {/* 마켓 썸네일 (없으면 예견 로고) */}
+        <div className="h-10 w-10 rounded-lg shrink-0 overflow-hidden bg-canvas-100 flex items-center justify-center self-start mt-0.5 border border-ink-200/60">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={market.thumbnail_url ?? '/logo.png'}
+            alt=""
+            className="h-full w-full object-cover"
+          />
         </div>
 
         {/* 제목 + 메타 */}

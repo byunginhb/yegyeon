@@ -47,7 +47,7 @@ export default async function MarketDetailPage({ params }: Props) {
       .from('markets')
       .select(
         `
-        id, title, description, type, status,
+        id, title, description, thumbnail_url, type, status,
         creator_id, category_id, close_date, resolved_at, resolution,
         total_volume, unique_traders, comment_count,
         yes_probability, yes_amount, no_amount,
@@ -56,7 +56,7 @@ export default async function MarketDetailPage({ params }: Props) {
         tags, created_at, updated_at,
         creator:users!creator_id(id, username, display_name, avatar_url),
         category:categories!category_id(id, name, slug, icon, color),
-        options:market_options(id, market_id, text, color, probability, total_amount, sort_order)
+        options:market_options(id, market_id, text, color, image_url, probability, total_amount, sort_order)
         `
       )
       .eq('id', id)
@@ -163,10 +163,20 @@ export default async function MarketDetailPage({ params }: Props) {
             />
           )}
 
-          {/* 제목 */}
-          <h1 className="text-2xl font-bold text-ink-1000 leading-snug mb-3">
-            {market.title}
-          </h1>
+          {/* 썸네일 + 제목 */}
+          <div className="flex items-start gap-4 mb-3">
+            <div className="h-16 w-16 shrink-0 rounded-xl overflow-hidden border border-ink-200 bg-canvas-100">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={market.thumbnail_url ?? '/logo.png'}
+                alt=""
+                className="h-full w-full object-cover"
+              />
+            </div>
+            <h1 className="text-2xl font-bold text-ink-1000 leading-snug flex-1">
+              {market.title}
+            </h1>
+          </div>
 
           {/* 생성자 + 통계 바 */}
           <div className="flex items-center gap-3 flex-wrap mb-5 text-sm text-ink-500">

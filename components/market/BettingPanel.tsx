@@ -232,14 +232,22 @@ export default function BettingPanel({
                 key={opt.id}
                 type="button"
                 onClick={() => setSelectedOutcome(opt.id)}
-                className={`w-full py-2.5 px-4 rounded-xl text-sm font-medium text-left transition-all flex items-center justify-between ${
+                className={`w-full py-2 px-3 rounded-xl text-sm font-medium text-left transition-all flex items-center gap-2.5 ${
                   selectedOutcome === opt.id
                     ? 'bg-primary text-white shadow-sm'
                     : 'bg-canvas-100 text-ink-800 hover:bg-canvas-50 border border-ink-200'
                 }`}
               >
-                <span>{opt.text}</span>
-                <span className="text-xs opacity-80">
+                <span className="h-8 w-8 shrink-0 rounded-lg overflow-hidden bg-canvas-0/40 border border-black/5 flex items-center justify-center">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={opt.image_url ?? '/logo.png'}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                </span>
+                <span className="flex-1 truncate">{opt.text}</span>
+                <span className="text-xs opacity-80 tabular-nums">
                   {Math.round(opt.probability * 100)}%
                 </span>
               </button>

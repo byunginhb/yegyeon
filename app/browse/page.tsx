@@ -60,7 +60,7 @@ async function fetchMarkets(params: {
   let query = adminSupabase
     .from('markets')
     .select(
-      `id, slug, title, description, type, status, creator_id, category_id,
+      `id, slug, title, description, thumbnail_url, type, status, creator_id, category_id,
        close_date, resolved_at, resolution, total_volume, unique_traders,
        comment_count, yes_probability, yes_amount, no_amount, is_hidden,
        tags, created_at, updated_at,

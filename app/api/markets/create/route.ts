@@ -17,9 +17,19 @@ function generateSlug(title: string): string {
   return kebab ? `${kebab}-${random}` : random
 }
 
+const ImageUrlSchema = z
+  .string()
+  .trim()
+  .url()
+  .max(1000)
+  .refine((url) => /\/storage\/v1\/object\/public\/market-images\//.test(url), {
+    message: '허용되지 않은 이미지 경로입니다.',
+  })
+
 const BaseSchema = z.object({
   title: z.string().trim().min(5, '제목은 5자 이상이어야 합니다.').max(200),
   description: z.string().trim().max(2000).optional(),
+  thumbnail_url: ImageUrlSchema.nullish(),
   category_id: z.number().int().positive().optional(),
   close_date: z.string().min(1, '마감일이 필요합니다.'),
   resolution_criteria: z.string().trim().max(2000).optional(),
@@ -33,7 +43,12 @@ const CreateMarketSchema = z.discriminatedUnion('type', [
   BaseSchema.extend({
     type: z.literal('multiple_choice'),
     options: z
-      .array(z.object({ text: z.string().trim().min(1).max(100) }))
+      .array(
+        z.object({
+          text: z.string().trim().min(1).max(100),
+          image_url: ImageUrlSchema.nullish(),
+        })
+      )
       .min(2, '선택지는 2개 이상이어야 합니다.')
       .max(8, '선택지는 8개 이하여야 합니다.'),
   }),
@@ -140,6 +155,7 @@ export async function POST(req: NextRequest) {
     const marketInsert: Record<string, unknown> = {
       title: data.title,
       description: data.description ?? null,
+      thumbnail_url: data.thumbnail_url ?? null,
       category_id: data.category_id ?? null,
       creator_id: dbUser.id,
       type: data.type,
@@ -190,6 +206,7 @@ export async function POST(req: NextRequest) {
       const optionRows = data.options.map((opt, idx) => ({
         market_id: market!.id,
         text: opt.text.trim(),
+        image_url: opt.image_url ?? null,
         // 마지막 옵션이 잔차를 흡수해 합=1 보장
         probability: idx === n - 1 ? parseFloat((1 - baseProb * (n - 1)).toFixed(4)) : baseProb,
         total_amount: 0,

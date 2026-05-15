@@ -90,6 +90,7 @@ export interface Market {
   slug: string
   title: string
   description: string | null
+  thumbnail_url: string | null
   type: MarketType
   status: MarketStatus
   creator_id: string | null
@@ -126,6 +127,7 @@ export interface MarketOption {
   market_id: string
   text: string
   color: string
+  image_url: string | null
   probability: number
   total_amount: number
   sort_order: number

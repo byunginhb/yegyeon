@@ -20,6 +20,7 @@ export async function GET(req: NextRequest) {
         slug,
         title,
         description,
+        thumbnail_url,
         type,
         status,
         creator_id,

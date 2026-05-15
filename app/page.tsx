@@ -65,13 +65,13 @@ async function fetchMarkets(params: {
   let query = adminSupabase
     .from('markets')
     .select(
-      `id, slug, title, description, type, status, creator_id, category_id,
+      `id, slug, title, description, thumbnail_url, type, status, creator_id, category_id,
        close_date, resolved_at, resolution, total_volume, unique_traders,
        comment_count, yes_probability, yes_amount, no_amount, is_hidden,
        tags, created_at, updated_at,
        creator:users!creator_id(id, username, display_name, avatar_url),
        category:categories!category_id(id, name, slug, icon, color),
-       options:market_options(id, text, color, probability, total_amount, sort_order)`
+       options:market_options(id, text, color, image_url, probability, total_amount, sort_order)`
     )
     .eq('is_hidden', false)
     .eq('status', 'open')
