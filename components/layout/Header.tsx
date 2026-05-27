@@ -52,7 +52,20 @@ export default function Header() {
         }
       }
     )
-    return () => subscription.unsubscribe()
+
+    // 베팅/정산 등 외부에서 잔액 변동 시 즉시 반영
+    function handleBalance(e: Event) {
+      const detail = (e as CustomEvent<{ points: number }>).detail
+      if (typeof detail?.points === 'number') {
+        setUser((prev) => (prev ? { ...prev, points: detail.points } : prev))
+      }
+    }
+    window.addEventListener('yegyeon:balance-updated', handleBalance)
+
+    return () => {
+      subscription.unsubscribe()
+      window.removeEventListener('yegyeon:balance-updated', handleBalance)
+    }
   }, [])
 
   async function handleSignOut() {

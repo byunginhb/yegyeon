@@ -43,26 +43,35 @@ export default function MarketProbabilityChart({
 
   if (market.type === 'multiple_choice' && market.options) {
     const sorted = [...market.options].sort((a, b) => b.probability - a.probability)
+    const hasAnyImage = sorted.some((o) => !!o.image_url)
     return (
-      <div className="space-y-3">
-        <p className="text-sm text-ink-500 font-medium">현재 예측</p>
-        {sorted.map((opt) => {
-          const pct = Math.round(opt.probability * 100)
-          return (
-            <div key={opt.id}>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-ink-800 font-medium">{opt.text}</span>
-                <span className="text-ink-600 tabular-nums">{pct}%</span>
+      <div>
+        <p className="text-sm text-ink-500 font-medium mb-2">현재 예측</p>
+        <div className="divide-y divide-ink-200">
+          {sorted.map((opt) => {
+            const pct = Math.round(opt.probability * 100)
+            return (
+              <div key={opt.id} className="flex items-center gap-3 py-3">
+                {hasAnyImage && (
+                  <span className="h-10 w-10 shrink-0 rounded-full overflow-hidden bg-canvas-100 border border-ink-200/60 flex items-center justify-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={opt.image_url ?? '/logo.png'}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
+                  </span>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-ink-900 truncate">{opt.text}</p>
+                </div>
+                <div className="shrink-0 text-2xl font-bold text-ink-900 tabular-nums w-14 text-right">
+                  {pct}%
+                </div>
               </div>
-              <div className="h-2 rounded-full bg-ink-200 overflow-hidden">
-                <div
-                  className="h-full bg-primary transition-all duration-500 rounded-full"
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
-            </div>
-          )
-        })}
+            )
+          })}
+        </div>
       </div>
     )
   }

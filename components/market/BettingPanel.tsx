@@ -138,10 +138,17 @@ export default function BettingPanel({
         return
       }
 
-      if (typeof json.data.new_balance === 'number') {
-        setLocalPoints(json.data.new_balance)
-      } else {
-        setLocalPoints((prev) => prev - amount)
+      const newBalance =
+        typeof json.data?.new_balance === 'number'
+          ? json.data.new_balance
+          : localPoints - amount
+      setLocalPoints(newBalance)
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('yegyeon:balance-updated', {
+            detail: { points: newBalance },
+          })
+        )
       }
       onBetSuccess?.(json.data.new_probability)
 
@@ -238,14 +245,16 @@ export default function BettingPanel({
                     : 'bg-canvas-100 text-ink-800 hover:bg-canvas-50 border border-ink-200'
                 }`}
               >
-                <span className="h-8 w-8 shrink-0 rounded-lg overflow-hidden bg-canvas-0/40 border border-black/5 flex items-center justify-center">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={opt.image_url ?? '/logo.png'}
-                    alt=""
-                    className="h-full w-full object-cover"
-                  />
-                </span>
+                {opt.image_url && (
+                  <span className="h-8 w-8 shrink-0 rounded-lg overflow-hidden bg-canvas-0/40 border border-black/5 flex items-center justify-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={opt.image_url}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
+                  </span>
+                )}
                 <span className="flex-1 truncate">{opt.text}</span>
                 <span className="text-xs opacity-80 tabular-nums">
                   {Math.round(opt.probability * 100)}%

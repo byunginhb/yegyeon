@@ -37,10 +37,15 @@ export default function InlineMarketBetting({ market, userPoints, isLoggedIn, ch
   const [localPoints, setLocalPoints] = useState(userPoints ?? 0)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [range, setRange] = useState<RangeKey>('ALL')
+  const [localOptions, setLocalOptions] = useState<MarketOption[]>(market.options ?? [])
 
   useEffect(() => {
     setLocalPoints(userPoints ?? 0)
   }, [userPoints])
+
+  useEffect(() => {
+    setLocalOptions(market.options ?? [])
+  }, [market.options])
 
   const yesPercent = Math.round(currentProb * 100)
   const noPercent = 100 - yesPercent
@@ -69,15 +74,15 @@ export default function InlineMarketBetting({ market, userPoints, isLoggedIn, ch
       const newProb = total > 0 ? Math.max(0.01, Math.min(0.99, newYes / total)) : currentProb
       return { payout, newProb, multiplier: amount > 0 ? payout / amount : 0 }
     }
-    if (market.type === 'multiple_choice' && market.options) {
-      const opt = market.options.find((o) => o.id === selectedOutcome)
+    if (market.type === 'multiple_choice' && localOptions.length > 0) {
+      const opt = localOptions.find((o) => o.id === selectedOutcome)
       const optionPool = opt?.total_amount ?? 0
-      const totalPool = market.options.reduce((s, o) => s + (o.total_amount ?? 0), 0)
+      const totalPool = localOptions.reduce((s, o) => s + (o.total_amount ?? 0), 0)
       const payout = calcExpectedPayoutOption(amount, optionPool, totalPool)
       return { payout, newProb: currentProb, multiplier: amount > 0 ? payout / amount : 0 }
     }
     return { payout: amount, newProb: currentProb, multiplier: 1 }
-  }, [selectedOutcome, amount, currentProb, market.type, market.yes_amount, market.no_amount, market.options])
+  }, [selectedOutcome, amount, currentProb, market.type, market.yes_amount, market.no_amount, localOptions])
 
   const p = preview()
 
@@ -110,7 +115,7 @@ export default function InlineMarketBetting({ market, userPoints, isLoggedIn, ch
     setIsSubmitting(true)
     try {
       const isOption = market.type === 'multiple_choice'
-      const selectedOption = isOption ? market.options?.find(o => o.id === selectedOutcome) : null
+      const selectedOption = isOption ? localOptions.find(o => o.id === selectedOutcome) : null
       const res = await fetch('/api/bets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -126,12 +131,37 @@ export default function InlineMarketBetting({ market, userPoints, isLoggedIn, ch
         toast.error(json.error ?? '베팅 실패')
         return
       }
-      if (typeof json.data.new_balance === 'number') {
-        setLocalPoints(json.data.new_balance)
-      } else {
-        setLocalPoints((prev) => prev - amount)
+      const newBalance =
+        typeof json.data?.new_balance === 'number'
+          ? json.data.new_balance
+          : localPoints - amount
+      setLocalPoints(newBalance)
+      // 헤더/사이드바 등 외부 잔액 표시 컴포넌트에 통보
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('yegyeon:balance-updated', {
+            detail: { points: newBalance },
+          })
+        )
       }
       if (json.data.new_probability) setCurrentProb(json.data.new_probability)
+
+      // MC: 로컬 옵션 풀/확률 재계산
+      if (isOption) {
+        setLocalOptions((prev) => {
+          const next = prev.map((o) =>
+            o.id === selectedOutcome
+              ? { ...o, total_amount: (o.total_amount ?? 0) + amount }
+              : o
+          )
+          const total = next.reduce((s, o) => s + (o.total_amount ?? 0), 0)
+          return next.map((o) => ({
+            ...o,
+            probability: total > 0 ? (o.total_amount ?? 0) / total : 0,
+          }))
+        })
+      }
+
       const outcomeLabel = selectedOption?.text ?? selectedOutcome
       toast.success(
         `${outcomeLabel}에 ${amount.toLocaleString()}포인트 베팅 완료`
@@ -139,6 +169,8 @@ export default function InlineMarketBetting({ market, userPoints, isLoggedIn, ch
       setSelectedOutcome(null)
       setAmount(100)
       setInputValue('100')
+      // 차트 등 서버 데이터 재검증
+      router.refresh()
     } catch {
       toast.error('서버 오류가 발생했습니다.')
     } finally {
@@ -326,46 +358,62 @@ export default function InlineMarketBetting({ market, userPoints, isLoggedIn, ch
   }
 
   /* ── Multiple Choice ────────────────────────── */
-  if (market.type === 'multiple_choice' && market.options) {
-    const sorted = [...market.options].sort((a, b) => b.probability - a.probability)
+  if (market.type === 'multiple_choice' && localOptions.length > 0) {
+    const sorted = [...localOptions].sort((a, b) => b.probability - a.probability)
+    const hasAnyImage = sorted.some((o) => !!o.image_url)
     return (
-      <div className="mb-6 space-y-3">
-        {sorted.map((opt) => {
-          const pct = Math.round(opt.probability * 100)
-          const isSelected = selectedOutcome === opt.id
-          return (
-            <div key={opt.id}>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="font-medium text-ink-800">{opt.text}</span>
-                <span className="text-ink-600 tabular-nums">{pct}%</span>
+      <div className="mb-6">
+        <div className="divide-y divide-ink-200">
+          {sorted.map((opt) => {
+            const pct = Math.round(opt.probability * 100)
+            const isSelected = selectedOutcome === opt.id
+            return (
+              <div
+                key={opt.id}
+                className="flex items-center gap-3 py-3"
+              >
+                {hasAnyImage && (
+                  <span className="h-10 w-10 shrink-0 rounded-full overflow-hidden bg-canvas-100 border border-ink-200/60 flex items-center justify-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={opt.image_url ?? '/logo.png'}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
+                  </span>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-ink-900 truncate">{opt.text}</p>
+                  <p className="text-xs text-ink-500 mt-0.5 inline-flex items-center gap-1">
+                    <PointsDisplay amount={opt.total_amount} size="xs" className="text-ink-500" />
+                    <span>거래량</span>
+                  </p>
+                </div>
+                <div className="shrink-0 text-2xl font-bold text-ink-900 tabular-nums w-14 text-right mr-3">
+                  {pct}%
+                </div>
+                {isOpen && (
+                  <button
+                    onClick={() => handleOutcomeClick(opt.id)}
+                    className={`shrink-0 px-4 py-2 rounded-lg text-sm font-semibold transition-all min-w-[88px] ${
+                      isSelected
+                        ? 'bg-teal-500 text-white shadow-sm'
+                        : 'bg-teal-500/15 text-teal-600 hover:bg-teal-500/25'
+                    }`}
+                  >
+                    배팅 {pct}%
+                  </button>
+                )}
               </div>
-              <div className="h-2 rounded-full bg-ink-200 overflow-hidden mb-1.5">
-                <div
-                  className="h-full bg-primary transition-all duration-500 rounded-full"
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
-              {isOpen && (
-                <button
-                  onClick={() => handleOutcomeClick(opt.id)}
-                  className={`w-full py-2 rounded-lg text-sm font-medium transition-all ${
-                    isSelected
-                      ? 'bg-primary text-white'
-                      : 'bg-canvas-100 text-ink-700 hover:bg-canvas-50 border border-ink-200'
-                  }`}
-                >
-                  {opt.text} 베팅
-                </button>
-              )}
-            </div>
-          )
-        })}
+            )
+          })}
+        </div>
 
         {selectedOutcome && isLoggedIn && isOpen && (
           <div className="bg-canvas-50 border border-ink-200 rounded-xl p-4 space-y-3 mt-2">
             <div className="flex items-center justify-between text-sm">
               <span className="font-semibold text-ink-800">
-                <span className="text-primary">{market.options?.find(o => o.id === selectedOutcome)?.text ?? selectedOutcome}</span> 베팅
+                <span className="text-primary">{localOptions.find(o => o.id === selectedOutcome)?.text ?? selectedOutcome}</span> 베팅
               </span>
               <span className="text-ink-500">
                 보유: <PointsDisplay amount={localPoints} size="sm" />
