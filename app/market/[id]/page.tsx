@@ -3,7 +3,7 @@ import { adminSupabase } from '@/lib/supabase/admin'
 
 export const dynamic = 'force-dynamic'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
-import { Users, Calendar, TrendingUp, ArrowLeft } from 'lucide-react'
+import { Users, Calendar, TrendingUp, ArrowLeft, Pencil } from 'lucide-react'
 import type { Market, MarketOption } from '@/types'
 import InlineMarketBetting from '@/components/market/InlineMarketBetting'
 import CommentSection from '@/components/market/CommentSection'
@@ -211,6 +211,15 @@ export default async function MarketDetailPage({ params }: Props) {
               {closeDate.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })} 마감
             </span>
             <div className="ml-auto flex items-center gap-1">
+              {(isCreator || isAdmin) && market.status !== 'resolved' && market.status !== 'cancelled' && (
+                <Link
+                  href={`/market/${market.id}/edit`}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-ink-600 hover:text-primary hover:bg-canvas-100 transition-colors"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                  수정
+                </Link>
+              )}
               {!isPending && !isRejected && (
                 <ShareButton
                   marketId={market.id}

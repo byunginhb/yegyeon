@@ -165,6 +165,10 @@ export interface Comment {
   is_deleted: boolean
   created_at: string
   updated_at: string
+  embed_url: string | null
+  embed_title: string | null
+  embed_description: string | null
+  embed_image: string | null
   user?: Pick<User, 'id' | 'username' | 'display_name' | 'avatar_url'>
 }
 

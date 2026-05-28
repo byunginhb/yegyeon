@@ -12,6 +12,7 @@ export async function GET() {
     .from('categories')
     .select('*')
     .order('sort_order', { ascending: true })
+    .order('id', { ascending: true })
 
   if (error) {
     console.error('admin categories GET error', error)

@@ -56,7 +56,8 @@ async function fetchSidebarData() {
       .from('categories')
       .select('id, name, slug, icon, color')
       .eq('is_active', true)
-      .order('sort_order', { ascending: true }),
+      .order('sort_order', { ascending: true })
+      .order('id', { ascending: true }),
     adminSupabase
       .from('markets')
       .select('category_id', { count: 'exact', head: false })

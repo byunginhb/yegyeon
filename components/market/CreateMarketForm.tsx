@@ -116,6 +116,7 @@ export default function CreateMarketForm({ categories }: Props) {
     if (!form.title.trim() || form.title.trim().length < 5)
       return '마켓 제목은 5자 이상이어야 합니다.'
     if (form.title.length > 200) return '제목은 200자 이하로 입력해주세요.'
+    if (!form.category_id) return '카테고리를 선택해주세요.'
     if (!form.close_date) return '마감일을 선택해주세요.'
     const close = new Date(form.close_date)
     if (Number.isNaN(close.getTime())) return '마감일 형식이 잘못되었습니다.'
@@ -342,7 +343,7 @@ export default function CreateMarketForm({ categories }: Props) {
 
             <div className="space-y-1.5">
               <Label className="text-ink-800 font-medium">
-                카테고리 <span className="text-ink-400 font-normal">(선택)</span>
+                카테고리 <span className="text-scarlet-500">*</span>
               </Label>
               <Select
                 value={form.category_id}

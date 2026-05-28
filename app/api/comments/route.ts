@@ -2,7 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { adminSupabase } from '@/lib/supabase/admin'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { triggerQuestComplete } from '@/lib/quest'
+import { extractFirstUrl, fetchOgMetadata } from '@/lib/og-fetch'
 import type { Comment } from '@/types'
+
+const COMMENT_SELECT = `
+  id, market_id, user_id, content, is_deleted, created_at, updated_at,
+  embed_url, embed_title, embed_description, embed_image,
+  user:users!user_id(id, username, display_name, avatar_url)
+`
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
@@ -14,10 +21,7 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await adminSupabase
     .from('comments')
-    .select(`
-      id, market_id, user_id, content, is_deleted, created_at, updated_at,
-      user:users!user_id(id, username, display_name, avatar_url)
-    `)
+    .select(COMMENT_SELECT)
     .eq('market_id', market_id)
     .eq('is_deleted', false)
     .order('created_at', { ascending: false })
@@ -63,13 +67,40 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: '사용자를 찾을 수 없습니다' }, { status: 404 })
   }
 
+  // OG 임베드: 본문에 URL이 있으면 첫 URL의 메타데이터를 가져온다.
+  // fetch 실패/타임아웃은 무시하고 텍스트만 저장.
+  let embed: {
+    embed_url: string | null
+    embed_title: string | null
+    embed_description: string | null
+    embed_image: string | null
+  } = { embed_url: null, embed_title: null, embed_description: null, embed_image: null }
+
+  const firstUrl = extractFirstUrl(trimmed)
+  if (firstUrl) {
+    try {
+      const meta = await fetchOgMetadata(firstUrl)
+      if (meta) {
+        embed = {
+          embed_url: meta.url,
+          embed_title: meta.title,
+          embed_description: meta.description,
+          embed_image: meta.image,
+        }
+      } else {
+        // fetch 실패해도 URL 자체는 기록 (UI에서 단순 링크 카드 fallback 가능)
+        embed = { ...embed, embed_url: firstUrl.slice(0, 2048) }
+      }
+    } catch (e) {
+      console.error('og fetch failed', e)
+      embed = { ...embed, embed_url: firstUrl.slice(0, 2048) }
+    }
+  }
+
   const { data, error } = await adminSupabase
     .from('comments')
-    .insert({ market_id, user_id: dbUser.id, content: trimmed })
-    .select(`
-      id, market_id, user_id, content, is_deleted, created_at, updated_at,
-      user:users!user_id(id, username, display_name, avatar_url)
-    `)
+    .insert({ market_id, user_id: dbUser.id, content: trimmed, ...embed })
+    .select(COMMENT_SELECT)
     .single()
 
   if (error) {

@@ -133,7 +133,9 @@ export default function ProbabilityChart({
             fill="url(#probGrad)"
             dot={false}
             activeDot={{ r: 4, fill: '#10b981', stroke: 'white', strokeWidth: 2 }}
-            isAnimationActive={false}
+            isAnimationActive={true}
+            animationDuration={900}
+            animationEasing="ease-out"
           />
         </AreaChart>
       </ResponsiveContainer>

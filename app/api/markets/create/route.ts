@@ -30,7 +30,7 @@ const BaseSchema = z.object({
   title: z.string().trim().min(5, '제목은 5자 이상이어야 합니다.').max(200),
   description: z.string().trim().max(2000).optional(),
   thumbnail_url: ImageUrlSchema.nullish(),
-  category_id: z.number().int().positive().optional(),
+  category_id: z.number({ message: '카테고리를 선택해주세요.' }).int().positive('카테고리를 선택해주세요.'),
   close_date: z.string().min(1, '마감일이 필요합니다.'),
   resolution_criteria: z.string().trim().max(2000).optional(),
 })

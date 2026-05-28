@@ -55,7 +55,7 @@ export default function CommentSection({ marketId, isLoggedIn }: Props) {
     setSubmitting(true)
     setError(null)
 
-    // 낙관적 업데이트
+    // 낙관적 업데이트 — embed 정보는 서버에서 채워지므로 비워둠
     const optimistic: Comment = {
       id: `optimistic-${Date.now()}`,
       market_id: marketId,
@@ -64,6 +64,10 @@ export default function CommentSection({ marketId, isLoggedIn }: Props) {
       is_deleted: false,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      embed_url: null,
+      embed_title: null,
+      embed_description: null,
+      embed_image: null,
       user: undefined,
     }
     setComments((prev) => [optimistic, ...prev])
@@ -129,9 +133,12 @@ export default function CommentSection({ marketId, isLoggedIn }: Props) {
           )}
         </form>
       ) : (
-        <div className="mb-6 px-4 py-3 rounded-xl border border-ink-200 bg-canvas-50 text-sm text-ink-500 text-center">
-          <a href="/auth/login" className="text-primary hover:underline font-medium">로그인</a> 후 댓글 작성이 가능합니다
-        </div>
+        <a
+          href="/auth/login"
+          className="mb-6 block px-4 py-3 rounded-xl border border-ink-200 bg-canvas-50 text-sm text-ink-500 text-center hover:border-primary hover:bg-canvas-100 hover:text-ink-700 transition-colors cursor-pointer"
+        >
+          <span className="text-primary font-medium">로그인</span> 후 댓글 작성이 가능합니다
+        </a>
       )}
 
       {/* 댓글 목록 */}
@@ -183,11 +190,74 @@ export default function CommentSection({ marketId, isLoggedIn }: Props) {
                 <p className="text-sm text-ink-700 leading-relaxed whitespace-pre-wrap break-words">
                   {comment.content}
                 </p>
+                {comment.embed_url && (
+                  <OgCard
+                    url={comment.embed_url}
+                    title={comment.embed_title}
+                    description={comment.embed_description}
+                    image={comment.embed_image}
+                  />
+                )}
               </div>
             </li>
           ))}
         </ul>
       )}
     </section>
+  )
+}
+
+function OgCard({
+  url,
+  title,
+  description,
+  image,
+}: {
+  url: string
+  title: string | null
+  description: string | null
+  image: string | null
+}) {
+  let host = ''
+  try {
+    host = new URL(url).hostname.replace(/^www\./, '')
+  } catch {
+    // 잘못된 URL이면 카드 자체를 안 그림
+    return null
+  }
+
+  const hasMeta = !!(title || description || image)
+
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer nofollow"
+      className="mt-2 flex gap-3 rounded-xl border border-ink-200 bg-canvas-0 overflow-hidden hover:border-primary/40 hover:bg-canvas-50 transition-colors max-w-md"
+    >
+      {image && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={image}
+          alt=""
+          loading="lazy"
+          className="h-20 w-20 sm:h-24 sm:w-24 shrink-0 object-cover bg-canvas-100"
+        />
+      )}
+      <div className="flex-1 min-w-0 px-3 py-2">
+        <p className="text-[10px] uppercase tracking-wide text-ink-400 truncate">{host}</p>
+        {title ? (
+          <p className="text-sm font-semibold text-ink-1000 line-clamp-2 mt-0.5">{title}</p>
+        ) : (
+          <p className="text-sm font-medium text-ink-700 line-clamp-2 mt-0.5 break-all">{url}</p>
+        )}
+        {description && (
+          <p className="text-xs text-ink-500 line-clamp-2 mt-1">{description}</p>
+        )}
+        {!hasMeta && (
+          <p className="text-xs text-ink-400 mt-1">미리보기를 가져올 수 없는 링크예요.</p>
+        )}
+      </div>
+    </a>
   )
 }
