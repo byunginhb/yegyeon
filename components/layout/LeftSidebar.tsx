@@ -12,6 +12,7 @@ import { useTheme } from 'next-themes'
 import { createClient } from '@/lib/supabase/client'
 import PointsDisplay from '@/components/ui/PointsDisplay'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import CommentTicker from '@/components/marquee/CommentTicker'
 import { cn } from '@/lib/utils'
 import type { User } from '@/types'
 
@@ -94,7 +95,7 @@ export default function LeftSidebar() {
       </div>
 
       {/* 네비게이션 */}
-      <nav className="flex-1 px-3 pt-2 pb-2 space-y-0.5 overflow-y-auto">
+      <nav className="px-3 pt-2 pb-2 space-y-0.5">
         {NAV_ITEMS.map(({ href, icon: Icon, label, exact }) => {
           const isActive = exact ? pathname === href : pathname.startsWith(href)
           return (
@@ -136,6 +137,11 @@ export default function LeftSidebar() {
           </Link>
         </div>
       </nav>
+
+      {/* 실시간 댓글 ticker (남는 공간 채움) */}
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <CommentTicker />
+      </div>
 
       {/* 약관 푸터 메뉴 */}
       <div className="px-4 pt-2 pb-1">
