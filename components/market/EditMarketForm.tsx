@@ -21,6 +21,7 @@ import type { Category, Market } from '@/types'
 interface Props {
   market: Market
   categories: Category[]
+  isAdmin?: boolean
 }
 
 interface FormState {
@@ -30,13 +31,27 @@ interface FormState {
   category_id: string
   resolution_criteria: string
   tags: string[]
+  close_date: string
 }
 
-export default function EditMarketForm({ market, categories }: Props) {
+function toDatetimeLocal(iso: string): string {
+  const d = new Date(iso)
+  const tz = d.getTimezoneOffset() * 60_000
+  return new Date(d.getTime() - tz).toISOString().slice(0, 16)
+}
+
+export default function EditMarketForm({ market, categories, isAdmin = false }: Props) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [tagInput, setTagInput] = useState('')
+
+  const originalCloseDateLocal = toDatetimeLocal(market.close_date)
+  // 비-admin: 연장만 허용이므로 현재 마감일이 최소값
+  // admin: 단축도 가능하지만 최소 현재시각+1시간
+  const minCloseDateLocal = isAdmin
+    ? toDatetimeLocal(new Date(Date.now() + 60 * 60 * 1000).toISOString())
+    : originalCloseDateLocal
 
   const [form, setForm] = useState<FormState>({
     title: market.title ?? '',
@@ -45,6 +60,7 @@ export default function EditMarketForm({ market, categories }: Props) {
     category_id: market.category_id != null ? String(market.category_id) : '',
     resolution_criteria: market.resolution_criteria ?? '',
     tags: market.tags ?? [],
+    close_date: originalCloseDateLocal,
   })
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
@@ -80,6 +96,20 @@ export default function EditMarketForm({ market, categories }: Props) {
       return '마켓 제목은 5자 이상이어야 합니다.'
     if (form.title.length > 200) return '제목은 200자 이하로 입력해주세요.'
     if (!form.category_id) return '카테고리를 선택해주세요.'
+    if (!form.close_date) return '마감일을 입력해주세요.'
+    const newClose = new Date(form.close_date)
+    if (Number.isNaN(newClose.getTime())) return '마감일 형식이 잘못되었습니다.'
+    const now = Date.now()
+    const minClose = new Date(now + 60 * 60 * 1000)
+    const maxClose = new Date(now + 5 * 365 * 24 * 60 * 60 * 1000)
+    if (newClose <= minClose) return '마감일은 최소 1시간 이후여야 합니다.'
+    if (newClose > maxClose) return '마감일은 5년 이내여야 합니다.'
+    if (!isAdmin) {
+      const currentClose = new Date(market.close_date)
+      if (newClose.getTime() <= currentClose.getTime()) {
+        return '마감일은 현재보다 미래로만 변경 가능합니다 (연장만 허용).'
+      }
+    }
     return null
   }
 
@@ -101,6 +131,10 @@ export default function EditMarketForm({ market, categories }: Props) {
         category_id: parseInt(form.category_id, 10),
         resolution_criteria: form.resolution_criteria.trim() || null,
         tags: form.tags,
+      }
+      // 마감일이 변경된 경우에만 전송
+      if (form.close_date && form.close_date !== originalCloseDateLocal) {
+        body.close_date = form.close_date
       }
 
       const res = await fetch(`/api/markets/${market.id}`, {
@@ -128,8 +162,8 @@ export default function EditMarketForm({ market, categories }: Props) {
     <div className="max-w-2xl mx-auto px-4 py-10">
       <h1 className="text-2xl font-bold text-ink-1000 mb-2">마켓 정보 수정</h1>
       <p className="text-sm text-ink-500 mb-8">
-        제목·설명·카테고리·이미지·태그·결과 기준만 수정할 수 있어요.
-        마켓 유형이나 마감일, 선택지 같은 베팅 관련 설정은 바꿀 수 없습니다.
+        제목·설명·카테고리·이미지·태그·결과 기준·마감일을 수정할 수 있어요.
+        마켓 유형이나 선택지 같은 베팅 정합성에 영향을 주는 설정은 바꿀 수 없습니다.
       </p>
 
       <div className="space-y-5">
@@ -227,6 +261,32 @@ export default function EditMarketForm({ market, categories }: Props) {
             rows={3}
             className="w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring resize-none transition-colors"
           />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="close_date" className="text-ink-800 font-medium">
+            마감일 <span className="text-scarlet-500">*</span>
+          </Label>
+          <Input
+            id="close_date"
+            type="datetime-local"
+            value={form.close_date}
+            min={minCloseDateLocal}
+            onChange={(e) => update('close_date', e.target.value)}
+            className="h-10"
+          />
+          <p className="text-xs text-ink-500">
+            현재 마감일: {new Date(market.close_date).toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short' })}
+          </p>
+          {isAdmin ? (
+            <p className="text-xs text-ink-400">
+              관리자는 마감일을 단축·연장할 수 있습니다. 단축 시 베팅 참여자가 영향을 받을 수 있으니 신중히 결정해주세요.
+            </p>
+          ) : (
+            <p className="text-xs text-ink-400">
+              마감일은 현재 마감일보다 미래로만 변경할 수 있어요 (연장만 가능합니다).
+            </p>
+          )}
         </div>
 
         <div className="space-y-1.5">

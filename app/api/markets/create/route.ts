@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { adminSupabase } from '@/lib/supabase/admin'
-
-const OPTION_COLORS = ['#6366f1', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#8b5cf6', '#3b82f6']
+import { getOptionColor } from '@/lib/marketColors'
+import { MC_MAX_OPTIONS } from '@/lib/marketLimits'
 
 function generateSlug(title: string): string {
   const kebab = title
@@ -50,7 +50,7 @@ const CreateMarketSchema = z.discriminatedUnion('type', [
         })
       )
       .min(2, '선택지는 2개 이상이어야 합니다.')
-      .max(8, '선택지는 8개 이하여야 합니다.'),
+      .max(MC_MAX_OPTIONS, '선택지는 100개 이하여야 합니다.'),
   }),
   BaseSchema.extend({
     type: z.literal('numeric'),
@@ -211,7 +211,7 @@ export async function POST(req: NextRequest) {
         probability: idx === n - 1 ? parseFloat((1 - baseProb * (n - 1)).toFixed(4)) : baseProb,
         total_amount: 0,
         sort_order: idx,
-        color: OPTION_COLORS[idx % OPTION_COLORS.length],
+        color: getOptionColor(idx),
       }))
 
       const { error: optError } = await adminSupabase.from('market_options').insert(optionRows)

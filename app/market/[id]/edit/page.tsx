@@ -51,7 +51,11 @@ export default async function EditMarketPage({ params }: Props) {
   if (!isCreator && !isAdmin) {
     redirect(`/market/${id}`)
   }
-  if (market.status === 'resolved' || market.status === 'cancelled') {
+  if (
+    market.status === 'resolved' ||
+    market.status === 'cancelled' ||
+    market.status === 'closed'
+  ) {
     redirect(`/market/${id}`)
   }
 
@@ -66,7 +70,11 @@ export default async function EditMarketPage({ params }: Props) {
 
   return (
     <main className="min-h-screen bg-canvas-100">
-      <EditMarketForm market={market as unknown as Market} categories={categories} />
+      <EditMarketForm
+        market={market as unknown as Market}
+        categories={categories}
+        isAdmin={isAdmin}
+      />
     </main>
   )
 }

@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import type { Category, MarketType } from '@/types'
+import { MC_MAX_OPTIONS } from '@/lib/marketLimits'
 
 interface Props {
   categories: Category[]
@@ -165,18 +166,27 @@ export default function CreateMarketForm({ categories }: Props) {
   }
 
   function addOption() {
-    if (form.options.length >= 8) return
-    update('options', [...form.options, { text: '', image_url: null }])
+    setError(null)
+    setForm(prev => {
+      if (prev.options.length >= MC_MAX_OPTIONS) return prev
+      return { ...prev, options: [...prev.options, { text: '', image_url: null }] }
+    })
   }
 
   function removeOption(idx: number) {
-    if (form.options.length <= 2) return
-    update('options', form.options.filter((_, i) => i !== idx))
+    setError(null)
+    setForm(prev => {
+      if (prev.options.length <= 2) return prev
+      return { ...prev, options: prev.options.filter((_, i) => i !== idx) }
+    })
   }
 
   function updateOption(idx: number, patch: Partial<OptionDraft>) {
-    const next = form.options.map((o, i) => (i === idx ? { ...o, ...patch } : o))
-    update('options', next)
+    setError(null)
+    setForm(prev => ({
+      ...prev,
+      options: prev.options.map((o, i) => (i === idx ? { ...o, ...patch } : o)),
+    }))
   }
 
   async function handleSubmit() {
@@ -440,20 +450,20 @@ export default function CreateMarketForm({ categories }: Props) {
           {/* Multiple Choice */}
           {form.type === 'multiple_choice' && (
             <div className="space-y-4">
-              <p className="text-ink-700">선택지를 2개 이상 입력하세요 (최대 8개). 각 선택지에 이미지를 추가할 수 있습니다.</p>
-              <div className="space-y-3">
+              <p className="text-ink-700">선택지를 2개 이상 입력하세요 (최대 {MC_MAX_OPTIONS}개). 각 선택지에 이미지를 추가할 수 있습니다.</p>
+              <div className="max-h-[60vh] overflow-y-auto pr-2 space-y-2">
                 {form.options.map((opt, idx) => (
                   <div
                     key={idx}
-                    className="rounded-lg border border-ink-200 bg-canvas-0 p-3 space-y-3"
+                    className="rounded-lg border border-ink-200 bg-canvas-0 p-2 space-y-2"
                   >
                     <div className="flex gap-2 items-center">
-                      <span className="text-sm text-ink-500 w-6 text-right">{idx + 1}.</span>
+                      <span className="text-sm text-ink-500 w-8 text-right">{idx + 1}.</span>
                       <Input
                         value={opt.text}
                         onChange={e => updateOption(idx, { text: e.target.value })}
                         placeholder={`선택지 ${idx + 1}`}
-                        className="h-10 flex-1"
+                        className="h-9 flex-1"
                       />
                       <button
                         type="button"
@@ -464,30 +474,37 @@ export default function CreateMarketForm({ categories }: Props) {
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
-                    <div className="pl-8">
+                    <div className="pl-10">
                       <MarketImagePicker
                         value={opt.image_url}
                         onChange={(url) => updateOption(idx, { image_url: url })}
                         kind="option"
-                        size="md"
+                        size="sm"
                         label="선택지 이미지 (선택)"
                       />
                     </div>
                   </div>
                 ))}
               </div>
-              {form.options.length < 8 && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={addOption}
-                  className="text-primary hover:text-primary/80"
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  선택지 추가
-                </Button>
-              )}
+              <div className="flex items-center justify-between">
+                {form.options.length < MC_MAX_OPTIONS ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={addOption}
+                    className="text-primary hover:text-primary/80"
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    선택지 추가
+                  </Button>
+                ) : (
+                  <div />
+                )}
+                <span className="text-xs text-ink-500">
+                  {form.options.length}/{MC_MAX_OPTIONS}
+                </span>
+              </div>
             </div>
           )}
 

@@ -12,7 +12,7 @@ const ImageUrlSchema = z
     message: '허용되지 않은 이미지 경로입니다.',
   })
 
-// 메타데이터만 수정 허용. 마켓 타입·옵션·마감일·확률 등 정합성에 영향이 있는 필드는 제외.
+// 메타데이터 및 마감일 수정 허용. 마켓 타입·옵션·확률 등 정합성에 영향이 있는 필드는 제외.
 const UpdateMarketSchema = z
   .object({
     title: z.string().trim().min(5, '제목은 5자 이상이어야 합니다.').max(200).optional(),
@@ -21,8 +21,23 @@ const UpdateMarketSchema = z
     category_id: z.number().int().positive('카테고리를 선택해주세요.').optional(),
     resolution_criteria: z.string().trim().max(2000).nullish(),
     tags: z.array(z.string().trim().min(1).max(40)).max(10).optional(),
+    close_date: z.string().min(1).optional(),
   })
   .refine((v) => Object.keys(v).length > 0, { message: '수정할 항목이 없습니다.' })
+
+function normalizeCloseDate(input: string): Date | null {
+  // datetime-local (YYYY-MM-DDTHH:mm) → KST 해석, ISO → 그대로
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(input)) {
+    // 시간 정보 있음 — 사용자 입력대로 (KST 가정)
+    return new Date(`${input.replace('Z', '')}+09:00`)
+  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(input)) {
+    // 날짜만 — KST 23:59:59로 정규화
+    return new Date(`${input}T23:59:59+09:00`)
+  }
+  const d = new Date(input)
+  return Number.isNaN(d.getTime()) ? null : d
+}
 
 export async function PATCH(
   req: NextRequest,
@@ -51,7 +66,7 @@ export async function PATCH(
 
     const { data: market, error: marketError } = await adminSupabase
       .from('markets')
-      .select('id, creator_id, status')
+      .select('id, creator_id, status, close_date')
       .eq('id', id)
       .single()
     if (marketError || !market) {
@@ -63,8 +78,15 @@ export async function PATCH(
     if (!isCreator && !isAdmin) {
       return NextResponse.json({ success: false, error: '수정 권한이 없습니다.' }, { status: 403 })
     }
-    if (market.status === 'resolved' || market.status === 'cancelled') {
-      return NextResponse.json({ success: false, error: '종료된 마켓은 수정할 수 없습니다.' }, { status: 400 })
+    if (
+      market.status === 'resolved' ||
+      market.status === 'cancelled' ||
+      market.status === 'closed'
+    ) {
+      return NextResponse.json(
+        { success: false, error: '종료되었거나 마감된 마켓은 수정할 수 없습니다.' },
+        { status: 400 },
+      )
     }
 
     let body: unknown
@@ -104,6 +126,44 @@ export async function PATCH(
     if (data.resolution_criteria !== undefined)
       updatePayload.resolution_criteria = data.resolution_criteria ?? null
     if (data.tags !== undefined) updatePayload.tags = data.tags
+
+    // 마감일 변경 처리
+    if (data.close_date !== undefined) {
+      const newCloseDate = normalizeCloseDate(data.close_date)
+      if (!newCloseDate) {
+        return NextResponse.json(
+          { success: false, error: '마감일 형식이 잘못되었습니다.' },
+          { status: 400 },
+        )
+      }
+      const now = Date.now()
+      const minClose = new Date(now + 60 * 60 * 1000) // 최소 1시간 후
+      const maxClose = new Date(now + 5 * 365 * 24 * 60 * 60 * 1000) // 5년 이내
+      if (newCloseDate <= minClose) {
+        return NextResponse.json(
+          { success: false, error: '마감일은 최소 1시간 이후여야 합니다.' },
+          { status: 400 },
+        )
+      }
+      if (newCloseDate > maxClose) {
+        return NextResponse.json(
+          { success: false, error: '마감일은 5년 이내여야 합니다.' },
+          { status: 400 },
+        )
+      }
+      // 일반 작성자는 연장(미래로 이동)만 허용. admin은 단축/연장 모두 허용.
+      const currentCloseDate = new Date(market.close_date)
+      if (!isAdmin && newCloseDate.getTime() <= currentCloseDate.getTime()) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: '마감일은 현재보다 미래로만 변경 가능합니다 (연장만 허용).',
+          },
+          { status: 400 },
+        )
+      }
+      updatePayload.close_date = newCloseDate.toISOString()
+    }
 
     const { error: updateError } = await adminSupabase
       .from('markets')

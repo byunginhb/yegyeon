@@ -13,6 +13,11 @@ import RejectedBanner from '@/components/market/RejectedBanner'
 import AdminApprovalBar from '@/components/market/AdminApprovalBar'
 import ShareButton from '@/components/market/ShareButton'
 import type { ChartPoint } from '@/components/market/ProbabilityChart'
+import MultiChoiceProbabilityChart, {
+  type ChartSeries,
+} from '@/components/market/MultiChoiceProbabilityChart'
+import { getOptionColor } from '@/lib/marketColors'
+import { MC_CHART_TOP_N } from '@/lib/marketLimits'
 import Link from 'next/link'
 import { ReportButton } from '@/components/common/ReportButton'
 
@@ -107,6 +112,79 @@ export default async function MarketDetailPage({ params }: Props) {
     })),
     { t: renderedAt, p: Math.round(market.yes_probability * 100) },
   ]
+
+  // ── MC 마켓 시계열 빌드 ──────────────────────────
+  let mcChartSeries: ChartSeries[] = []
+  if (market.type === 'multiple_choice' && market.options && market.options.length > 0) {
+    const { data: mcBets } = await adminSupabase
+      .from('bets')
+      .select('created_at, option_id, probability_at_bet')
+      .eq('market_id', market.id)
+      .not('option_id', 'is', null)
+      .not('probability_at_bet', 'is', null)
+      .order('created_at', { ascending: true })
+
+    const marketStart = new Date(market.created_at).getTime()
+    const optionCount = market.options.length
+    const initProb = (1 / optionCount) * 100
+
+    // 현재 확률 기준 정렬 → 상위 6 + 기타
+    const sortedOptions = [...market.options].sort((a, b) => b.probability - a.probability)
+    const topOptions = sortedOptions.slice(0, MC_CHART_TOP_N)
+    const otherOptions = sortedOptions.slice(MC_CHART_TOP_N)
+    const topIds = new Set(topOptions.map((o) => o.id))
+
+    // 상위 옵션별 series 초기화
+    const seriesMap: Record<string, ChartSeries> = {}
+    for (const opt of topOptions) {
+      seriesMap[opt.id] = {
+        optionId: opt.id,
+        label: opt.text,
+        color: opt.color || getOptionColor(opt.sort_order ?? 0),
+        imageUrl: opt.image_url ?? null,
+        points: [{ t: marketStart, p: initProb }],
+      }
+    }
+
+    // 베팅 이벤트 시계열 누적 (상위 옵션만)
+    for (const bet of mcBets ?? []) {
+      const optId = bet.option_id as string | null
+      const prob = bet.probability_at_bet as number | null
+      if (!optId || prob == null) continue
+      if (!topIds.has(optId)) continue
+      seriesMap[optId].points.push({
+        t: new Date(bet.created_at as string).getTime(),
+        p: prob * 100,
+      })
+    }
+
+    // 현재 값 종점 추가
+    for (const opt of topOptions) {
+      seriesMap[opt.id].points.push({
+        t: renderedAt,
+        p: opt.probability * 100,
+      })
+    }
+
+    mcChartSeries = topOptions.map((o) => seriesMap[o.id])
+
+    // 기타 series: 마켓 시작 + 현재 시점 두 점 (초기 합 + 현재 합)
+    if (otherOptions.length > 0) {
+      const otherInitSum = (otherOptions.length / optionCount) * 100
+      const otherCurrentSum = otherOptions.reduce((s, o) => s + o.probability * 100, 0)
+      mcChartSeries.push({
+        optionId: '__other__',
+        label: '기타',
+        color: '#9ca3af',
+        imageUrl: null,
+        isOther: true,
+        points: [
+          { t: marketStart, p: otherInitSum },
+          { t: renderedAt, p: otherCurrentSum },
+        ],
+      })
+    }
+  }
 
   const isOpen = market.status === 'open'
   const statusLabel =
@@ -247,12 +325,20 @@ export default async function MarketDetailPage({ params }: Props) {
 
           {/* 확률 차트 + 베팅 폼 (open 상태만 활성) */}
           {!isPending && !isRejected ? (
-            <InlineMarketBetting
-              market={market}
-              userPoints={userPoints}
-              isLoggedIn={isLoggedIn}
-              chartData={market.type === 'binary' ? chartData : undefined}
-            />
+            <>
+              {/* MC 옵션별 시계열 차트 (Polymarket 스타일) */}
+              {market.type === 'multiple_choice' && mcChartSeries.length > 0 && (
+                <div className="mb-5">
+                  <MultiChoiceProbabilityChart series={mcChartSeries} />
+                </div>
+              )}
+              <InlineMarketBetting
+                market={market}
+                userPoints={userPoints}
+                isLoggedIn={isLoggedIn}
+                chartData={market.type === 'binary' ? chartData : undefined}
+              />
+            </>
           ) : (
             <div className="mb-5 p-4 rounded-xl bg-canvas-50 border border-ink-200 text-center text-sm text-ink-500">
               승인 후 베팅이 활성화됩니다.
