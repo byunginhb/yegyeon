@@ -2,14 +2,14 @@ import { adminSupabase } from '@/lib/supabase/admin'
 
 /**
  * 출석 보상 계산 (streak → points)
- * streak 1-2일: 10p / 3-6일: 20p / 7-13일: 50p / 14-29일: 100p / 30일+: 200p
+ * streak 1-2일: 100p / 3-6일: 200p / 7-13일: 500p / 14-29일: 1000p / 30일+: 2000p
  */
 export function calculateAttendanceReward(streakCount: number): number {
-  if (streakCount >= 30) return 200
-  if (streakCount >= 14) return 100
-  if (streakCount >= 7) return 50
-  if (streakCount >= 3) return 20
-  return 10
+  if (streakCount >= 30) return 2000
+  if (streakCount >= 14) return 1000
+  if (streakCount >= 7) return 500
+  if (streakCount >= 3) return 200
+  return 100
 }
 
 /**
@@ -33,28 +33,28 @@ export const DAILY_QUESTS = [
     type: 'daily_checkin',
     title: '오늘 출석하기',
     description: '하루에 한 번 출석 체크인',
-    points: 10,
+    points: 100,
     icon: 'calendar',
   },
   {
     type: 'daily_bet',
     title: '예측 참여하기',
     description: '마켓에 1회 이상 베팅',
-    points: 10,
+    points: 100,
     icon: 'trending-up',
   },
   {
     type: 'daily_comment',
     title: '댓글 달기',
     description: '마켓에 댓글 1개 작성',
-    points: 5,
+    points: 50,
     icon: 'message-circle',
   },
   {
     type: 'daily_share',
     title: '마켓 공유하기',
     description: '마켓을 1회 이상 공유',
-    points: 5,
+    points: 50,
     icon: 'share-2',
   },
 ] as const

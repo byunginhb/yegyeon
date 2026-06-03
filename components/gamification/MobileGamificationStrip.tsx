@@ -173,7 +173,7 @@ export default function MobileGamificationStrip() {
               ) : (
                 <>
                   <CalendarCheck className="h-3.5 w-3.5" />
-                  출석 체크인 +{attendance?.next_reward ?? 10}p
+                  출석 체크인 +{attendance?.next_reward ?? 100}p
                 </>
               )}
             </Button>
