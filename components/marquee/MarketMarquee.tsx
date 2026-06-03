@@ -46,7 +46,7 @@ export default function MarketMarquee() {
 
   return (
     <div
-      className="ticker-pause relative w-full overflow-hidden border-y border-ink-200/40 bg-canvas-0/40 backdrop-blur-sm
+      className="ticker-pause relative w-full overflow-hidden rounded-xl border border-ink-200/40 bg-canvas-0/40 backdrop-blur-sm
                  [mask-image:linear-gradient(90deg,transparent_0%,#000_4%,#000_96%,transparent_100%)]"
       aria-label="인기 마켓 흐름"
     >
@@ -55,12 +55,12 @@ export default function MarketMarquee() {
         style={{ ['--ticker-duration' as string]: duration }}
       >
         {doubled.map((m, idx) => (
-          <li key={`${m.id}-${idx}`} className={m.isHot ? 'rounded-full' : ''}>
+          <li key={`${m.id}-${idx}`}>
             <Link
               href={`/market/${m.id}`}
               className={
                 m.isHot
-                  ? 'hot-border relative z-[1] flex items-center gap-2 rounded-full bg-canvas-0 px-3 py-1.5 text-sm font-medium text-ink-900 transition-colors hover:bg-canvas-50'
+                  ? 'hot-border flex items-center gap-2 rounded-full bg-canvas-0 px-3 py-1.5 text-sm font-medium text-ink-900 transition-colors hover:bg-canvas-50'
                   : 'flex items-center gap-2 rounded-full border border-ink-200/40 bg-canvas-0/60 px-3 py-1.5 text-sm text-ink-700 transition-colors hover:border-primary/40 hover:text-ink-900'
               }
             >

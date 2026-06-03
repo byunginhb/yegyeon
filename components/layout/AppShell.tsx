@@ -6,7 +6,6 @@ import MobileNav from './MobileNav'
 import MobileTopBar from './MobileTopBar'
 import SiteFooter from './SiteFooter'
 import { AnnouncementBanner } from '@/components/common/AnnouncementBanner'
-import MarketMarquee from '@/components/marquee/MarketMarquee'
 
 const SIDEBAR_EXCLUDED = ['/admin', '/auth']
 
@@ -24,7 +23,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <div className="lg:ml-64 min-h-screen pb-16 lg:pb-0 flex flex-col">
         <MobileTopBar />
         <AnnouncementBanner />
-        <MarketMarquee />
         <div className="flex-1">{children}</div>
         <SiteFooter />
       </div>

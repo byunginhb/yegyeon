@@ -24,6 +24,7 @@ export const metadata: Metadata = {
 }
 
 import FilterBar from '@/components/market/FilterBar'
+import MarketMarquee from '@/components/marquee/MarketMarquee'
 import MarketList from '@/components/market/MarketList'
 import MarketListSkeleton from '@/components/market/MarketListSkeleton'
 import HomeHeader from '@/components/home/HomeHeader'
@@ -144,6 +145,9 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
       {/* 모바일 전용: 출석·퀘스트 스트립 (xl 이상은 RightSidebar에서 표시) */}
       <MobileGamificationStrip />
+
+      {/* 인기 마켓 marquee — 카테고리 탭 바로 위에서 흐름 */}
+      <MarketMarquee />
 
       {/* 통합 필터 바: 검색 + 카테고리 + 정렬 */}
       <Suspense fallback={null}>
