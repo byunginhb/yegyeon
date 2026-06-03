@@ -53,8 +53,8 @@ export default function CommentTicker() {
 
   // 자연스러운 무한 루프를 위해 콘텐츠 2회 복제
   const doubled = [...items, ...items]
-  // 콘텐츠 길이에 비례한 duration (아이템당 ~1.5초로 빠르게)
-  const duration = `${Math.max(14, items.length * 1.5)}s`
+  // 콘텐츠 길이에 비례한 duration (아이템당 ~1.0초)
+  const duration = `${Math.max(10, items.length * 1.0)}s`
 
   return (
     <div className="px-2 pt-5 pb-2">
@@ -64,17 +64,17 @@ export default function CommentTicker() {
       </div>
       <div
         className="ticker-pause relative h-[260px] overflow-hidden rounded-lg
-                   [mask-image:linear-gradient(180deg,transparent_0%,#000_8%,#000_92%,transparent_100%)]"
+                   [mask-image:linear-gradient(180deg,transparent_0%,#000_3%,#000_97%,transparent_100%)]"
       >
         <ul
-          className="animate-ticker-up flex flex-col gap-2"
+          className="animate-ticker-up flex flex-col gap-1.5"
           style={{ ['--ticker-duration' as string]: duration }}
         >
           {doubled.map((c, idx) => (
             <li key={`${c.id}-${idx}`}>
               <Link
                 href={`/market/${c.marketId}`}
-                className="block rounded-lg border border-ink-200/40 bg-canvas-0/40 px-2.5 py-2
+                className="block rounded-lg border border-ink-200/40 bg-canvas-0/40 px-2.5 py-1.5
                            hover:border-primary/40 hover:bg-canvas-0 transition-colors"
               >
                 <p className="text-[10px] text-ink-500 truncate mb-0.5">
