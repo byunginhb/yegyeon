@@ -193,26 +193,26 @@
 }
 
 /* ── Marquee / Ticker 애니메이션 ─────────────────── */
-@keyframes ticker-up {
-  0%   { transform: translateY(0); }
-  100% { transform: translateY(-50%); }
+@keyframes ticker-down {
+  0%   { transform: translateY(-50%); }
+  100% { transform: translateY(0); }
 }
 
-@keyframes ticker-right {
-  0%   { transform: translateX(-50%); }
-  100% { transform: translateX(0); }
+@keyframes ticker-left {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
-.animate-ticker-up {
-  animation: ticker-up var(--ticker-duration, 60s) linear infinite;
+.animate-ticker-down {
+  animation: ticker-down var(--ticker-duration, 60s) linear infinite;
   will-change: transform;
 }
-.animate-ticker-right {
-  animation: ticker-right var(--ticker-duration, 50s) linear infinite;
+.animate-ticker-left {
+  animation: ticker-left var(--ticker-duration, 50s) linear infinite;
   will-change: transform;
 }
-.ticker-pause:hover .animate-ticker-up,
-.ticker-pause:hover .animate-ticker-right {
+.ticker-pause:hover .animate-ticker-down,
+.ticker-pause:hover .animate-ticker-left {
   animation-play-state: paused;
 }
 
@@ -237,8 +237,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-ticker-up,
-  .animate-ticker-right,
+  .animate-ticker-down,
+  .animate-ticker-left,
   .hot-border {
     animation: none;
   }

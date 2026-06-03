@@ -51,7 +51,7 @@ export default function MarketMarquee() {
       aria-label="인기 마켓 흐름"
     >
       <ul
-        className="animate-ticker-right flex w-max gap-3 py-2.5 pl-3 pr-3"
+        className="animate-ticker-left flex w-max gap-3 py-2.5 pl-3 pr-3"
         style={{ ['--ticker-duration' as string]: duration }}
       >
         {doubled.map((m, idx) => (
