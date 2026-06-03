@@ -53,18 +53,18 @@ export default function CommentTicker() {
 
   // 자연스러운 무한 루프를 위해 콘텐츠 2회 복제
   const doubled = [...items, ...items]
-  // 콘텐츠 길이에 비례한 duration (아이템당 ~3.5초)
-  const duration = `${Math.max(30, items.length * 3.5)}s`
+  // 콘텐츠 길이에 비례한 duration (아이템당 ~2.4초로 약간 빠르게)
+  const duration = `${Math.max(22, items.length * 2.4)}s`
 
   return (
-    <div className="px-2 pb-2">
-      <div className="flex items-center gap-1.5 mb-2 px-1 text-[11px] uppercase tracking-wide text-ink-500">
+    <div className="px-2 pt-5 pb-2">
+      <div className="flex items-center gap-1.5 mb-3 px-1 text-[11px] uppercase tracking-wide text-ink-500">
         <MessageCircle className="h-3 w-3" />
         <span>실시간 댓글</span>
       </div>
       <div
-        className="ticker-pause relative h-64 overflow-hidden rounded-lg
-                   [mask-image:linear-gradient(180deg,transparent_0%,#000_12%,#000_88%,transparent_100%)]"
+        className="ticker-pause relative h-[260px] overflow-hidden rounded-lg
+                   [mask-image:linear-gradient(180deg,transparent_0%,#000_8%,#000_92%,transparent_100%)]"
       >
         <ul
           className="animate-ticker-up flex flex-col gap-2"
