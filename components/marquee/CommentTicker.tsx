@@ -51,10 +51,15 @@ export default function CommentTicker() {
 
   if (items.length === 0) return null
 
-  // 자연스러운 무한 루프를 위해 콘텐츠 2회 복제
-  const doubled = [...items, ...items]
-  // 콘텐츠 길이에 비례한 duration (아이템당 ~1.0초)
-  const duration = `${Math.max(10, items.length * 1.0)}s`
+  // 댓글 수가 적어도 컨테이너를 항상 채우도록 짝수 회 복제.
+  // (절반 위치로 이동하는 무한 루프 패턴 — 한 사본 길이가 컨테이너보다 작으면 빈 공간 발생)
+  const MIN_TOTAL_CARDS = 12
+  const baseFactor = Math.max(2, Math.ceil(MIN_TOTAL_CARDS / items.length))
+  const repeatFactor = baseFactor % 2 === 0 ? baseFactor : baseFactor + 1
+  const expanded: TickerComment[] = Array.from({ length: repeatFactor }, () => items).flat()
+  // 한 사이클당 (전체 카드 수 / 2) 만큼 이동 → 그 거리에 비례한 duration
+  const cardsPerCycle = (repeatFactor * items.length) / 2
+  const duration = `${Math.max(10, cardsPerCycle * 1.0)}s`
 
   return (
     <div className="px-2 pt-5 pb-2">
@@ -70,7 +75,7 @@ export default function CommentTicker() {
           className="animate-ticker-up flex flex-col gap-1.5"
           style={{ ['--ticker-duration' as string]: duration }}
         >
-          {doubled.map((c, idx) => (
+          {expanded.map((c, idx) => (
             <li key={`${c.id}-${idx}`}>
               <Link
                 href={`/market/${c.marketId}`}
