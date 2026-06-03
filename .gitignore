@@ -43,3 +43,6 @@ yarn-error.log*
 next-env.d.ts
 .claude
 .omc
+
+# supabase CLI 임시 파일 (사용자 환경마다 다름)
+supabase/.temp/
