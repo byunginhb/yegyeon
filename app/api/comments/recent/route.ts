@@ -5,7 +5,10 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 30
 
 // 사이트 전체의 최근 댓글 — 사이드바 ticker용
-// open 상태이고 숨김 처리되지 않은 마켓의 댓글만 노출
+// 공개 가능한 모든 마켓(open/closed/resolved) 댓글을 노출.
+// 숨김(is_hidden)·심사중(pending)·거절(rejected)·취소(cancelled)는 제외.
+const VISIBLE_STATUSES = new Set(['open', 'closed', 'resolved'])
+
 export async function GET() {
   const { data, error } = await adminSupabase
     .from('comments')
@@ -32,7 +35,7 @@ export async function GET() {
   }
 
   const filtered = ((data ?? []) as unknown as Row[])
-    .filter((r) => r.market && !r.market.is_hidden && r.market.status === 'open')
+    .filter((r) => r.market && !r.market.is_hidden && VISIBLE_STATUSES.has(r.market.status))
     .slice(0, 25)
     .map((r) => ({
       id: r.id,
