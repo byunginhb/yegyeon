@@ -53,8 +53,8 @@ export default function CommentTicker() {
 
   // 자연스러운 무한 루프를 위해 콘텐츠 2회 복제
   const doubled = [...items, ...items]
-  // 콘텐츠 길이에 비례한 duration (아이템당 ~2.4초로 약간 빠르게)
-  const duration = `${Math.max(22, items.length * 2.4)}s`
+  // 콘텐츠 길이에 비례한 duration (아이템당 ~1.5초로 빠르게)
+  const duration = `${Math.max(14, items.length * 1.5)}s`
 
   return (
     <div className="px-2 pt-5 pb-2">
