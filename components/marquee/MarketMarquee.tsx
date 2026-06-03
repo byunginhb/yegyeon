@@ -42,7 +42,7 @@ export default function MarketMarquee() {
 
   // 자연스러운 무한 루프를 위해 콘텐츠 2회 복제
   const doubled = [...items, ...items]
-  const duration = `${Math.max(35, items.length * 3.5)}s`
+  const duration = `${Math.max(70, items.length * 7.0)}s`
 
   return (
     <div

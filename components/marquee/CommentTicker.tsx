@@ -59,7 +59,7 @@ export default function CommentTicker() {
   const expanded: TickerComment[] = Array.from({ length: repeatFactor }, () => items).flat()
   // 한 사이클당 (전체 카드 수 / 2) 만큼 이동 → 그 거리에 비례한 duration
   const cardsPerCycle = (repeatFactor * items.length) / 2
-  const duration = `${Math.max(10, cardsPerCycle * 1.0)}s`
+  const duration = `${Math.max(20, cardsPerCycle * 2.0)}s`
 
   return (
     <div className="px-2 pt-5 pb-2">

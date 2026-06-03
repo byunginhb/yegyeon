@@ -29,16 +29,36 @@ export async function generateMetadata({ params }: Props) {
   const { id } = await params
   const { data } = await adminSupabase
     .from('markets')
-    .select('title, description, status')
+    .select('title, description, status, thumbnail_url')
     .eq('id', id)
     .single()
   if (!data) return { title: '마켓을 찾을 수 없습니다 — 예견' }
   if (data.status === 'pending' || data.status === 'rejected') {
     return { title: '예견 — 마켓 심사 중' }
   }
+  const title = `${data.title} — 예견`
+  const description = data.description ?? '예견에서 함께 예측해보세요'
+  const images = data.thumbnail_url
+    ? [{ url: data.thumbnail_url, alt: data.title }]
+    : [{ url: '/yegeon_concept2_128.png', alt: '예견' }]
   return {
-    title: `${data.title} — 예견`,
-    description: data.description ?? undefined,
+    title,
+    description,
+    openGraph: {
+      title: data.title,
+      description,
+      url: `/market/${id}`,
+      siteName: '예견',
+      type: 'website',
+      locale: 'ko_KR',
+      images,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: data.title,
+      description,
+      images,
+    },
   }
 }
 
