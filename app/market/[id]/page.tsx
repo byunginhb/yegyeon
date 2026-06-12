@@ -76,7 +76,7 @@ export default async function MarketDetailPage({ params }: Props) {
         creator_id, category_id, close_date, resolved_at, resolution,
         total_volume, unique_traders, comment_count,
         yes_probability, yes_amount, no_amount,
-        min_value, max_value, unit,
+        min_value, max_value, unit, auto_kind,
         is_hidden, rejection_reason, reviewed_by, reviewed_at,
         tags, created_at, updated_at,
         creator:users!creator_id(id, username, display_name, avatar_url),
@@ -343,8 +343,16 @@ export default async function MarketDetailPage({ params }: Props) {
             </div>
           )}
 
-          {/* 확률 차트 + 베팅 폼 (open 상태만 활성) */}
-          {!isPending && !isRejected ? (
+          {/* 자동 마켓(BTC 5분 등)은 전용 위젯에서만 베팅 */}
+          {market.auto_kind ? (
+            <div className="mb-5 p-4 rounded-xl bg-canvas-50 border border-ink-200 text-center text-sm text-ink-500">
+              이 라운드는{' '}
+              <Link href="/" className="text-primary font-medium hover:underline">
+                메인 페이지의 실시간 위젯
+              </Link>
+              에서 베팅할 수 있습니다.
+            </div>
+          ) : !isPending && !isRejected ? (
             <>
               {/* MC 옵션별 시계열 차트 (Polymarket 스타일) */}
               {market.type === 'multiple_choice' && mcChartSeries.length > 0 && (

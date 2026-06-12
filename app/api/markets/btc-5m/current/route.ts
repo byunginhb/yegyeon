@@ -1,21 +1,21 @@
 import { NextResponse } from 'next/server'
 import { adminSupabase } from '@/lib/supabase/admin'
+import { fetchBtcKrw } from '@/lib/btc-price'
+import { sidePrice } from '@/lib/btc5m'
 
 export const dynamic = 'force-dynamic'
 
-// 비트코인 5분 등락 위젯용 — 현재 진행 중인 라운드 + 직전 정산 결과
+// 비트코인 5분 등락 위젯용 — 현재 라운드 + 라이브 가격 + 동적 배당(양쪽 가격) + 직전 결과
 export async function GET() {
-  // 1) 진행 중 라운드 (가장 최근 open)
   const { data: round } = await adminSupabase
     .from('markets')
-    .select('id, title, open_price, close_date, yes_probability, yes_amount, no_amount, unique_traders')
+    .select('id, title, open_price, close_date, yes_amount, no_amount, unique_traders')
     .eq('auto_kind', 'btc_5m')
     .eq('status', 'open')
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle()
 
-  // 2) 직전 정산 결과 (가장 최근 resolved)
   const { data: last } = await adminSupabase
     .from('markets')
     .select('id, resolution, open_price, close_price, resolved_at')
@@ -25,27 +25,28 @@ export async function GET() {
     .limit(1)
     .maybeSingle()
 
-  // 3) 현재 라운드의 방향별 shares 합 — 시간 감쇠 배당 미리보기 계산용
-  //    (정산 분배는 shares 비례이므로 위젯이 예상 수령액을 정확히 계산하려면 필요)
-  let yesShares = 0
-  let noShares = 0
-  if (round?.id) {
-    const { data: bets } = await adminSupabase
-      .from('bets')
-      .select('outcome, shares')
-      .eq('market_id', round.id)
-
-    for (const b of bets ?? []) {
-      const s = Number(b.shares) || 0
-      if (String(b.outcome).toUpperCase() === 'YES') yesShares += s
-      else noShares += s
+  // 라이브 BTC 현재가 → 양쪽 베팅 가격(=확률+vig) 산정
+  let currentPrice: number | null = null
+  let upPrice: number | null = null
+  let downPrice: number | null = null
+  if (round?.open_price != null) {
+    currentPrice = await fetchBtcKrw()
+    if (currentPrice != null) {
+      const secondsRemaining = Math.max(
+        0,
+        (new Date(round.close_date).getTime() - Date.now()) / 1000
+      )
+      upPrice = sidePrice('YES', currentPrice, Number(round.open_price), secondsRemaining)
+      downPrice = sidePrice('NO', currentPrice, Number(round.open_price), secondsRemaining)
     }
   }
 
   return NextResponse.json({
     success: true,
     data: {
-      round: round ? { ...round, yes_shares: yesShares, no_shares: noShares } : null,
+      round: round
+        ? { ...round, current_price: currentPrice, up_price: upPrice, down_price: downPrice }
+        : null,
       last: last ?? null,
     },
   })

@@ -8,17 +8,18 @@ import { TrendingUp, TrendingDown, Bitcoin, Timer } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import PointIcon from '@/components/ui/PointIcon'
 import { cn } from '@/lib/utils'
+import { sidePrice } from '@/lib/btc5m'
 
 interface Round {
   id: string
   title: string
   open_price: number | null
   close_date: string
-  yes_probability: number
+  current_price: number | null
+  up_price: number | null
+  down_price: number | null
   yes_amount: number
   no_amount: number
-  yes_shares: number
-  no_shares: number
   unique_traders: number
 }
 interface LastResult {
@@ -28,13 +29,11 @@ interface LastResult {
 }
 
 const QUICK_AMOUNTS = [10, 50, 100]
-const ROUND_SECONDS = 300 // 5분
 
 function formatKRW(n: number | null): string {
   if (n == null) return '-'
   return Math.round(n).toLocaleString('ko-KR')
 }
-
 function formatCountdown(ms: number): string {
   const total = Math.max(0, Math.floor(ms / 1000))
   const m = Math.floor(total / 60)
@@ -98,7 +97,7 @@ export default function Btc5mWidget() {
     }
     setSubmitting(true)
     try {
-      const res = await fetch('/api/bets', {
+      const res = await fetch('/api/markets/btc-5m/bet', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ market_id: round.id, outcome: side, amount }),
@@ -110,7 +109,11 @@ export default function Btc5mWidget() {
       }
       const json = await res.json()
       if (json.success) {
-        toast.success(`${side === 'YES' ? '상승' : '하락'}에 ${amount.toLocaleString()}포인트 베팅 완료!`)
+        const payout = json.data?.potential_payout
+        toast.success(
+          `${side === 'YES' ? '상승' : '하락'} 베팅 완료!` +
+            (payout ? ` 적중 시 ${Number(payout).toLocaleString()}포인트` : '')
+        )
         fetchData()
       } else {
         toast.error(json.error ?? '베팅에 실패했습니다.')
@@ -123,33 +126,31 @@ export default function Btc5mWidget() {
   }
 
   if (loading) {
-    return (
-      <div className="mb-3 h-[210px] rounded-xl border border-ink-200/60 bg-canvas-0 animate-pulse" />
-    )
+    return <div className="mb-3 h-[230px] rounded-xl border border-ink-200/60 bg-canvas-0 animate-pulse" />
   }
   if (!round) return null
 
-  const yesPercent = Math.round((round.yes_probability ?? 0.5) * 100)
-  const noPercent = 100 - yesPercent
   const closed = remaining <= 0
   const lastUp = last?.resolution?.toUpperCase() === 'YES'
 
-  // 시간 감쇠 가중치 (남은시간/5분, [0.01,1]) — 늦게 걸수록 배당↓
-  const weight = Math.min(1, Math.max(0.01, remaining / 1000 / ROUND_SECONDS))
+  // 라이브 가격(=확률+vig). 현재가가 있으면 매초 남은시간으로 재계산, 없으면 서버값.
+  const secs = Math.max(0, remaining / 1000)
+  const hasLive = round.current_price != null && round.open_price != null
+  const upPrice = hasLive
+    ? sidePrice('YES', round.current_price as number, round.open_price as number, secs)
+    : round.up_price
+  const downPrice = hasLive
+    ? sidePrice('NO', round.current_price as number, round.open_price as number, secs)
+    : round.down_price
+  const sidePriceVal = side === 'YES' ? upPrice : side === 'NO' ? downPrice : null
+  const upOdds = upPrice ? 1 / upPrice : null
+  const downOdds = downPrice ? 1 / downPrice : null
 
-  // 방향·금액별 예상 수령액 (정산이 shares 비례이므로 동일 공식으로 미리보기)
-  const calcExpected = (s: 'YES' | 'NO', amt: number) => {
-    if (amt <= 0) return null
-    const total = round.yes_amount + round.no_amount
-    const sideShares = s === 'YES' ? round.yes_shares : round.no_shares
-    const myShares = amt * weight
-    const denom = sideShares + myShares
-    if (denom <= 0) return null
-    const payout = Math.floor((myShares / denom) * (total + amt))
-    return { payout, odds: payout / amt }
-  }
-  const yesEx = calcExpected('YES', amount)
-  const noEx = calcExpected('NO', amount)
+  // 현재가 등락
+  const delta =
+    round.current_price != null && round.open_price != null
+      ? round.current_price - round.open_price
+      : null
 
   return (
     <div className="mb-3 overflow-hidden rounded-xl border border-amber-400/40 bg-gradient-to-br from-amber-50/80 to-canvas-0 dark:from-amber-950/20">
@@ -179,13 +180,30 @@ export default function Btc5mWidget() {
         )}
       </div>
 
-      {/* 시작가 + 카운트다운 */}
+      {/* 시작가/현재가 + 카운트다운 */}
       <div className="flex items-end justify-between px-4">
-        <div>
-          <p className="text-[11px] text-ink-400">라운드 시작가 · 업비트 BTC/KRW</p>
-          <p className="text-lg font-bold tabular-nums text-ink-1000">
-            ₩{formatKRW(round.open_price)}
-          </p>
+        <div className="flex items-end gap-3">
+          <div>
+            <p className="text-[11px] text-ink-400">시작가</p>
+            <p className="text-base font-bold tabular-nums text-ink-700">₩{formatKRW(round.open_price)}</p>
+          </div>
+          <div>
+            <p className="text-[11px] text-ink-400">현재가 · 업비트</p>
+            <p
+              className={cn(
+                'text-base font-bold tabular-nums',
+                delta == null ? 'text-ink-700' : delta > 0 ? 'text-teal-600' : delta < 0 ? 'text-scarlet-600' : 'text-ink-700'
+              )}
+            >
+              ₩{formatKRW(round.current_price)}
+              {delta != null && delta !== 0 && (
+                <span className="ml-1 text-[11px]">
+                  {delta > 0 ? '▲' : '▼'}
+                  {formatKRW(Math.abs(delta))}
+                </span>
+              )}
+            </p>
+          </div>
         </div>
         <div className="text-right">
           <p className="flex items-center justify-end gap-1 text-[11px] text-ink-400">
@@ -202,27 +220,8 @@ export default function Btc5mWidget() {
         </div>
       </div>
 
-      {/* 확률 바 */}
-      <div className="mt-2 px-4">
-        <div className="flex h-6 overflow-hidden rounded-md text-[11px] font-bold text-white">
-          <div
-            className="flex items-center justify-start bg-teal-500 pl-2 transition-all"
-            style={{ width: `${Math.max(yesPercent, 12)}%` }}
-          >
-            {yesPercent}%
-          </div>
-          <div
-            className="flex items-center justify-end bg-scarlet-500 pr-2 transition-all"
-            style={{ width: `${Math.max(noPercent, 12)}%` }}
-          >
-            {noPercent}%
-          </div>
-        </div>
-      </div>
-
-      {/* 베팅: 1) 방향 선택 → 2) 금액 → 3) 베팅 */}
+      {/* 베팅: 방향(배당 표기) → 금액(예상 수령액) → 베팅 */}
       <div className="mt-3 px-4 pb-3">
-        {/* 1) 방향 선택 — 각 버튼에 현재 배당 표기 */}
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
@@ -239,7 +238,7 @@ export default function Btc5mWidget() {
               <TrendingUp className="h-4 w-4" /> 상승
             </span>
             <span className={cn('text-[11px] font-semibold tabular-nums', side === 'YES' ? 'text-white/90' : 'text-ink-400')}>
-              {yesEx ? `${yesEx.odds.toFixed(2)}배` : '—'}
+              {upOdds ? `${upOdds.toFixed(2)}배` : '—'}
             </span>
           </button>
           <button
@@ -257,15 +256,15 @@ export default function Btc5mWidget() {
               <TrendingDown className="h-4 w-4" /> 하락
             </span>
             <span className={cn('text-[11px] font-semibold tabular-nums', side === 'NO' ? 'text-white/90' : 'text-ink-400')}>
-              {noEx ? `${noEx.odds.toFixed(2)}배` : '—'}
+              {downOdds ? `${downOdds.toFixed(2)}배` : '—'}
             </span>
           </button>
         </div>
 
-        {/* 2) 금액 선택 — 선택한 방향 기준 예상 수령액 표기 */}
+        {/* 금액 — 선택한 방향 기준 예상 수령액 */}
         <div className="mt-2 flex items-stretch gap-1.5">
           {QUICK_AMOUNTS.map((a) => {
-            const ex = side ? calcExpected(side, a) : null
+            const win = sidePriceVal ? Math.floor(a / sidePriceVal) : null
             return (
               <button
                 key={a}
@@ -282,20 +281,16 @@ export default function Btc5mWidget() {
                   <PointIcon size={11} />
                   {a.toLocaleString()}
                 </span>
-                <span className="text-[10px] text-ink-400">
-                  {ex ? `예상 ${ex.payout.toLocaleString()}` : ' '}
-                </span>
+                <span className="text-[10px] text-ink-400">{win != null ? `예상 ${win.toLocaleString()}` : ' '}</span>
               </button>
             )
           })}
         </div>
 
-        {/* 시간 감쇠 안내 */}
         <p className="mt-2 text-center text-[10px] text-ink-400">
-          현재 배당 가중치 {Math.round(weight * 100)}% · 시간이 지날수록 배당이 낮아집니다
+          배당 = 가격(확률) 기반 · 막판일수록 유력한 쪽 배당이 1배에 수렴합니다
         </p>
 
-        {/* 3) 베팅 버튼 */}
         <Button
           type="button"
           onClick={placeBet}
