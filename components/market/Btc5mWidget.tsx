@@ -139,7 +139,10 @@ export default function Btc5mWidget() {
         <div className="flex items-center gap-1.5">
           <Bitcoin className="h-4 w-4 text-amber-500" />
           <span className="text-sm font-bold text-ink-900">비트코인 5분 등락</span>
-          <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-scarlet-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-scarlet-600">
+          <span className="inline-flex items-center rounded-full border border-ink-300 bg-canvas-0 px-1.5 py-0.5 text-[10px] font-semibold text-ink-500">
+            베타
+          </span>
+          <span className="inline-flex items-center gap-1 rounded-full bg-scarlet-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-scarlet-600">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-scarlet-500" />
             LIVE
           </span>
