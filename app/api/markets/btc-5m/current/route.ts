@@ -25,8 +25,28 @@ export async function GET() {
     .limit(1)
     .maybeSingle()
 
+  // 3) 현재 라운드의 방향별 shares 합 — 시간 감쇠 배당 미리보기 계산용
+  //    (정산 분배는 shares 비례이므로 위젯이 예상 수령액을 정확히 계산하려면 필요)
+  let yesShares = 0
+  let noShares = 0
+  if (round?.id) {
+    const { data: bets } = await adminSupabase
+      .from('bets')
+      .select('outcome, shares')
+      .eq('market_id', round.id)
+
+    for (const b of bets ?? []) {
+      const s = Number(b.shares) || 0
+      if (String(b.outcome).toUpperCase() === 'YES') yesShares += s
+      else noShares += s
+    }
+  }
+
   return NextResponse.json({
     success: true,
-    data: { round: round ?? null, last: last ?? null },
+    data: {
+      round: round ? { ...round, yes_shares: yesShares, no_shares: noShares } : null,
+      last: last ?? null,
+    },
   })
 }
