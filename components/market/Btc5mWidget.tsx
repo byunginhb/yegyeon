@@ -110,9 +110,13 @@ export default function Btc5mWidget() {
       const json = await res.json()
       if (json.success) {
         const payout = json.data?.potential_payout
+        const price = json.data?.price
+        const odds = price ? (1 / Number(price)).toFixed(2) : null
         toast.success(
           `${side === 'YES' ? '상승' : '하락'} 베팅 완료!` +
-            (payout ? ` 적중 시 ${Number(payout).toLocaleString()}포인트` : '')
+            (odds && payout
+              ? ` ${odds}배 · 적중 시 ${Number(payout).toLocaleString()}포인트`
+              : '')
         )
         fetchData()
       } else {
@@ -288,7 +292,7 @@ export default function Btc5mWidget() {
         </div>
 
         <p className="mt-2 text-center text-[10px] text-ink-400">
-          배당 = 가격(확률) 기반 · 막판일수록 유력한 쪽 배당이 1배에 수렴합니다
+          표시 배당은 예상이며 베팅 시점 시세로 확정됩니다 · 막판일수록 유력한 쪽 배당이 1배에 수렴
         </p>
 
         <Button

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { adminSupabase } from '@/lib/supabase/admin'
-import { fetchBtcKrw } from '@/lib/btc-price'
+import { fetchBtcKrwCached } from '@/lib/btc-price'
 import { sidePrice } from '@/lib/btc5m'
 
 export const dynamic = 'force-dynamic'
@@ -30,7 +30,7 @@ export async function GET() {
   let upPrice: number | null = null
   let downPrice: number | null = null
   if (round?.open_price != null) {
-    currentPrice = await fetchBtcKrw()
+    currentPrice = await fetchBtcKrwCached()
     if (currentPrice != null) {
       const secondsRemaining = Math.max(
         0,
