@@ -163,7 +163,7 @@ export default function Btc5mWidget() {
       {/* 시작가 + 카운트다운 */}
       <div className="flex items-end justify-between px-4">
         <div>
-          <p className="text-[11px] text-ink-400">라운드 시작가</p>
+          <p className="text-[11px] text-ink-400">라운드 시작가 · 업비트 BTC/KRW</p>
           <p className="text-lg font-bold tabular-nums text-ink-1000">
             ₩{formatKRW(round.open_price)}
           </p>
@@ -240,9 +240,21 @@ export default function Btc5mWidget() {
             {submitting === 'NO' ? '베팅 중…' : '하락'}
           </Button>
         </div>
+        <p className="mt-2 text-center text-[10px] leading-relaxed text-ink-400">
+          가격 출처:{' '}
+          <a
+            href="https://upbit.com/exchange?code=CRIX.UPBIT.KRW-BTC"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-ink-500 underline underline-offset-2 hover:text-primary"
+          >
+            업비트(Upbit) KRW-BTC 실시간 체결가
+          </a>
+          {' '}· 5분마다 자동 정산
+        </p>
         <Link
           href={`/market/${round.id}`}
-          className="mt-2 block text-center text-[11px] text-ink-400 hover:text-primary transition-colors"
+          className="mt-1 block text-center text-[11px] text-ink-400 hover:text-primary transition-colors"
         >
           라운드 상세 보기 →
         </Link>
