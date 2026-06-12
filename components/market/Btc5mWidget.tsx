@@ -137,18 +137,19 @@ export default function Btc5mWidget() {
   // 시간 감쇠 가중치 (남은시간/5분, [0.01,1]) — 늦게 걸수록 배당↓
   const weight = Math.min(1, Math.max(0.01, remaining / 1000 / ROUND_SECONDS))
 
-  // 선택한 방향 기준 예상 수령액 (정산이 shares 비례이므로 동일 공식으로 미리보기)
-  const expected = (() => {
-    if (!side || amount <= 0) return null
+  // 방향·금액별 예상 수령액 (정산이 shares 비례이므로 동일 공식으로 미리보기)
+  const calcExpected = (s: 'YES' | 'NO', amt: number) => {
+    if (amt <= 0) return null
     const total = round.yes_amount + round.no_amount
-    const sideShares = side === 'YES' ? round.yes_shares : round.no_shares
-    const myShares = amount * weight
+    const sideShares = s === 'YES' ? round.yes_shares : round.no_shares
+    const myShares = amt * weight
     const denom = sideShares + myShares
     if (denom <= 0) return null
-    const payout = Math.floor((myShares / denom) * (total + amount))
-    const odds = payout / amount
-    return { payout, odds }
-  })()
+    const payout = Math.floor((myShares / denom) * (total + amt))
+    return { payout, odds: payout / amt }
+  }
+  const yesEx = calcExpected('YES', amount)
+  const noEx = calcExpected('NO', amount)
 
   return (
     <div className="mb-3 overflow-hidden rounded-xl border border-amber-400/40 bg-gradient-to-br from-amber-50/80 to-canvas-0 dark:from-amber-950/20">
@@ -221,77 +222,78 @@ export default function Btc5mWidget() {
 
       {/* 베팅: 1) 방향 선택 → 2) 금액 → 3) 베팅 */}
       <div className="mt-3 px-4 pb-3">
-        {/* 1) 방향 선택 */}
+        {/* 1) 방향 선택 — 각 버튼에 현재 배당 표기 */}
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={() => setSide('YES')}
             disabled={closed}
             className={cn(
-              'inline-flex items-center justify-center gap-1 rounded-lg border-2 py-2 text-sm font-bold transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed',
+              'flex flex-col items-center justify-center gap-0.5 rounded-lg border-2 py-1.5 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed',
               side === 'YES'
                 ? 'border-teal-500 bg-teal-500 text-white shadow-sm'
                 : 'border-teal-500/40 bg-teal-500/5 text-teal-600 hover:bg-teal-500/10'
             )}
           >
-            <TrendingUp className="h-4 w-4" /> 상승
+            <span className="inline-flex items-center gap-1 text-sm font-bold">
+              <TrendingUp className="h-4 w-4" /> 상승
+            </span>
+            <span className={cn('text-[11px] font-semibold tabular-nums', side === 'YES' ? 'text-white/90' : 'text-ink-400')}>
+              {yesEx ? `${yesEx.odds.toFixed(2)}배` : '—'}
+            </span>
           </button>
           <button
             type="button"
             onClick={() => setSide('NO')}
             disabled={closed}
             className={cn(
-              'inline-flex items-center justify-center gap-1 rounded-lg border-2 py-2 text-sm font-bold transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed',
+              'flex flex-col items-center justify-center gap-0.5 rounded-lg border-2 py-1.5 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed',
               side === 'NO'
                 ? 'border-scarlet-500 bg-scarlet-500 text-white shadow-sm'
                 : 'border-scarlet-500/40 bg-scarlet-500/5 text-scarlet-600 hover:bg-scarlet-500/10'
             )}
           >
-            <TrendingDown className="h-4 w-4" /> 하락
+            <span className="inline-flex items-center gap-1 text-sm font-bold">
+              <TrendingDown className="h-4 w-4" /> 하락
+            </span>
+            <span className={cn('text-[11px] font-semibold tabular-nums', side === 'NO' ? 'text-white/90' : 'text-ink-400')}>
+              {noEx ? `${noEx.odds.toFixed(2)}배` : '—'}
+            </span>
           </button>
         </div>
 
-        {/* 2) 금액 선택 */}
-        <div className="mt-2 flex items-center gap-1.5">
-          {QUICK_AMOUNTS.map((a) => (
-            <button
-              key={a}
-              type="button"
-              onClick={() => setAmount(a)}
-              className={cn(
-                'flex-1 inline-flex items-center justify-center gap-0.5 rounded-md border px-2 py-1 text-xs font-semibold transition-colors cursor-pointer tabular-nums',
-                amount === a
-                  ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-ink-200 bg-canvas-0 text-ink-500 hover:border-ink-400'
-              )}
-            >
-              <PointIcon size={11} />
-              {a.toLocaleString()}
-            </button>
-          ))}
+        {/* 2) 금액 선택 — 선택한 방향 기준 예상 수령액 표기 */}
+        <div className="mt-2 flex items-stretch gap-1.5">
+          {QUICK_AMOUNTS.map((a) => {
+            const ex = side ? calcExpected(side, a) : null
+            return (
+              <button
+                key={a}
+                type="button"
+                onClick={() => setAmount(a)}
+                className={cn(
+                  'flex-1 flex flex-col items-center justify-center gap-0.5 rounded-md border px-2 py-1.5 transition-colors cursor-pointer tabular-nums',
+                  amount === a
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-ink-200 bg-canvas-0 text-ink-500 hover:border-ink-400'
+                )}
+              >
+                <span className="inline-flex items-center gap-0.5 text-xs font-semibold">
+                  <PointIcon size={11} />
+                  {a.toLocaleString()}
+                </span>
+                <span className="text-[10px] text-ink-400">
+                  {ex ? `예상 ${ex.payout.toLocaleString()}` : ' '}
+                </span>
+              </button>
+            )
+          })}
         </div>
 
-        {/* 예상 수령액 + 시간 감쇠 안내 */}
-        <div className="mt-2 rounded-lg bg-canvas-0/70 px-3 py-2 text-center">
-          {side && expected ? (
-            <p className="flex items-center justify-center gap-1 text-xs text-ink-700">
-              <span className={side === 'YES' ? 'font-semibold text-teal-600' : 'font-semibold text-scarlet-600'}>
-                {side === 'YES' ? '상승' : '하락'}
-              </span>
-              적중 시 예상
-              <span className="inline-flex items-center gap-0.5 font-bold text-ink-1000 tabular-nums">
-                <PointIcon size={12} />
-                {expected.payout.toLocaleString()}
-              </span>
-              <span className="text-ink-400">({expected.odds.toFixed(2)}배)</span>
-            </p>
-          ) : (
-            <p className="text-xs text-ink-400">방향을 선택하면 예상 배당이 표시됩니다</p>
-          )}
-          <p className="mt-0.5 text-[10px] text-ink-400">
-            현재 배당 가중치 {Math.round(weight * 100)}% · 시간이 지날수록 배당이 낮아집니다
-          </p>
-        </div>
+        {/* 시간 감쇠 안내 */}
+        <p className="mt-2 text-center text-[10px] text-ink-400">
+          현재 배당 가중치 {Math.round(weight * 100)}% · 시간이 지날수록 배당이 낮아집니다
+        </p>
 
         {/* 3) 베팅 버튼 */}
         <Button
