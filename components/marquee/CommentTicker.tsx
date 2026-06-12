@@ -72,7 +72,7 @@ export default function CommentTicker() {
                    [mask-image:linear-gradient(180deg,transparent_0%,#000_3%,#000_97%,transparent_100%)]"
       >
         <ul
-          className="animate-ticker-down flex flex-col gap-1.5"
+          className="animate-ticker-up flex flex-col gap-1.5"
           style={{ ['--ticker-duration' as string]: duration }}
         >
           {expanded.map((c, idx) => (
