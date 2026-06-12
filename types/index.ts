@@ -157,6 +157,13 @@ export interface PointTransaction {
   created_at: string
 }
 
+// 댓글 작성자의 해당 마켓 베팅 포지션 요약 (대표 방향 = 누적 베팅액 최대 방향)
+export interface CommentPosition {
+  kind: 'yes' | 'no' | 'option' // 이진 마켓 YES/NO 또는 그 외(옵션/숫자)
+  label: string // 표시용 라벨 (YES/NO 또는 옵션 텍스트)
+  amount: number // 해당 방향 누적 베팅 포인트
+}
+
 export interface Comment {
   id: string
   user_id: string
@@ -170,6 +177,7 @@ export interface Comment {
   embed_description: string | null
   embed_image: string | null
   user?: Pick<User, 'id' | 'username' | 'display_name' | 'avatar_url'>
+  author_position?: CommentPosition | null
 }
 
 // API 응답 표준 형식

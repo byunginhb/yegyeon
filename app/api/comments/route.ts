@@ -3,6 +3,7 @@ import { adminSupabase } from '@/lib/supabase/admin'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { triggerQuestComplete } from '@/lib/quest'
 import { extractFirstUrl, fetchOgMetadata } from '@/lib/og-fetch'
+import { getMarketPositions } from '@/lib/comment-positions'
 import type { Comment } from '@/types'
 
 const COMMENT_SELECT = `
@@ -30,7 +31,19 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json({ success: true, data: data as unknown as Comment[] })
+  const comments = (data ?? []) as unknown as Comment[]
+
+  // 작성자별 베팅 포지션을 한 번에 조회해 각 댓글에 부착
+  const positions = await getMarketPositions(
+    market_id,
+    comments.map((c) => c.user_id)
+  )
+  const withPositions = comments.map((c) => ({
+    ...c,
+    author_position: positions[c.user_id] ?? null,
+  }))
+
+  return NextResponse.json({ success: true, data: withPositions })
 }
 
 export async function POST(request: NextRequest) {
@@ -121,5 +134,12 @@ export async function POST(request: NextRequest) {
     console.error('daily_comment quest trigger failed', e)
   }
 
-  return NextResponse.json({ success: true, data: data as unknown as Comment }, { status: 201 })
+  // 작성자의 이 마켓 베팅 포지션을 부착해 반환
+  const positions = await getMarketPositions(market_id, [dbUser.id])
+  const enriched: Comment = {
+    ...(data as unknown as Comment),
+    author_position: positions[dbUser.id] ?? null,
+  }
+
+  return NextResponse.json({ success: true, data: enriched }, { status: 201 })
 }
