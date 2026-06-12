@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Flame, TrendingUp } from 'lucide-react'
+import PointIcon from '@/components/ui/PointIcon'
 
 interface MarqueeMarket {
   id: string
@@ -70,8 +71,9 @@ export default function MarketMarquee() {
                 <TrendingUp className="h-3.5 w-3.5 text-ink-400" />
               )}
               <span className="max-w-[260px] truncate">{m.title}</span>
-              <span className="text-[11px] tabular-nums text-ink-400">
-                ₣{formatVolume(m.totalVolume)}
+              <span className="inline-flex items-center gap-0.5 text-[11px] tabular-nums text-ink-400">
+                <PointIcon size={11} />
+                {formatVolume(m.totalVolume)}
               </span>
             </Link>
           </li>

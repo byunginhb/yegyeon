@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { MessageCircle, CornerDownRight } from 'lucide-react'
 import type { Comment, CommentPosition } from '@/types'
 import { ReportButton } from '@/components/common/ReportButton'
+import PointIcon from '@/components/ui/PointIcon'
 import { cn } from '@/lib/utils'
 
 interface Props {
@@ -378,10 +379,13 @@ function PositionBadge({ position }: { position: CommentPosition }) {
         'inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold leading-none',
         style
       )}
-      title={`이 마켓에 ${display} ₣${amount.toLocaleString()} 베팅`}
+      title={`이 마켓에 ${display} ${amount.toLocaleString()}포인트 베팅`}
     >
       <span className="max-w-[7rem] truncate">{display}</span>
-      <span className="tabular-nums opacity-90">₣{amount.toLocaleString()}</span>
+      <span className="inline-flex items-center gap-0.5 tabular-nums opacity-90">
+        <PointIcon size={10} />
+        {amount.toLocaleString()}
+      </span>
     </span>
   )
 }

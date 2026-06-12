@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { toast } from 'sonner'
 import { TrendingUp, TrendingDown, Bitcoin, Timer } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import PointIcon from '@/components/ui/PointIcon'
 import { cn } from '@/lib/utils'
 
 interface Round {
@@ -108,7 +109,7 @@ export default function Btc5mWidget() {
       }
       const json = await res.json()
       if (json.success) {
-        toast.success(`${outcome === 'YES' ? '상승' : '하락'}에 ₣${amount.toLocaleString()} 베팅 완료!`)
+        toast.success(`${outcome === 'YES' ? '상승' : '하락'}에 ${amount.toLocaleString()}포인트 베팅 완료!`)
         fetchData()
       } else {
         toast.error(json.error ?? '베팅에 실패했습니다.')
@@ -210,13 +211,14 @@ export default function Btc5mWidget() {
               type="button"
               onClick={() => setAmount(a)}
               className={cn(
-                'flex-1 rounded-md border px-2 py-1 text-xs font-semibold transition-colors cursor-pointer',
+                'flex-1 inline-flex items-center justify-center gap-0.5 rounded-md border px-2 py-1 text-xs font-semibold transition-colors cursor-pointer tabular-nums',
                 amount === a
                   ? 'border-primary bg-primary/10 text-primary'
                   : 'border-ink-200 bg-canvas-0 text-ink-500 hover:border-ink-400'
               )}
             >
-              ₣{a}
+              <PointIcon size={11} />
+              {a.toLocaleString()}
             </button>
           ))}
         </div>
