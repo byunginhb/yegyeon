@@ -7,7 +7,7 @@ import { getMarketPositions } from '@/lib/comment-positions'
 import type { Comment } from '@/types'
 
 const COMMENT_SELECT = `
-  id, market_id, user_id, content, is_deleted, created_at, updated_at,
+  id, market_id, user_id, parent_id, content, is_deleted, created_at, updated_at,
   embed_url, embed_title, embed_description, embed_image,
   user:users!user_id(id, username, display_name, avatar_url)
 `
@@ -25,7 +25,9 @@ export async function GET(request: NextRequest) {
     .select(COMMENT_SELECT)
     .eq('market_id', market_id)
     .eq('is_deleted', false)
-    .order('created_at', { ascending: false })
+    // 오름차순(시간순)으로 받아 클라이언트에서 스레드를 구성한다.
+    // 최상위 댓글은 클라이언트에서 최신순으로 정렬, 답글은 시간순 유지.
+    .order('created_at', { ascending: true })
 
   if (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
@@ -56,6 +58,7 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json()
   const { market_id, content } = body
+  const rawParentId = body.parent_id
 
   if (!market_id || !content) {
     return NextResponse.json({ success: false, error: 'market_id와 content가 필요합니다' }, { status: 400 })
@@ -67,6 +70,22 @@ export async function POST(request: NextRequest) {
   }
   if (trimmed.length > 500) {
     return NextResponse.json({ success: false, error: '댓글은 500자 이내로 작성해주세요' }, { status: 400 })
+  }
+
+  // 답글이면 부모 댓글 검증 — 같은 마켓의 살아있는 댓글이어야 한다.
+  // 스레드 깊이는 1단계로 고정: 답글에 답글을 달면 최상위 부모로 평탄화한다.
+  let parent_id: string | null = null
+  if (rawParentId) {
+    const { data: parent } = await adminSupabase
+      .from('comments')
+      .select('id, market_id, parent_id, is_deleted')
+      .eq('id', String(rawParentId))
+      .single()
+
+    if (!parent || parent.is_deleted || parent.market_id !== market_id) {
+      return NextResponse.json({ success: false, error: '답글 대상 댓글을 찾을 수 없습니다' }, { status: 400 })
+    }
+    parent_id = (parent.parent_id as string | null) ?? (parent.id as string)
   }
 
   // users 테이블에서 user_id 조회
@@ -112,7 +131,7 @@ export async function POST(request: NextRequest) {
 
   const { data, error } = await adminSupabase
     .from('comments')
-    .insert({ market_id, user_id: dbUser.id, content: trimmed, ...embed })
+    .insert({ market_id, user_id: dbUser.id, parent_id, content: trimmed, ...embed })
     .select(COMMENT_SELECT)
     .single()
 

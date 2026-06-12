@@ -168,6 +168,7 @@ export interface Comment {
   id: string
   user_id: string
   market_id: string
+  parent_id: string | null // 답글이면 부모 댓글 id, 최상위 댓글이면 null
   content: string
   is_deleted: boolean
   created_at: string
