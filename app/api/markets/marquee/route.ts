@@ -11,6 +11,7 @@ export async function GET() {
     .select('id, title, thumbnail_url, total_volume, unique_traders, type')
     .eq('status', 'open')
     .eq('is_hidden', false)
+    .is('auto_kind', null) // 자동 마켓(BTC 5분 등) 제외
     .order('total_volume', { ascending: false })
     .order('unique_traders', { ascending: false })
     .limit(20)

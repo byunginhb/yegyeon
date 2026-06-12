@@ -70,6 +70,7 @@ async function fetchMarkets(params: {
     )
     .eq('is_hidden', false)
     .eq('status', 'open')
+    .is('auto_kind', null) // 자동 마켓(BTC 5분 등) 제외
 
   if (params.category && params.category !== 'all') {
     const { data: cat } = await adminSupabase

@@ -114,6 +114,10 @@ export interface Market {
   reviewed_by: string | null
   reviewed_at: string | null
   tags: string[]
+  // 자동 마켓 (예: 비트코인 5분 등락). null이면 일반 사용자 마켓
+  auto_kind?: string | null
+  open_price?: number | null
+  close_price?: number | null
   created_at: string
   updated_at: string
   // 조인 데이터

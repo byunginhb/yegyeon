@@ -24,6 +24,7 @@ export const metadata: Metadata = {
 }
 
 import FilterBar from '@/components/market/FilterBar'
+import Btc5mWidget from '@/components/market/Btc5mWidget'
 import MarketMarquee from '@/components/marquee/MarketMarquee'
 import MarketList from '@/components/market/MarketList'
 import MarketListSkeleton from '@/components/market/MarketListSkeleton'
@@ -77,6 +78,7 @@ async function fetchMarkets(params: {
     )
     .eq('is_hidden', false)
     .eq('status', 'open')
+    .is('auto_kind', null) // 자동 마켓(BTC 5분 등)은 전용 위젯에서만 노출
 
   if (params.category && params.category !== 'all') {
     const { data: cat } = await adminSupabase
@@ -145,6 +147,9 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
       {/* 모바일 전용: 출석·퀘스트 스트립 (xl 이상은 RightSidebar에서 표시) */}
       <MobileGamificationStrip />
+
+      {/* 비트코인 5분 등락 — 자동 생성/정산되는 단기 라운드 위젯 */}
+      <Btc5mWidget />
 
       {/* 인기 마켓 marquee — 카테고리 탭 바로 위에서 흐름 */}
       <MarketMarquee />

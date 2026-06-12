@@ -44,6 +44,7 @@ export async function GET(req: NextRequest) {
         { count: 'exact' }
       )
       .eq('is_hidden', false)
+      .is('auto_kind', null) // 자동 마켓(BTC 5분 등)은 전용 위젯 전용
 
     // 상태 필터: 공개 API는 pending/rejected 노출 금지
     const PUBLIC_STATUSES = ['open', 'closed', 'resolved', 'cancelled']
