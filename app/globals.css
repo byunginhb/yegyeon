@@ -216,6 +216,16 @@
   animation-play-state: paused;
 }
 
+/* 필터 전환 중 인디터미네이트 진행 바 */
+@keyframes filter-progress {
+  0%   { transform: translateX(-120%); }
+  100% { transform: translateX(420%); }
+}
+.animate-filter-progress {
+  animation: filter-progress 0.9s ease-in-out infinite;
+  will-change: transform;
+}
+
 /* 핫 마켓 카드 — 테두리만 깜빡임 (회전 없음) */
 @keyframes hot-border-pulse {
   0%, 100% {
@@ -239,6 +249,7 @@
 @media (prefers-reduced-motion: reduce) {
   .animate-ticker-up,
   .animate-ticker-left,
+  .animate-filter-progress,
   .hot-border {
     animation: none;
   }
