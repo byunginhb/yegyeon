@@ -203,23 +203,25 @@ export default function Btc5mWidget() {
       </div>
 
       {/* 시작가/현재가 + 카운트다운 */}
-      <div className="flex items-end justify-between px-4">
-        <div className="flex items-end gap-3">
-          <div>
+      <div className="flex items-start justify-between gap-2 px-4">
+        <div className="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-end sm:gap-4">
+          <div className="min-w-0">
             <p className="text-[11px] text-ink-400">시작가</p>
-            <p className="text-base font-bold tabular-nums text-ink-700">₩{formatKRW(round.open_price)}</p>
+            <p className="truncate text-sm font-bold tabular-nums text-ink-700 sm:text-base">
+              ₩{formatKRW(round.open_price)}
+            </p>
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-[11px] text-ink-400">현재가 · 업비트</p>
             <p
               className={cn(
-                'text-base font-bold tabular-nums',
+                'flex items-baseline gap-1 text-sm font-bold tabular-nums sm:text-base',
                 delta == null ? 'text-ink-700' : delta > 0 ? 'text-teal-600' : delta < 0 ? 'text-scarlet-600' : 'text-ink-700'
               )}
             >
-              ₩{formatKRW(round.current_price)}
+              <span className="truncate">₩{formatKRW(round.current_price)}</span>
               {delta != null && delta !== 0 && (
-                <span className="ml-1 text-[11px]">
+                <span className="shrink-0 text-[11px]">
                   {delta > 0 ? '▲' : '▼'}
                   {formatKRW(Math.abs(delta))}
                 </span>
@@ -227,13 +229,13 @@ export default function Btc5mWidget() {
             </p>
           </div>
         </div>
-        <div className="text-right">
+        <div className="shrink-0 text-right">
           <p className="flex items-center justify-end gap-1 text-[11px] text-ink-400">
             <Timer className="h-3 w-3" /> 남은 시간
           </p>
           <p
             className={cn(
-              'text-lg font-bold tabular-nums',
+              'text-base font-bold tabular-nums sm:text-lg',
               closed ? 'text-ink-400' : remaining < 30000 ? 'text-scarlet-600' : 'text-ink-1000'
             )}
           >
