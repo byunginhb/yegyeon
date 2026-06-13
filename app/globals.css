@@ -226,6 +226,15 @@
   will-change: transform;
 }
 
+/* LIVE 배지 깜빡임 */
+@keyframes live-blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+.animate-live-blink {
+  animation: live-blink 1.1s ease-in-out infinite;
+}
+
 /* 핫 마켓 카드 — 테두리만 깜빡임 (회전 없음) */
 @keyframes hot-border-pulse {
   0%, 100% {
@@ -250,6 +259,7 @@
   .animate-ticker-up,
   .animate-ticker-left,
   .animate-filter-progress,
+  .animate-live-blink,
   .hot-border {
     animation: none;
   }

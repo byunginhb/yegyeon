@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { toast } from 'sonner'
 import { TrendingUp, TrendingDown, Bitcoin, Timer } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -166,8 +165,8 @@ export default function Btc5mWidget() {
           <span className="inline-flex items-center rounded-full border border-ink-300 bg-canvas-0 px-1.5 py-0.5 text-[10px] font-semibold text-ink-500">
             베타
           </span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-scarlet-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-scarlet-600">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-scarlet-500" />
+          <span className="animate-live-blink inline-flex items-center gap-1 rounded-full bg-scarlet-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-scarlet-600">
+            <span className="h-1.5 w-1.5 rounded-full bg-scarlet-500" />
             LIVE
           </span>
         </div>
@@ -322,12 +321,6 @@ export default function Btc5mWidget() {
           </a>
           {' '}· 5분마다 자동 정산
         </p>
-        <Link
-          href={`/market/${round.id}`}
-          className="mt-1 block text-center text-[11px] text-ink-400 hover:text-primary transition-colors"
-        >
-          라운드 상세 보기 →
-        </Link>
       </div>
     </div>
   )
