@@ -21,6 +21,7 @@ interface Round {
   yes_amount: number
   no_amount: number
   unique_traders: number
+  samples?: PricePoint[]
 }
 interface LastResult {
   resolution: string | null
@@ -52,7 +53,6 @@ export default function Btc5mWidget() {
   const [now, setNow] = useState(() => Date.now())
   const [history, setHistory] = useState<PricePoint[]>([])
   const settlingRef = useRef(false)
-  const roundIdRef = useRef<string | null>(null)
 
   const fetchData = useCallback(async () => {
     try {
@@ -62,20 +62,17 @@ export default function Btc5mWidget() {
         const r = json.data.round as Round | null
         setRound(r)
         setLast(json.data.last)
-        if (r && r.current_price != null) {
-          const nowT = Date.now()
-          setHistory((prev) => {
-            let base = prev
-            if (roundIdRef.current !== r.id) {
-              // 새 라운드 — 히스토리 초기화 + 시작가를 라운드 시작 시점에 시드
-              const startT = new Date(r.close_date).getTime() - 300000
-              base = r.open_price != null ? [{ t: startT, p: r.open_price }] : []
-            }
-            const next = [...base, { t: nowT, p: r.current_price as number }]
-            const cutoff = nowT - 320000
-            return next.filter((d) => d.t >= cutoff).slice(-400)
-          })
-          roundIdRef.current = r.id
+        if (r) {
+          // 서버 적재 샘플(라운드 전체 흐름) + 시작가 시드 + 라이브 현재가 포인트로 구성
+          const serverPts: PricePoint[] = Array.isArray(r.samples) ? r.samples : []
+          const startT = new Date(r.close_date).getTime() - 300000
+          const seed: PricePoint[] = r.open_price != null ? [{ t: startT, p: r.open_price }] : []
+          const lastServerT = serverPts.length ? serverPts[serverPts.length - 1].t : 0
+          const livePt: PricePoint[] =
+            r.current_price != null && Date.now() > lastServerT
+              ? [{ t: Date.now(), p: r.current_price }]
+              : []
+          setHistory([...seed, ...serverPts, ...livePt])
         }
       }
     } catch {

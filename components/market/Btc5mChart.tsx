@@ -42,8 +42,10 @@ export default function Btc5mChart({ openPrice, history, windowMs = 120000, heig
   }, [])
 
   const PAD_Y = 14
-  const rightEdge = now
-  const leftEdge = now - windowMs
+  // 시계 오차로 서버 샘플 시각이 클라 now보다 미래여도 잘리지 않도록 데이터 최댓값과 비교
+  const lastT = history.length ? history[history.length - 1].t : now
+  const rightEdge = Math.max(now, lastT)
+  const leftEdge = rightEdge - windowMs
 
   // 표시창 내 포인트만 (앞에 하나 더 포함해 왼쪽 잘림 자연스럽게)
   const pts = history.filter((d) => d.t >= leftEdge - 5000 && d.t <= rightEdge + 1000)
