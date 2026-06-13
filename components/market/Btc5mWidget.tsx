@@ -84,9 +84,32 @@ export default function Btc5mWidget() {
   }, [])
 
   useEffect(() => {
+    // 폴링 10초(서버 샘플러 주기와 일치) + 탭 비활성 시 중지 → Vercel 함수 호출 최소화
+    let poll: ReturnType<typeof setInterval> | null = null
+    const start = () => {
+      if (!poll) poll = setInterval(fetchData, 10000)
+    }
+    const stop = () => {
+      if (poll) {
+        clearInterval(poll)
+        poll = null
+      }
+    }
+    const onVisibility = () => {
+      if (document.hidden) {
+        stop()
+      } else {
+        fetchData()
+        start()
+      }
+    }
     fetchData()
-    const poll = setInterval(fetchData, 2000)
-    return () => clearInterval(poll)
+    start()
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => {
+      stop()
+      document.removeEventListener('visibilitychange', onVisibility)
+    }
   }, [fetchData])
 
   useEffect(() => {
