@@ -241,10 +241,15 @@ export default function Btc5mWidget() {
         </div>
       </div>
 
-      {/* 실시간 가격 차트 */}
+      {/* 실시간 가격 차트 — 5분 라운드 고정 프레임, 기준가 중앙 */}
       {round.open_price != null && history.length > 0 && (
         <div className="mt-2 px-2">
-          <Btc5mChart openPrice={round.open_price} history={history} />
+          <Btc5mChart
+            openPrice={round.open_price}
+            history={history}
+            startTs={new Date(round.close_date).getTime() - 300000}
+            closeTs={new Date(round.close_date).getTime()}
+          />
         </div>
       )}
 
