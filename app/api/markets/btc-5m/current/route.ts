@@ -1,28 +1,14 @@
 import { NextResponse } from 'next/server'
 import { adminSupabase } from '@/lib/supabase/admin'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { sidePrice } from '@/lib/btc5m'
 
-export const dynamic = 'force-dynamic'
-
 // 비트코인 5분 등락 위젯용 — 현재 라운드 + 가격 샘플(라운드 흐름) + 동적 배당 + 직전 결과
-// 관리자 전용(베타). 가격은 서버 샘플러(10초)가 적재한 최신 샘플에서 도출 → 폴링마다 업비트 호출 없음.
-export async function GET() {
-  // 관리자 가드
-  const supabase = await createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    return NextResponse.json({ success: false, error: '로그인이 필요합니다.' }, { status: 401 })
-  }
-  const { data: me } = await adminSupabase
-    .from('users')
-    .select('role')
-    .eq('auth_id', user.id)
-    .single()
-  if (me?.role !== 'admin') {
-    return NextResponse.json({ success: false, error: '관리자 전용 베타 기능입니다.' }, { status: 403 })
-  }
+// CDN 엣지 캐시(약 8초)로 Vercel 함수 호출을 캐시 주기당 1회로 고정(뷰어 수·폴링 빈도 무관).
+// 노출 데이터는 공개 시세/라운드 정보뿐이라 공개 읽기. 위젯은 페이지에서 관리자에게만 렌더되고,
+// 실제 베팅(/bet)은 별도 관리자 가드를 유지한다.
+const CACHE_CONTROL = 'public, s-maxage=8, stale-while-revalidate=20'
 
+export async function GET() {
   const { data: round } = await adminSupabase
     .from('markets')
     .select('id, title, open_price, close_date, yes_amount, no_amount, unique_traders')
@@ -66,13 +52,16 @@ export async function GET() {
     downPrice = sidePrice('NO', currentPrice, Number(round.open_price), secondsRemaining)
   }
 
-  return NextResponse.json({
-    success: true,
-    data: {
-      round: round
-        ? { ...round, current_price: currentPrice, up_price: upPrice, down_price: downPrice, samples }
-        : null,
-      last: last ?? null,
+  return NextResponse.json(
+    {
+      success: true,
+      data: {
+        round: round
+          ? { ...round, current_price: currentPrice, up_price: upPrice, down_price: downPrice, samples }
+          : null,
+        last: last ?? null,
+      },
     },
-  })
+    { headers: { 'Cache-Control': CACHE_CONTROL } }
+  )
 }
