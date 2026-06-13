@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import PointIcon from '@/components/ui/PointIcon'
 import { cn } from '@/lib/utils'
 import { sidePrice } from '@/lib/btc5m'
+import Btc5mChart, { type PricePoint } from '@/components/market/Btc5mChart'
 
 interface Round {
   id: string
@@ -49,15 +50,33 @@ export default function Btc5mWidget() {
   const [amount, setAmount] = useState(100)
   const [submitting, setSubmitting] = useState(false)
   const [now, setNow] = useState(() => Date.now())
+  const [history, setHistory] = useState<PricePoint[]>([])
   const settlingRef = useRef(false)
+  const roundIdRef = useRef<string | null>(null)
 
   const fetchData = useCallback(async () => {
     try {
       const res = await fetch('/api/markets/btc-5m/current', { cache: 'no-store' })
       const json = await res.json()
       if (json.success) {
-        setRound(json.data.round)
+        const r = json.data.round as Round | null
+        setRound(r)
         setLast(json.data.last)
+        if (r && r.current_price != null) {
+          const nowT = Date.now()
+          setHistory((prev) => {
+            let base = prev
+            if (roundIdRef.current !== r.id) {
+              // 새 라운드 — 히스토리 초기화 + 시작가를 라운드 시작 시점에 시드
+              const startT = new Date(r.close_date).getTime() - 300000
+              base = r.open_price != null ? [{ t: startT, p: r.open_price }] : []
+            }
+            const next = [...base, { t: nowT, p: r.current_price as number }]
+            const cutoff = nowT - 320000
+            return next.filter((d) => d.t >= cutoff).slice(-400)
+          })
+          roundIdRef.current = r.id
+        }
       }
     } catch {
       // 조용히 실패
@@ -69,7 +88,7 @@ export default function Btc5mWidget() {
 
   useEffect(() => {
     fetchData()
-    const poll = setInterval(fetchData, 5000)
+    const poll = setInterval(fetchData, 2000)
     return () => clearInterval(poll)
   }, [fetchData])
 
@@ -222,6 +241,13 @@ export default function Btc5mWidget() {
           </p>
         </div>
       </div>
+
+      {/* 실시간 가격 차트 */}
+      {round.open_price != null && history.length > 0 && (
+        <div className="mt-2 px-2">
+          <Btc5mChart openPrice={round.open_price} history={history} />
+        </div>
+      )}
 
       {/* 베팅: 방향(배당 표기) → 금액(예상 수령액) → 베팅 */}
       <div className="mt-3 px-4 pb-3">

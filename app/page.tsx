@@ -32,6 +32,7 @@ import HomeHeader from '@/components/home/HomeHeader'
 import PageShell from '@/components/layout/PageShell'
 import MobileGamificationStrip from '@/components/gamification/MobileGamificationStrip'
 import { adminSupabase } from '@/lib/supabase/admin'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 import type { Category, Market } from '@/types/index'
 
 interface HomePageProps {
@@ -41,6 +42,23 @@ interface HomePageProps {
     page?: string
     q?: string
   }>
+}
+
+// BTC 5분 위젯은 관리자에게만 노출 (베타)
+async function isAdminViewer(): Promise<boolean> {
+  try {
+    const supabase = await createServerSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return false
+    const { data } = await adminSupabase
+      .from('users')
+      .select('role')
+      .eq('auth_id', user.id)
+      .single()
+    return data?.role === 'admin'
+  } catch {
+    return false
+  }
 }
 
 async function fetchCategories(): Promise<Category[]> {
@@ -137,7 +155,7 @@ async function MarketsSection({
 
 export default async function HomePage({ searchParams }: HomePageProps) {
   const params = await searchParams
-  const categories = await fetchCategories()
+  const [categories, isAdmin] = await Promise.all([fetchCategories(), isAdminViewer()])
 
   return (
     <PageShell>
@@ -148,8 +166,8 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       {/* 모바일 전용: 출석·퀘스트 스트립 (xl 이상은 RightSidebar에서 표시) */}
       <MobileGamificationStrip />
 
-      {/* 비트코인 5분 등락 — 자동 생성/정산되는 단기 라운드 위젯 */}
-      <Btc5mWidget />
+      {/* 비트코인 5분 등락 — 관리자 전용(베타). 자동 생성/정산되는 단기 라운드 위젯 */}
+      {isAdmin && <Btc5mWidget />}
 
       {/* 인기 마켓 marquee — 카테고리 탭 바로 위에서 흐름 */}
       <MarketMarquee />

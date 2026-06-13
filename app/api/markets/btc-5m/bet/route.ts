@@ -40,6 +40,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: '로그인이 필요합니다.' }, { status: 401 })
     }
 
+    // 관리자 전용(베타)
+    const { data: dbUser } = await adminSupabase
+      .from('users')
+      .select('role')
+      .eq('auth_id', authUser.id)
+      .single()
+    if (dbUser?.role !== 'admin') {
+      return NextResponse.json({ success: false, error: '관리자 전용 베타 기능입니다.' }, { status: 403 })
+    }
+
     let body: unknown
     try {
       body = await req.json()
