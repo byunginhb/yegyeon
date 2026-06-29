@@ -163,7 +163,7 @@ export default function EditMarketForm({ market, categories, isAdmin = false }: 
       <h1 className="text-2xl font-bold text-ink-1000 mb-2">마켓 정보 수정</h1>
       <p className="text-sm text-ink-500 mb-8">
         제목·설명·카테고리·이미지·태그·결과 기준·마감일을 수정할 수 있어요.
-        마켓 유형이나 선택지 같은 베팅 정합성에 영향을 주는 설정은 바꿀 수 없습니다.
+        마켓 유형이나 선택지 같은 예측 정합성에 영향을 주는 설정은 바꿀 수 없습니다.
       </p>
 
       <div className="space-y-5">
@@ -280,7 +280,7 @@ export default function EditMarketForm({ market, categories, isAdmin = false }: 
           </p>
           {isAdmin ? (
             <p className="text-xs text-ink-400">
-              관리자는 마감일을 단축·연장할 수 있습니다. 단축 시 베팅 참여자가 영향을 받을 수 있으니 신중히 결정해주세요.
+              관리자는 마감일을 단축·연장할 수 있습니다. 단축 시 예측 참여자가 영향을 받을 수 있으니 신중히 결정해주세요.
             </p>
           ) : (
             <p className="text-xs text-ink-400">

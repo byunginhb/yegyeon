@@ -498,7 +498,7 @@ export default function MarketDetailDialog({
 
               {/* 통계 (pending 외) */}
               {detail.status !== 'pending' && (
-                <Section title="베팅 통계">
+                <Section title="예측 통계">
                   <Row label="총 거래량" value={`${detail.total_volume.toLocaleString()} 포인트`} />
                   <Row label="참여자" value={`${detail.unique_traders.toLocaleString()}명`} />
                   <Row label="댓글" value={`${detail.comment_count}개`} />
@@ -629,7 +629,7 @@ export default function MarketDetailDialog({
               {deleteConfirm && (
                 <div className="mb-4 p-3 bg-scarlet-50 border border-scarlet-200 rounded-lg space-y-2">
                   <p className="text-xs font-medium text-scarlet-700">정말 삭제하시겠습니까?</p>
-                  <p className="text-xs text-scarlet-600">삭제된 마켓과 베팅 데이터는 복구할 수 없습니다.</p>
+                  <p className="text-xs text-scarlet-600">삭제된 마켓과 예측 데이터는 복구할 수 없습니다.</p>
                   <div className="flex justify-end gap-2">
                     <Button size="sm" variant="outline" onClick={() => setDeleteConfirm(false)} disabled={actionLoading}>
                       취소

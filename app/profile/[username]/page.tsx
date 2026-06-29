@@ -86,7 +86,7 @@ export default async function ProfilePage({ params }: Props) {
 
   const isSelf = currentUserId === profileUser.id
 
-  // 마켓 및 베팅 데이터 조회
+  // 마켓 및 예측 데이터 조회
   const [marketsResult, betsResult] = await Promise.all([
     adminSupabase
       .from('markets')
@@ -200,7 +200,7 @@ export default async function ProfilePage({ params }: Props) {
             </div>
             <div className="text-center">
               <p className="text-lg font-bold text-ink-1000">{bets.length}</p>
-              <p className="text-xs text-ink-500">베팅 횟수</p>
+              <p className="text-xs text-ink-500">예측 횟수</p>
             </div>
           </div>
         </div>
@@ -210,7 +210,7 @@ export default async function ProfilePage({ params }: Props) {
           <TabsList className="w-full mb-4">
             <TabsTrigger value="summary" className="flex-1">요약</TabsTrigger>
             <TabsTrigger value="markets" className="flex-1">마켓</TabsTrigger>
-            <TabsTrigger value="trades" className="flex-1">베팅</TabsTrigger>
+            <TabsTrigger value="trades" className="flex-1">예측</TabsTrigger>
           </TabsList>
 
           {/* ─── Summary 탭 ─────────────────────────── */}
@@ -225,13 +225,13 @@ export default async function ProfilePage({ params }: Props) {
               </div>
               <div className="bg-canvas-0 rounded-xl border border-ink-200 p-4 text-center">
                 <p className="text-xl font-bold text-ink-1000 tabular-nums">{bets.length}</p>
-                <p className="text-xs text-ink-500 mt-1">총 베팅 수</p>
+                <p className="text-xs text-ink-500 mt-1">총 예측 수</p>
               </div>
               <div className="bg-canvas-0 rounded-xl border border-ink-200 p-4 text-center">
                 <p className="text-xl font-bold text-ink-1000 tabular-nums">
                   {totalBetAmount.toLocaleString()}
                 </p>
-                <p className="text-xs text-ink-500 mt-1">총 베팅 금액</p>
+                <p className="text-xs text-ink-500 mt-1">총 예측 금액</p>
               </div>
               <div className="bg-canvas-0 rounded-xl border border-ink-200 p-4 text-center">
                 <p
@@ -246,21 +246,21 @@ export default async function ProfilePage({ params }: Props) {
               </div>
             </div>
 
-            {/* 본인 프로필일 때만 진행 중/완료 베팅 섹션 노출 */}
+            {/* 본인 프로필일 때만 진행 중/완료 예측 섹션 노출 */}
             {isSelf && (
               <>
-                {/* 진행 중인 베팅 */}
+                {/* 진행 중인 예측 */}
                 <section className="mb-6">
                   <h2 className="text-base font-semibold text-ink-900 mb-3 flex items-center gap-2">
                     <Clock className="h-4 w-4 text-ink-400" />
-                    진행 중인 베팅
+                    진행 중인 예측
                     <span className="text-sm font-normal text-ink-500">
                       ({activeBets.length})
                     </span>
                   </h2>
                   {activeBets.length === 0 ? (
                     <div className="bg-canvas-0 rounded-xl border border-ink-200 p-8 text-center text-ink-400 text-sm">
-                      진행 중인 베팅이 없습니다.
+                      진행 중인 예측이 없습니다.
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -339,18 +339,18 @@ export default async function ProfilePage({ params }: Props) {
                   )}
                 </section>
 
-                {/* 완료된 베팅 */}
+                {/* 완료된 예측 */}
                 <section>
                   <h2 className="text-base font-semibold text-ink-900 mb-3 flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-ink-400" />
-                    완료된 베팅
+                    완료된 예측
                     <span className="text-sm font-normal text-ink-500">
                       ({resolvedBets.length})
                     </span>
                   </h2>
                   {resolvedBets.length === 0 ? (
                     <div className="bg-canvas-0 rounded-xl border border-ink-200 p-8 text-center text-ink-400 text-sm">
-                      완료된 베팅이 없습니다.
+                      완료된 예측이 없습니다.
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -508,7 +508,7 @@ export default async function ProfilePage({ params }: Props) {
           <TabsContent value="trades">
             {bets.length === 0 ? (
               <div className="py-12 text-center text-ink-400 text-sm bg-canvas-0 rounded-2xl border border-ink-200">
-                베팅 내역이 없습니다.
+                예측 내역이 없습니다.
               </div>
             ) : (
               <ul className="space-y-3">
@@ -534,7 +534,7 @@ export default async function ProfilePage({ params }: Props) {
                             {bet.outcome.toUpperCase()}
                           </span>
                           <span className="tabular-nums">
-                            {bet.amount.toLocaleString()}포인트 베팅
+                            {bet.amount.toLocaleString()}포인트 예측
                           </span>
                         </div>
                         {bet.payout !== null ? (

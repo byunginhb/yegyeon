@@ -183,7 +183,7 @@ export default async function LeaderboardPage() {
         <TabsList className="w-full mb-6">
           <TabsTrigger value="points" className="flex-1">포인트 순위</TabsTrigger>
           <TabsTrigger value="profit" className="flex-1">수익률 순위</TabsTrigger>
-          <TabsTrigger value="bets" className="flex-1">베팅 횟수</TabsTrigger>
+          <TabsTrigger value="bets" className="flex-1">예측 횟수</TabsTrigger>
         </TabsList>
 
         <TabsContent value="points">
@@ -208,7 +208,7 @@ export default async function LeaderboardPage() {
           <LeaderboardTable
             entries={betsEntries}
             currentUserId={currentUserId}
-            valueLabel="베팅 횟수"
+            valueLabel="예측 횟수"
             valueFormatter={(v) => `${v.toLocaleString()}회`}
           />
         </TabsContent>

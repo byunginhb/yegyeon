@@ -51,7 +51,7 @@ export default function InlineMarketBetting({ market, userPoints, isLoggedIn, ch
   const noPercent = 100 - yesPercent
   const isOpen = market.status === 'open'
 
-  // 최근 변화량 표시용 (마지막 베팅 대비 delta)
+  // 최근 변화량 표시용 (마지막 예측 대비 delta)
   const deltaPercent = (() => {
     if (!chartData || chartData.length < 2) return 0
     const first = chartData[0].p
@@ -128,7 +128,7 @@ export default function InlineMarketBetting({ market, userPoints, isLoggedIn, ch
       })
       const json = await res.json()
       if (!json.success) {
-        toast.error(json.error ?? '베팅 실패')
+        toast.error(json.error ?? '예측 실패')
         return
       }
       const newBalance =
@@ -164,7 +164,7 @@ export default function InlineMarketBetting({ market, userPoints, isLoggedIn, ch
 
       const outcomeLabel = selectedOption?.text ?? selectedOutcome
       toast.success(
-        `${outcomeLabel}에 ${amount.toLocaleString()}포인트 베팅 완료`
+        `${outcomeLabel}에 ${amount.toLocaleString()}포인트 예측 완료`
       )
       setSelectedOutcome(null)
       setAmount(100)
@@ -231,7 +231,7 @@ export default function InlineMarketBetting({ market, userPoints, isLoggedIn, ch
           height={260}
         />
 
-        {/* 베팅 버튼 */}
+        {/* 예측 버튼 */}
         {isOpen && (
           <div className="grid grid-cols-2 gap-3 mt-4 mb-4">
             <button
@@ -242,7 +242,7 @@ export default function InlineMarketBetting({ market, userPoints, isLoggedIn, ch
                   : 'bg-teal-500 text-white hover:bg-teal-600'
               }`}
             >
-              베팅 YES ↑
+              예측 YES ↑
             </button>
             <button
               onClick={() => handleOutcomeClick('NO')}
@@ -252,12 +252,12 @@ export default function InlineMarketBetting({ market, userPoints, isLoggedIn, ch
                   : 'bg-scarlet-500 text-white hover:bg-scarlet-600'
               }`}
             >
-              베팅 NO ↓
+              예측 NO ↓
             </button>
           </div>
         )}
 
-        {/* 인라인 베팅 폼 */}
+        {/* 인라인 예측 폼 */}
         {selectedOutcome && isLoggedIn && isOpen && (
           <div className="bg-canvas-50 border border-ink-200 rounded-xl p-4 space-y-3">
             <div className="flex items-center justify-between text-sm">
@@ -266,7 +266,7 @@ export default function InlineMarketBetting({ market, userPoints, isLoggedIn, ch
                   className={selectedOutcome === 'YES' ? 'text-teal-600' : 'text-scarlet-600'}
                 >
                   {selectedOutcome}
-                </span>에 베팅
+                </span>에 예측
               </span>
               <span className="text-ink-500">
                 보유: <PointsDisplay amount={localPoints} size="sm" />
@@ -313,7 +313,7 @@ export default function InlineMarketBetting({ market, userPoints, isLoggedIn, ch
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-ink-500">베팅 후 YES 확률</span>
+                  <span className="text-ink-500">예측 후 YES 확률</span>
                   <span className="font-semibold text-ink-900">
                     {Math.round(p.newProb * 100)}%
                   </span>
@@ -328,7 +328,7 @@ export default function InlineMarketBetting({ market, userPoints, isLoggedIn, ch
             >
               {isSubmitting
                 ? '처리 중...'
-                : `${selectedOutcome}에 ${amount.toLocaleString()}포인트 베팅`}
+                : `${selectedOutcome}에 ${amount.toLocaleString()}포인트 예측`}
             </Button>
           </div>
         )}
@@ -336,7 +336,7 @@ export default function InlineMarketBetting({ market, userPoints, isLoggedIn, ch
         {/* 비로그인 안내 */}
         {!isLoggedIn && isOpen && (
           <p className="text-sm text-ink-500 mt-1">
-            베팅하려면{' '}
+            예측하려면{' '}
             <button
               onClick={() => router.push('/auth/login')}
               className="text-primary hover:underline font-medium"
@@ -348,7 +348,7 @@ export default function InlineMarketBetting({ market, userPoints, isLoggedIn, ch
         )}
 
         {!isOpen && (
-          <p className="text-sm text-ink-400 mt-1">이 마켓은 베팅이 마감되었습니다.</p>
+          <p className="text-sm text-ink-400 mt-1">이 마켓은 예측이 마감되었습니다.</p>
         )}
 
         {/* NO 확률 힌트 */}
@@ -413,7 +413,7 @@ export default function InlineMarketBetting({ market, userPoints, isLoggedIn, ch
           <div className="bg-canvas-50 border border-ink-200 rounded-xl p-4 space-y-3 mt-2">
             <div className="flex items-center justify-between text-sm">
               <span className="font-semibold text-ink-800">
-                <span className="text-primary">{localOptions.find(o => o.id === selectedOutcome)?.text ?? selectedOutcome}</span> 베팅
+                <span className="text-primary">{localOptions.find(o => o.id === selectedOutcome)?.text ?? selectedOutcome}</span> 예측
               </span>
               <span className="text-ink-500">
                 보유: <PointsDisplay amount={localPoints} size="sm" />
@@ -450,7 +450,7 @@ export default function InlineMarketBetting({ market, userPoints, isLoggedIn, ch
               </div>
             )}
             <Button className="w-full" onClick={handleSubmit} disabled={isSubmitting || amount < 10}>
-              {isSubmitting ? '처리 중...' : `${amount.toLocaleString()}포인트 베팅`}
+              {isSubmitting ? '처리 중...' : `${amount.toLocaleString()}포인트 예측`}
             </Button>
           </div>
         )}

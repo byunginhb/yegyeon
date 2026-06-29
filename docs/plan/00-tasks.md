@@ -20,10 +20,10 @@
 - [x] 마켓 자동 마감 Cron
 - [x] 카테고리 시스템
 
-### 베팅 / 거래
-- [x] Binary YES/NO 베팅
-- [x] Multiple Choice 베팅
-- [x] Numeric 베팅
+### 예측 / 거래
+- [x] Binary YES/NO 예측
+- [x] Multiple Choice 예측
+- [x] Numeric 예측
 - [x] LMSR 기반 확률 계산 (`lib/market-math.ts`)
 - [x] 포인트 자동 차감 (RPC 트랜잭션)
 
@@ -60,7 +60,7 @@
 
 ### 마이페이지
 - [x] 프로필 조회
-- [x] 베팅 내역 (진행 중 / 완료)
+- [x] 예측 내역 (진행 중 / 완료)
 - [x] 수익 통계
 - [x] 프로필 수정 / 아바타 업로드
 - [x] 팔로우 / 언팔로우 버튼

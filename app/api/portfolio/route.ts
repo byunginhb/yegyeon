@@ -29,7 +29,7 @@ export async function GET(_req: NextRequest) {
       )
     }
 
-    // 베팅 목록 조회 (마켓 정보 포함)
+    // 예측 목록 조회 (마켓 정보 포함)
     const { data: bets, error: betsError } = await adminSupabase
       .from('bets')
       .select(`
@@ -41,7 +41,7 @@ export async function GET(_req: NextRequest) {
 
     if (betsError) {
       return NextResponse.json(
-        { success: false, error: '베팅 목록을 불러오는 데 실패했습니다.' },
+        { success: false, error: '예측 목록을 불러오는 데 실패했습니다.' },
         { status: 500 }
       )
     }
@@ -58,7 +58,7 @@ export async function GET(_req: NextRequest) {
 
     const allBets = (bets ?? []) as unknown as BetRow[]
 
-    // 진행 중 베팅 / 완료된 베팅 분류
+    // 진행 중 예측 / 완료된 예측 분류
     const activeBets = allBets.filter((b) => {
       return b.market?.status === 'open' || b.market?.status === 'closed'
     })

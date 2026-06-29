@@ -166,7 +166,7 @@ export default async function MarketDetailPage({ params }: Props) {
       }
     }
 
-    // 베팅 이벤트 시계열 누적 (상위 옵션만)
+    // 예측 이벤트 시계열 누적 (상위 옵션만)
     for (const bet of mcBets ?? []) {
       const optId = bet.option_id as string | null
       const prob = bet.probability_at_bet as number | null
@@ -343,14 +343,14 @@ export default async function MarketDetailPage({ params }: Props) {
             </div>
           )}
 
-          {/* 자동 마켓(BTC 5분 등)은 전용 위젯에서만 베팅 */}
+          {/* 자동 마켓(BTC 5분 등)은 전용 위젯에서만 예측 */}
           {market.auto_kind ? (
             <div className="mb-5 p-4 rounded-xl bg-canvas-50 border border-ink-200 text-center text-sm text-ink-500">
               이 라운드는{' '}
               <Link href="/" className="text-primary font-medium hover:underline">
                 메인 페이지의 실시간 위젯
               </Link>
-              에서 베팅할 수 있습니다.
+              에서 예측할 수 있습니다.
             </div>
           ) : !isPending && !isRejected ? (
             <>
@@ -369,7 +369,7 @@ export default async function MarketDetailPage({ params }: Props) {
             </>
           ) : (
             <div className="mb-5 p-4 rounded-xl bg-canvas-50 border border-ink-200 text-center text-sm text-ink-500">
-              승인 후 베팅이 활성화됩니다.
+              승인 후 예측이 활성화됩니다.
             </div>
           )}
 

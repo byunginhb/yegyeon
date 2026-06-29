@@ -53,7 +53,7 @@ export default function Header() {
       }
     )
 
-    // 베팅/정산 등 외부에서 잔액 변동 시 즉시 반영
+    // 예측/정산 등 외부에서 잔액 변동 시 즉시 반영
     function handleBalance(e: Event) {
       const detail = (e as CustomEvent<{ points: number }>).detail
       if (typeof detail?.points === 'number') {

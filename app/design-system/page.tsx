@@ -906,7 +906,7 @@ export default function DesignSystemPage() {
                       주의
                     </div>
                     <p className="text-xs text-amber-700/80 dark:text-amber-300/80">
-                      마감 시간 이후에는 베팅을 취소할 수 없습니다.
+                      마감 시간 이후에는 예측을 취소할 수 없습니다.
                     </p>
                   </div>
                 </div>
@@ -918,7 +918,7 @@ export default function DesignSystemPage() {
                       오류
                     </div>
                     <p className="text-xs text-scarlet-700/80 dark:text-scarlet-300/80">
-                      잔액이 부족하여 베팅을 진행할 수 없습니다.
+                      잔액이 부족하여 예측을 진행할 수 없습니다.
                     </p>
                   </div>
                 </div>
@@ -1039,7 +1039,7 @@ export default function DesignSystemPage() {
                   <DialogHeader>
                     <DialogTitle>정말 삭제하시겠습니까?</DialogTitle>
                     <DialogDescription>
-                      이 작업은 되돌릴 수 없습니다. 마켓에 참여한 모든 베팅이
+                      이 작업은 되돌릴 수 없습니다. 마켓에 참여한 모든 예측이
                       취소됩니다.
                     </DialogDescription>
                   </DialogHeader>
@@ -1080,7 +1080,7 @@ export default function DesignSystemPage() {
               <Button
                 variant="outline"
                 onClick={() =>
-                  toast.success('베팅이 성공적으로 등록되었습니다', {
+                  toast.success('예측이 성공적으로 등록되었습니다', {
                     description: '확률이 62%로 업데이트되었습니다.',
                   })
                 }
@@ -1092,7 +1092,7 @@ export default function DesignSystemPage() {
               <Button
                 variant="outline"
                 onClick={() =>
-                  toast.error('베팅에 실패했습니다', {
+                  toast.error('예측에 실패했습니다', {
                     description: '잔액이 부족합니다.',
                   })
                 }

@@ -12,8 +12,8 @@ const BetSchema = z.object({
 })
 
 const RPC_ERRORS: Record<string, { status: number; message: string }> = {
-  INVALID_AMOUNT: { status: 400, message: '베팅 금액이 유효하지 않습니다.' },
-  BELOW_MIN_BET: { status: 400, message: '최소 베팅 금액 미만입니다.' },
+  INVALID_AMOUNT: { status: 400, message: '예측 금액이 유효하지 않습니다.' },
+  BELOW_MIN_BET: { status: 400, message: '최소 예측 금액 미만입니다.' },
   USER_NOT_FOUND: { status: 404, message: '사용자 정보를 찾을 수 없습니다.' },
   USER_BANNED: { status: 403, message: '정지된 계정입니다.' },
   INSUFFICIENT_POINTS: { status: 400, message: '포인트가 부족합니다.' },
@@ -29,7 +29,7 @@ function mapRpcError(message: string | undefined): { status: number; error: stri
       if (message.includes(code)) return { status: info.status, error: info.message }
     }
   }
-  return { status: 500, error: '베팅 처리에 실패했습니다.' }
+  return { status: 500, error: '예측 처리에 실패했습니다.' }
 }
 
 export async function POST(req: NextRequest) {
@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: '이번 라운드는 마감됐습니다.' }, { status: 400 })
     }
 
-    // 라이브 BTC가 → 서버에서 베팅 가격 확정(클라이언트 신뢰 안 함)
+    // 라이브 BTC가 → 서버에서 예측 가격 확정(클라이언트 신뢰 안 함)
     const currentPrice = await fetchBtcKrw()
     if (currentPrice == null || round.open_price == null) {
       return NextResponse.json(

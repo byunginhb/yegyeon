@@ -1,5 +1,5 @@
 // 업비트 KRW-BTC 실시간 체결가 조회 (서버 전용)
-// 베팅 확정처럼 최신가가 필요한 경로에서 사용. (위젯 표시 가격은 서버 샘플 테이블에서 도출)
+// 예측 확정처럼 최신가가 필요한 경로에서 사용. (위젯 표시 가격은 서버 샘플 테이블에서 도출)
 export async function fetchBtcKrw(): Promise<number | null> {
   try {
     const res = await fetch(

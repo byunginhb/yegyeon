@@ -379,7 +379,7 @@ function PositionBadge({ position }: { position: CommentPosition }) {
         'inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold leading-none',
         style
       )}
-      title={`이 마켓에 ${display} ${amount.toLocaleString()}포인트 베팅`}
+      title={`이 마켓에 ${display} ${amount.toLocaleString()}포인트 예측`}
     >
       <span className="max-w-[7rem] truncate">{display}</span>
       <span className="inline-flex items-center gap-0.5 tabular-nums opacity-90">

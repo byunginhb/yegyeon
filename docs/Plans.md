@@ -9,7 +9,7 @@
 | 항목 | 내용 |
 |------|------|
 | **서비스명** | 예견 (YEGYEON) |
-| **컨셉** | 누구나 미래 사건에 질문을 만들고, 포인트로 예측에 베팅하는 한국 예측 시장 |
+| **컨셉** | 누구나 미래 사건에 질문을 만들고, 포인트로 예측에 예측하는 한국 예측 시장 |
 | **화폐** | 내부 포인트 (₣ 기호 사용, 가입 시 1,000₣ 지급) |
 | **레퍼런스** | Manifold Markets (https://manifold.markets) |
 | **대상** | 한국어 사용자, 한국 이슈에 관심 있는 모든 연령 |
@@ -25,12 +25,12 @@
 | 회원가입/로그인 | 이메일 + 카카오 OAuth | P0 |
 | 가입 포인트 지급 | 가입 즉시 1,000₣ 자동 지급 | P0 |
 | 마켓 브라우징 | 카테고리/정렬/검색으로 마켓 탐색 | P0 |
-| 마켓 상세 조회 | 확률 그래프, 베팅 내역, 댓글 | P0 |
+| 마켓 상세 조회 | 확률 그래프, 예측 내역, 댓글 | P0 |
 | 마켓 생성 | Binary / Multiple Choice / Numeric 3종 | P0 |
-| 베팅 | YES/NO 또는 옵션 선택 후 포인트 투입 | P0 |
+| 예측 | YES/NO 또는 옵션 선택 후 포인트 투입 | P0 |
 | 마켓 정산 | 생성자가 결과 확정 → 포인트 분배 | P0 |
-| 포트폴리오 | 내 베팅 현황, 손익, 포인트 잔액 | P1 |
-| 프로필 페이지 | 베팅 히스토리, 예측 적중률, 획득 포인트 | P1 |
+| 포트폴리오 | 내 예측 현황, 손익, 포인트 잔액 | P1 |
+| 프로필 페이지 | 예측 히스토리, 예측 적중률, 획득 포인트 | P1 |
 | 댓글 | 마켓별 댓글 작성/조회 | P1 |
 | 팔로우 | 유저 팔로우/언팔로우 | P2 |
 | 리더보드 | 포인트 랭킹 (전체/주간/월간) | P2 |
@@ -41,7 +41,7 @@
 
 | 기능 | 설명 | 우선순위 |
 |------|------|---------|
-| 대시보드 | DAU, 마켓 수, 베팅량, 포인트 유통량 통계 | P0 |
+| 대시보드 | DAU, 마켓 수, 예측량, 포인트 유통량 통계 | P0 |
 | 사용자 관리 | 목록/검색, 정지/복구, 포인트 수동 조정 | P0 |
 | 마켓 관리 | 목록/검색, 강제 정산, 숨김/삭제 | P0 |
 | 카테고리 관리 | 카테고리 추가/수정/삭제 | P0 |
@@ -182,7 +182,7 @@ CREATE TABLE market_options (
 );
 
 -- ============================================================
--- 베팅
+-- 예측
 -- ============================================================
 CREATE TABLE bets (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -295,7 +295,7 @@ CREATE TABLE service_settings (
 INSERT INTO service_settings (key, value, description) VALUES
   ('signup_bonus', '1000', '신규 가입 지급 포인트'),
   ('market_creation_cost', '0', '마켓 생성 비용 포인트'),
-  ('min_bet_amount', '10', '최소 베팅 포인트');
+  ('min_bet_amount', '10', '최소 예측 포인트');
 ```
 
 ---
@@ -315,7 +315,7 @@ app/
 │   └── about/page.tsx                # /about 서비스 소개
 │
 ├── (auth)/                           # 로그인 필요
-│   ├── portfolio/page.tsx            # /portfolio 내 베팅
+│   ├── portfolio/page.tsx            # /portfolio 내 예측
 │   ├── market/create/page.tsx        # /market/create 마켓 생성
 │   └── settings/page.tsx            # /settings 계정 설정
 │
@@ -364,9 +364,9 @@ components/
 │   ├── CategoryTabs.tsx        # 카테고리 필터 탭
 │   ├── SortTabs.tsx            # Best/Hot/New 정렬
 │   ├── MarketSearch.tsx        # 검색 인풋
-│   ├── BettingPanel.tsx        # 베팅 패널 (Binary)
-│   ├── BettingPanelMultiple.tsx # 베팅 패널 (Multiple Choice)
-│   ├── BettingPanelNumeric.tsx  # 베팅 패널 (Numeric)
+│   ├── BettingPanel.tsx        # 예측 패널 (Binary)
+│   ├── BettingPanelMultiple.tsx # 예측 패널 (Multiple Choice)
+│   ├── BettingPanelNumeric.tsx  # 예측 패널 (Numeric)
 │   ├── ProbabilityBar.tsx      # 확률 게이지
 │   ├── MarketTypeTag.tsx       # 마켓 타입 뱃지
 │   └── MarketStatusBadge.tsx   # 상태 뱃지
@@ -404,7 +404,7 @@ api/
 ├── markets/
 │   ├── route.ts                    # GET(목록) POST(생성)
 │   ├── [id]/route.ts               # GET(상세) PATCH(수정) DELETE
-│   ├── [id]/bet/route.ts           # POST(베팅)
+│   ├── [id]/bet/route.ts           # POST(예측)
 │   ├── [id]/resolve/route.ts       # POST(정산)
 │   └── [id]/comments/route.ts     # GET POST
 │
@@ -412,7 +412,7 @@ api/
 │   ├── [username]/route.ts         # GET(프로필)
 │   └── [username]/follow/route.ts  # POST DELETE
 │
-├── portfolio/route.ts              # GET(내 베팅 현황)
+├── portfolio/route.ts              # GET(내 예측 현황)
 │
 └── admin/
     ├── stats/route.ts              # GET(대시보드 통계)
@@ -522,10 +522,10 @@ function isWinner(predicted: number, actual: number, tolerance = 0.1): boolean {
 - [ ] Numeric 마켓 생성 API
 - [ ] 카테고리 선택, 마감일 선택
 
-### Phase 5 — 베팅 시스템
+### Phase 5 — 예측 시스템
 - [ ] BettingPanel 컴포넌트 (Binary)
 - [ ] BettingPanel (Multiple Choice / Numeric)
-- [ ] 베팅 API (포인트 차감 + 지분 계산 + 확률 업데이트 원자적 처리)
+- [ ] 예측 API (포인트 차감 + 지분 계산 + 확률 업데이트 원자적 처리)
 - [ ] point_transactions 기록
 - [ ] ProbabilityChart (Recharts)
 - [ ] 마켓 정산 API + UI

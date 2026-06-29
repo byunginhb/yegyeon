@@ -2,13 +2,13 @@ import { adminSupabase } from '@/lib/supabase/admin'
 import type { CommentPosition } from '@/types'
 
 /**
- * 주어진 마켓에서 여러 유저의 "대표 베팅 포지션"을 한 번에 조회한다.
+ * 주어진 마켓에서 여러 유저의 "대표 예측 포지션"을 한 번에 조회한다.
  *
  * - bets 테이블은 RLS상 본인만 조회 가능하므로 반드시 서비스롤(adminSupabase)로 호출한다.
- * - 한 유저가 여러 번/여러 방향에 베팅했을 수 있으므로 방향별로 누적액을 합산한 뒤,
- *   누적 베팅액이 가장 큰 방향을 대표 포지션으로 선택한다.
+ * - 한 유저가 여러 번/여러 방향에 예측했을 수 있으므로 방향별로 누적액을 합산한 뒤,
+ *   누적 예측액이 가장 큰 방향을 대표 포지션으로 선택한다.
  *
- * @returns userId → CommentPosition 매핑 (베팅 이력이 없는 유저는 키 자체가 없음)
+ * @returns userId → CommentPosition 매핑 (예측 이력이 없는 유저는 키 자체가 없음)
  */
 export async function getMarketPositions(
   marketId: string,

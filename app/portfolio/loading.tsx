@@ -19,7 +19,7 @@ export default function PortfolioLoading() {
         ))}
       </div>
 
-      {/* 진행 중인 베팅 */}
+      {/* 진행 중인 예측 */}
       <section className="mb-8">
         <div className="flex items-center gap-2 mb-3">
           <div className="h-4 w-4 bg-ink-200/40 rounded animate-pulse" />

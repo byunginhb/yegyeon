@@ -41,9 +41,9 @@ interface Meta {
 
 const TYPE_LABELS: Record<string, string> = {
   signup_bonus: '가입 보너스',
-  bet_placed: '베팅',
-  bet_won: '베팅 승리',
-  bet_refund: '베팅 환급',
+  bet_placed: '예측',
+  bet_won: '예측 승리',
+  bet_refund: '예측 환급',
   admin_adjust: '관리자 조정',
   resolution: '마켓 정산',
   market_created: '마켓 생성',
@@ -124,7 +124,7 @@ export default function AdminPointsPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-ink-600">오늘 베팅 총액</CardTitle>
+            <CardTitle className="text-sm font-medium text-ink-600">오늘 예측 총액</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-ink-900">
@@ -149,7 +149,7 @@ export default function AdminPointsPage() {
           <SelectContent>
             <SelectItem value="all">전체 타입</SelectItem>
             <SelectItem value="signup_bonus">가입 보너스</SelectItem>
-            <SelectItem value="bet_placed">베팅</SelectItem>
+            <SelectItem value="bet_placed">예측</SelectItem>
             <SelectItem value="resolution">마켓 정산</SelectItem>
             <SelectItem value="admin_adjust">관리자 조정</SelectItem>
           </SelectContent>

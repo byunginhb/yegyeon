@@ -29,12 +29,12 @@ test.describe('마켓 상세 페이지', () => {
     expect(bodyText).toContain('BTS')
   })
 
-  test('베팅 패널이 표시된다', async ({ page }) => {
+  test('예측 패널이 표시된다', async ({ page }) => {
     await page.goto('/market/bts-full-comeback-2025')
     await page.waitForLoadState('networkidle')
-    // 베팅 UI 또는 로그인 요청 중 하나가 표시
+    // 예측 UI 또는 로그인 요청 중 하나가 표시
     const bodyText = await page.textContent('body')
-    const hasBetting = bodyText?.includes('베팅') || bodyText?.includes('로그인')
+    const hasBetting = bodyText?.includes('예측') || bodyText?.includes('로그인')
     expect(hasBetting).toBe(true)
   })
 })

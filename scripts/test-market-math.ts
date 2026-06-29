@@ -34,18 +34,18 @@ function approxEq(a: number, b: number, eps = 1e-3) {
 
 console.log('\n[1] calcProbabilityAfterBet — 단조성·경계값')
 {
-  // YES 베팅은 확률을 ↑, NO 베팅은 ↓ 시켜야 한다
+  // YES 예측은 확률을 ↑, NO 예측은 ↓ 시켜야 한다
   const before = 0.5
   const afterYes = calcProbabilityAfterBet(before, 100, 'YES')
   const afterNo = calcProbabilityAfterBet(before, 100, 'NO')
-  ok('YES 베팅 후 확률 상승', afterYes > before, `before=${before} after=${afterYes}`)
-  ok('NO 베팅 후 확률 하락', afterNo < before, `before=${before} after=${afterNo}`)
+  ok('YES 예측 후 확률 상승', afterYes > before, `before=${before} after=${afterYes}`)
+  ok('NO 예측 후 확률 하락', afterNo < before, `before=${before} after=${afterNo}`)
 
   // 0/1 입력은 그대로 반환되거나 클램프
   const at0 = calcProbabilityAfterBet(0, 100, 'YES')
   const at1 = calcProbabilityAfterBet(1, 100, 'YES')
-  ok('확률 0 베팅 시 NaN 없음', Number.isFinite(at0))
-  ok('확률 1 베팅 시 NaN 없음', Number.isFinite(at1))
+  ok('확률 0 예측 시 NaN 없음', Number.isFinite(at0))
+  ok('확률 1 예측 시 NaN 없음', Number.isFinite(at1))
 
   // betAmount<=0이면 변화 없음
   ok('amount=0이면 그대로', calcProbabilityAfterBet(0.5, 0, 'YES') === 0.5)
@@ -60,10 +60,10 @@ console.log('\n[2] calcSharesReceived — 양의 값·단조성')
   ok('shares > 0', s100 > 0)
   ok('amount 증가 → shares 증가', s500 > s100, `s100=${s100} s500=${s500}`)
 
-  // 낮은 확률에서 YES 베팅 시 더 많은 share (배당비)
+  // 낮은 확률에서 YES 예측 시 더 많은 share (배당비)
   const sLow = calcSharesReceived(0.2, 100, 'YES')
   const sHigh = calcSharesReceived(0.8, 100, 'YES')
-  ok('낮은 확률 YES 베팅 시 shares 더 많음', sLow > sHigh, `sLow=${sLow} sHigh=${sHigh}`)
+  ok('낮은 확률 YES 예측 시 shares 더 많음', sLow > sHigh, `sLow=${sLow} sHigh=${sHigh}`)
 
   // shares 값이 NaN/Infinity가 아니어야 함
   ok('shares 유한값', Number.isFinite(s100) && Number.isFinite(s500))
@@ -125,7 +125,7 @@ console.log('\n[4] parimutuel 정산 시뮬레이션 — 포인트 보존')
 
 console.log('\n[5] parimutuel — 단독 승자 케이스')
 {
-  // 모든 베팅이 같은 outcome이면 각자 amount 비례로 자기 풀을 그대로 회수
+  // 모든 예측이 같은 outcome이면 각자 amount 비례로 자기 풀을 그대로 회수
   const bets = [
     { user: 'A', outcome: 'YES', amount: 100 },
     { user: 'B', outcome: 'YES', amount: 200 },

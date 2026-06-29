@@ -161,11 +161,11 @@ export interface PointTransaction {
   created_at: string
 }
 
-// 댓글 작성자의 해당 마켓 베팅 포지션 요약 (대표 방향 = 누적 베팅액 최대 방향)
+// 댓글 작성자의 해당 마켓 예측 포지션 요약 (대표 방향 = 누적 예측액 최대 방향)
 export interface CommentPosition {
   kind: 'yes' | 'no' | 'option' // 이진 마켓 YES/NO 또는 그 외(옵션/숫자)
   label: string // 표시용 라벨 (YES/NO 또는 옵션 텍스트)
-  amount: number // 해당 방향 누적 베팅 포인트
+  amount: number // 해당 방향 누적 예측 포인트
 }
 
 export interface Comment {

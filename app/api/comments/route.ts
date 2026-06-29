@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
 
   const comments = (data ?? []) as unknown as Comment[]
 
-  // 작성자별 베팅 포지션을 한 번에 조회해 각 댓글에 부착
+  // 작성자별 예측 포지션을 한 번에 조회해 각 댓글에 부착
   const positions = await getMarketPositions(
     market_id,
     comments.map((c) => c.user_id)
@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
     console.error('daily_comment quest trigger failed', e)
   }
 
-  // 작성자의 이 마켓 베팅 포지션을 부착해 반환
+  // 작성자의 이 마켓 예측 포지션을 부착해 반환
   const positions = await getMarketPositions(market_id, [dbUser.id])
   const enriched: Comment = {
     ...(data as unknown as Comment),

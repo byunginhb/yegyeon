@@ -39,7 +39,7 @@ export const DAILY_QUESTS = [
   {
     type: 'daily_bet',
     title: '예측 참여하기',
-    description: '마켓에 1회 이상 베팅',
+    description: '마켓에 1회 이상 예측',
     points: 100,
     icon: 'trending-up',
   },

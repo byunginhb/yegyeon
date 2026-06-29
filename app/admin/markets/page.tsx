@@ -631,7 +631,7 @@ export default function AdminMarketsPage() {
       <ConfirmModal
         open={!!deleteTarget}
         title="마켓 삭제"
-        description={`"${deleteTarget?.title}" 마켓을 삭제하시겠습니까? 관련 베팅 데이터도 함께 삭제됩니다.`}
+        description={`"${deleteTarget?.title}" 마켓을 삭제하시겠습니까? 관련 예측 데이터도 함께 삭제됩니다.`}
         confirmLabel="삭제"
         variant="destructive"
         onConfirm={handleDelete}

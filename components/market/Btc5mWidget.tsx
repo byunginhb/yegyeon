@@ -151,17 +151,17 @@ export default function Btc5mWidget() {
         const price = json.data?.price
         const odds = price ? (1 / Number(price)).toFixed(2) : null
         toast.success(
-          `${side === 'YES' ? '상승' : '하락'} 베팅 완료!` +
+          `${side === 'YES' ? '상승' : '하락'} 예측 완료!` +
             (odds && payout
               ? ` ${odds}배 · 적중 시 ${Number(payout).toLocaleString()}포인트`
               : '')
         )
         fetchData()
       } else {
-        toast.error(json.error ?? '베팅에 실패했습니다.')
+        toast.error(json.error ?? '예측에 실패했습니다.')
       }
     } catch {
-      toast.error('베팅에 실패했습니다.')
+      toast.error('예측에 실패했습니다.')
     } finally {
       setSubmitting(false)
     }
@@ -276,7 +276,7 @@ export default function Btc5mWidget() {
         </div>
       )}
 
-      {/* 베팅: 방향(배당 표기) → 금액(예상 수령액) → 베팅 */}
+      {/* 예측: 방향(배당 표기) → 금액(예상 수령액) → 예측 */}
       <div className="mt-3 px-4 pb-3">
         <div className="grid grid-cols-2 gap-2">
           <button
@@ -344,7 +344,7 @@ export default function Btc5mWidget() {
         </div>
 
         <p className="mt-2 text-center text-[10px] text-ink-400">
-          표시 배당은 예상이며 베팅 시점 시세로 확정됩니다 · 막판일수록 유력한 쪽 배당이 1배에 수렴
+          표시 배당은 예상이며 예측 시점 시세로 확정됩니다 · 막판일수록 유력한 쪽 배당이 1배에 수렴
         </p>
 
         <Button
@@ -356,9 +356,9 @@ export default function Btc5mWidget() {
           {closed
             ? '정산 중…'
             : submitting
-              ? '베팅 중…'
+              ? '예측 중…'
               : side
-                ? `${side === 'YES' ? '상승' : '하락'}에 베팅하기`
+                ? `${side === 'YES' ? '상승' : '하락'}에 예측하기`
                 : '방향을 선택하세요'}
         </Button>
 

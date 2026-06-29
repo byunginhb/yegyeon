@@ -51,9 +51,9 @@ interface UserDetail {
 
 const TX_LABELS: Record<string, string> = {
   signup_bonus: '가입 보너스',
-  bet_placed: '베팅',
-  bet_won: '베팅 승리',
-  bet_refund: '베팅 환급',
+  bet_placed: '예측',
+  bet_won: '예측 승리',
+  bet_refund: '예측 환급',
   admin_adjust: '관리자 조정',
   resolution: '마켓 정산',
   market_created: '마켓 생성',
@@ -210,11 +210,11 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">최근 베팅</CardTitle>
+          <CardTitle className="text-base">최근 예측</CardTitle>
         </CardHeader>
         <CardContent>
           {recentBets.length === 0 ? (
-            <p className="text-sm text-ink-400">베팅 기록이 없습니다.</p>
+            <p className="text-sm text-ink-400">예측 기록이 없습니다.</p>
           ) : (
             <Table>
               <TableHeader>

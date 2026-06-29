@@ -17,7 +17,7 @@ interface Setting {
 const KEY_LABELS: Record<string, string> = {
   signup_bonus: '신규 가입 지급 포인트',
   market_creation_cost: '마켓 생성 비용',
-  min_bet_amount: '최소 베팅 금액',
+  min_bet_amount: '최소 예측 금액',
   initial_liquidity: 'Binary 마켓 초기 유동성',
 }
 

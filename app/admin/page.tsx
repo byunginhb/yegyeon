@@ -176,7 +176,7 @@ export default function AdminDashboardPage() {
           highlight={stats.pendingMarkets > 0}
         />
         <StatCard
-          title="오늘 베팅 거래량"
+          title="오늘 예측 거래량"
           value={`${stats.todayBettingVolume.toLocaleString()}포인트`}
         />
         <StatCard

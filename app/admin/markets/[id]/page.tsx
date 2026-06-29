@@ -274,11 +274,11 @@ export default function AdminMarketDetailPage({ params }: { params: Promise<{ id
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">최근 베팅</CardTitle>
+          <CardTitle className="text-base">최근 예측</CardTitle>
         </CardHeader>
         <CardContent>
           {recentBets.length === 0 ? (
-            <p className="text-sm text-ink-400">베팅이 없습니다.</p>
+            <p className="text-sm text-ink-400">예측이 없습니다.</p>
           ) : (
             <Table>
               <TableHeader>

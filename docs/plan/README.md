@@ -44,7 +44,7 @@
 
 ### 구현 완료
 - 이메일/카카오/Google OAuth 인증
-- Binary / Multiple Choice / Numeric 마켓 생성 및 베팅
+- Binary / Multiple Choice / Numeric 마켓 생성 및 예측
 - LMSR 기반 확률 계산 + 마켓 정산
 - 포인트 시스템 (지갑, 거래 내역)
 - 댓글 / 신고 시스템

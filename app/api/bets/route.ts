@@ -12,14 +12,14 @@ const BetSchema = z.object({
 })
 
 const RPC_ERROR_MESSAGES: Record<string, { status: number; message: string }> = {
-  INVALID_AMOUNT: { status: 400, message: '베팅 금액이 유효하지 않습니다.' },
-  BELOW_MIN_BET: { status: 400, message: '최소 베팅 금액 미만입니다.' },
+  INVALID_AMOUNT: { status: 400, message: '예측 금액이 유효하지 않습니다.' },
+  BELOW_MIN_BET: { status: 400, message: '최소 예측 금액 미만입니다.' },
   USER_NOT_FOUND: { status: 404, message: '사용자 프로필을 찾을 수 없습니다.' },
   USER_BANNED: { status: 403, message: '정지된 계정입니다.' },
   INSUFFICIENT_POINTS: { status: 400, message: '포인트가 부족합니다.' },
   MARKET_NOT_FOUND: { status: 404, message: '마켓을 찾을 수 없습니다.' },
   MARKET_CLOSED: { status: 400, message: '이미 마감된 마켓입니다.' },
-  INVALID_OUTCOME: { status: 400, message: '잘못된 베팅 결과입니다.' },
+  INVALID_OUTCOME: { status: 400, message: '잘못된 예측 결과입니다.' },
   OPTION_REQUIRED: { status: 400, message: '옵션을 선택해주세요.' },
   INVALID_OPTION: { status: 400, message: '잘못된 옵션입니다.' },
   INVALID_NUMERIC: { status: 400, message: '숫자 값이 잘못되었습니다.' },
@@ -30,7 +30,7 @@ function mapRpcError(message: string | undefined): { status: number; error: stri
   for (const [code, info] of Object.entries(RPC_ERROR_MESSAGES)) {
     if (message.includes(code)) return { status: info.status, error: info.message }
   }
-  return { status: 500, error: '베팅 처리에 실패했습니다.' }
+  return { status: 500, error: '예측 처리에 실패했습니다.' }
 }
 
 export async function POST(req: NextRequest) {
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: mapped.error }, { status: mapped.status })
     }
 
-    // 베팅 성공 — daily_bet 퀘스트 자동 완료 (실패해도 본 동작에 영향 없음)
+    // 예측 성공 — daily_bet 퀘스트 자동 완료 (실패해도 본 동작에 영향 없음)
     try {
       const { data: dbUser } = await adminSupabase
         .from('users')

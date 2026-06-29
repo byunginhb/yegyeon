@@ -177,7 +177,7 @@ export default function MarketCard({ market }: MarketCardProps) {
             </>
           )}
 
-          {/* 베팅/보기 버튼 */}
+          {/* 예측/보기 버튼 */}
           <span
             className={cn(
               'px-3 py-1.5 rounded-full text-xs font-semibold border whitespace-nowrap',
@@ -186,7 +186,7 @@ export default function MarketCard({ market }: MarketCardProps) {
               'transition-colors'
             )}
           >
-            {market.status === 'open' ? '베팅' : '보기'}
+            {market.status === 'open' ? '예측' : '보기'}
           </span>
         </div>
       </div>

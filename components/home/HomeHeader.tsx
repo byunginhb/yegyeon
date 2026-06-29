@@ -56,7 +56,7 @@ export default async function HomeHeader() {
             한국에서 일어날 모든 일에
             <br />
             <span className="bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
-              포인트로 베팅하세요
+              포인트로 예측하세요
             </span>
           </h1>
           <p className="mt-2 text-sm text-ink-600 max-w-lg">

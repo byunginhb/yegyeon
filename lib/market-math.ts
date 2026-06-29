@@ -35,7 +35,7 @@ function lmsrCost(qYes: number, qNo: number, liquidity: number): number {
 }
 
 /**
- * 베팅 후 새로운 확률 계산
+ * 예측 후 새로운 확률 계산
  */
 export function calcProbabilityAfterBet(
   currentProb: number,
@@ -59,7 +59,7 @@ export function calcProbabilityAfterBet(
 }
 
 /**
- * 베팅으로 받게 되는 share 수 계산
+ * 예측으로 받게 되는 share 수 계산
  * shares = 비용 변화량 = C(after) - C(before) 로 구매하는 shares
  * 실제 LMSR에서 amount를 지불하면 receives shares = amount (단순화)
  * 정확한 계산: 새 q값에서의 share 차이
@@ -114,17 +114,17 @@ export function calcPotentialPayout(
 }
 
 /**
- * Parimutuel 예상 수익 — 베팅 미리보기와 실제 정산을 일치시키는 단일 공식.
+ * Parimutuel 예상 수익 — 예측 미리보기와 실제 정산을 일치시키는 단일 공식.
  *
- * 가정: 사용자가 amount 포인트를 'YES' 또는 'NO'에 베팅하고 그 결과가 정답이면,
+ * 가정: 사용자가 amount 포인트를 'YES' 또는 'NO'에 예측하고 그 결과가 정답이면,
  *        나의 amount / 새 winner_pool 비율 × 새 total_pool 만큼 받음.
  *
  * 예: yes_pool=300, no_pool=200, 내가 NO에 100 → 결과 NO일 때
  *     expected = (100 / (200 + 100)) * (300 + 200 + 100) = 1/3 * 600 = 200
  *
- * 자기 베팅분이 자기에게 포함되어 단순한 "self-fraction × 전체" 형태이므로
+ * 자기 예측분이 자기에게 포함되어 단순한 "self-fraction × 전체" 형태이므로
  * 실제 server-side parimutuel 정산 결과와 일치한다 (단, 다른 사용자가 동시에
- * 베팅을 추가하면 수치 변동 가능 — 이건 본질적인 시장 변동성).
+ * 예측을 추가하면 수치 변동 가능 — 이건 본질적인 시장 변동성).
  */
 export function calcExpectedPayoutBinary(
   amount: number,

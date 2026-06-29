@@ -35,13 +35,13 @@
 | 마켓 자동 마감 (Cron) | ✅ | `api/cron/close-expired-markets` |
 | 카테고리 시스템 | ✅ | `admin/categories/`, `api/categories` |
 
-### 베팅 / 거래
+### 예측 / 거래
 
 | 기능 | 상태 | 파일 |
 |------|------|------|
-| Binary YES/NO 베팅 (매수) | ✅ | `api/bets`, `supabase/functions/place_bet` |
-| Multiple Choice 베팅 | ✅ | 위 동일 |
-| Numeric 베팅 | ✅ | 위 동일 |
+| Binary YES/NO 예측 (매수) | ✅ | `api/bets`, `supabase/functions/place_bet` |
+| Multiple Choice 예측 | ✅ | 위 동일 |
+| Numeric 예측 | ✅ | 위 동일 |
 | LMSR 확률 계산 | ✅ | `lib/market-math.ts` |
 | 포인트 자동 차감 | ✅ | RPC 내 트랜잭션 |
 | 매도 기능 | ❌ | P3 범위 (1차 제외) |
@@ -97,7 +97,7 @@
 | 기능 | 상태 | 파일 |
 |------|------|------|
 | 프로필 조회 | ✅ | `app/profile/[username]/` |
-| 베팅 내역 (진행 중 / 완료) | ✅ | 프로필 탭 |
+| 예측 내역 (진행 중 / 완료) | ✅ | 프로필 탭 |
 | 수익 통계 | ✅ | 프로필 통계 섹션 |
 | 프로필 수정 | ✅ | `app/settings/` |
 | 아바타 업로드 | ✅ | `api/settings/avatar` |

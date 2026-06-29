@@ -102,11 +102,11 @@ export default function BettingPanel({
       return
     }
     if (!selectedOutcome) {
-      toast.error('베팅할 항목을 선택해주세요.')
+      toast.error('예측할 항목을 선택해주세요.')
       return
     }
     if (amount < 10) {
-      toast.error('최소 베팅 금액은 10포인트입니다.')
+      toast.error('최소 예측 금액은 10포인트입니다.')
       return
     }
     if (localPoints < amount) {
@@ -134,7 +134,7 @@ export default function BettingPanel({
       const json = await res.json()
 
       if (!json.success) {
-        toast.error(json.error ?? '베팅에 실패했습니다.')
+        toast.error(json.error ?? '예측에 실패했습니다.')
         return
       }
 
@@ -153,7 +153,7 @@ export default function BettingPanel({
       onBetSuccess?.(json.data.new_probability)
 
       toast.success(
-        `${outcomeText}에 ${amount.toLocaleString()}포인트 베팅 완료`
+        `${outcomeText}에 ${amount.toLocaleString()}포인트 예측 완료`
       )
 
       // 금액 초기화
@@ -169,15 +169,15 @@ export default function BettingPanel({
   if (!isLoggedIn) {
     return (
       <div className="bg-canvas-0 rounded-2xl border border-ink-200 p-6">
-        <h3 className="text-base font-semibold text-ink-1000 mb-4">베팅하기</h3>
+        <h3 className="text-base font-semibold text-ink-1000 mb-4">예측하기</h3>
         <p className="text-sm text-ink-600 mb-4">
-          이 마켓에 베팅하려면 로그인이 필요합니다.
+          이 마켓에 예측하려면 로그인이 필요합니다.
         </p>
         <Button
           className="w-full"
           onClick={() => router.push('/auth/login')}
         >
-          로그인 후 베팅하기
+          로그인 후 예측하기
         </Button>
       </div>
     )
@@ -186,8 +186,8 @@ export default function BettingPanel({
   if (market.status !== 'open') {
     return (
       <div className="bg-canvas-0 rounded-2xl border border-ink-200 p-6">
-        <h3 className="text-base font-semibold text-ink-1000 mb-2">베팅하기</h3>
-        <p className="text-sm text-ink-500">이 마켓은 현재 베팅이 마감되었습니다.</p>
+        <h3 className="text-base font-semibold text-ink-1000 mb-2">예측하기</h3>
+        <p className="text-sm text-ink-500">이 마켓은 현재 예측이 마감되었습니다.</p>
       </div>
     )
   }
@@ -195,7 +195,7 @@ export default function BettingPanel({
   return (
     <div className="bg-canvas-0 rounded-2xl border border-ink-200 p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-base font-semibold text-ink-1000">베팅하기</h3>
+        <h3 className="text-base font-semibold text-ink-1000">예측하기</h3>
         <span className="text-sm text-ink-500">
           보유: <PointsDisplay amount={localPoints} size="sm" className="font-semibold text-ink-800" />
         </span>
@@ -266,7 +266,7 @@ export default function BettingPanel({
 
       {/* 금액 입력 */}
       <div className="mb-3">
-        <label className="text-xs text-ink-500 mb-1.5 flex items-center gap-0.5">베팅 금액 <PointIcon size={11} /></label>
+        <label className="text-xs text-ink-500 mb-1.5 flex items-center gap-0.5">예측 금액 <PointIcon size={11} /></label>
         <Input
           type="number"
           min={10}
@@ -323,7 +323,7 @@ export default function BettingPanel({
         {isSubmitting
           ? '처리 중...'
           : selectedOutcome
-            ? `${market.type === 'multiple_choice' ? (market.options?.find(o => o.id === selectedOutcome)?.text ?? selectedOutcome) : selectedOutcome}에 ${amount.toLocaleString()}포인트 베팅`
+            ? `${market.type === 'multiple_choice' ? (market.options?.find(o => o.id === selectedOutcome)?.text ?? selectedOutcome) : selectedOutcome}에 ${amount.toLocaleString()}포인트 예측`
             : '항목을 선택해주세요'}
       </Button>
     </div>

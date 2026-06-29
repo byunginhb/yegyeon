@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 })
     }
 
-    // 베팅 횟수 집계
+    // 예측 횟수 집계
     const countMap: Record<string, number> = {}
     for (const b of data ?? []) {
       countMap[b.user_id] = (countMap[b.user_id] ?? 0) + 1
