@@ -12,6 +12,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = req.nextUrl
     const status = searchParams.get('status') || 'all'
     const search = searchParams.get('search') || ''
+    const autoKind = searchParams.get('auto_kind')
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10))
     const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '20', 10)))
     const offset = (page - 1) * limit
@@ -19,13 +20,20 @@ export async function GET(req: NextRequest) {
     let query = adminSupabase
       .from('markets')
       .select(
-        `id, title, type, status, total_volume, close_date, created_at,
+        `id, title, type, status, total_volume, close_date, created_at, auto_kind,
          creator:users!creator_id(id, username, display_name)`,
         { count: 'exact' }
       )
 
     if (status !== 'all') {
       query = query.eq('status', status)
+    }
+
+    // auto_kind=null → 일반 마켓만, auto_kind=btc_5m → BTC 5분 마켓만, 없으면 전체
+    if (autoKind === 'null') {
+      query = query.is('auto_kind', null)
+    } else if (autoKind) {
+      query = query.eq('auto_kind', autoKind)
     }
 
     if (search) {
