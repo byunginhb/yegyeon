@@ -49,6 +49,7 @@ import {
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import WelcomePopup from '@/components/common/WelcomePopup'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
@@ -272,6 +273,7 @@ export default function DesignSystemPage() {
   const [textareaValue, setTextareaValue] = useState('')
   const [checked, setChecked] = useState(true)
   const [selectValue, setSelectValue] = useState<string | null>('option-1')
+  const [showWelcomePopup, setShowWelcomePopup] = useState(false)
 
   return (
     <div className="min-h-screen bg-canvas-100">
@@ -1162,6 +1164,24 @@ export default function DesignSystemPage() {
             </p>
           </Section>
 
+          {/* 11. 팝업 ────────────────────────────── */}
+          <Section
+            id="popup"
+            title="11. 팝업 / 모달"
+            description="신규 가입자 환영 팝업 미리보기. canvas-confetti + 선착순 이벤트 배지."
+          >
+            <div className="flex flex-wrap gap-3">
+              <Button onClick={() => setShowWelcomePopup(true)}>
+                🎉 가입 축하 팝업 보기
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              실제 환경에서는 로그인 후 최초 1회만 표시됩니다.
+              {' '}이곳에서는 <code className="rounded bg-muted px-1">forceShow</code> prop으로
+              강제 표시합니다.
+            </p>
+          </Section>
+
           {/* 푸터 */}
           <footer className="border-t border-border pt-6 pb-12 text-center text-xs text-muted-foreground">
             예견 디자인 시스템 · Manifold Markets 토큰 기반 · Tailwind v4 +
@@ -1169,6 +1189,7 @@ export default function DesignSystemPage() {
           </footer>
         </main>
       </div>
+      <WelcomePopup forceShow={showWelcomePopup} />
     </div>
   )
 }
