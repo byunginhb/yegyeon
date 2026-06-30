@@ -73,7 +73,7 @@ export default async function MarketDetailPage({ params }: Props) {
       .select(
         `
         id, title, description, thumbnail_url, type, status,
-        creator_id, category_id, close_date, resolved_at, resolution,
+        creator_id, category_id, close_date, resolved_at, resolution, resolution_criteria,
         total_volume, unique_traders, comment_count,
         yes_probability, yes_amount, no_amount,
         min_value, max_value, unit, auto_kind,
@@ -378,6 +378,16 @@ export default async function MarketDetailPage({ params }: Props) {
             <div className="mb-5 p-4 bg-canvas-50 rounded-xl border border-ink-200">
               <p className="text-sm text-ink-700 leading-relaxed whitespace-pre-line">
                 {market.description}
+              </p>
+            </div>
+          )}
+
+          {/* 판정 기준 */}
+          {market.resolution_criteria && (
+            <div className="mb-5 p-4 bg-canvas-50 rounded-xl border border-ink-200">
+              <p className="text-xs font-bold text-ink-700 mb-1.5">📋 판정 기준</p>
+              <p className="text-sm text-ink-700 leading-relaxed whitespace-pre-line">
+                {market.resolution_criteria}
               </p>
             </div>
           )}
