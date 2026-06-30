@@ -258,6 +258,7 @@ export default function AdminMarketsPage() {
   const [marketTab, setMarketTab] = useState<'general' | 'btc_5m'>('general')
   const [loading, setLoading] = useState(true)
   const [bulkStopOpen, setBulkStopOpen] = useState(false)
+  const [restartOpen, setRestartOpen] = useState(false)
 
   const [selectedMarketId, setSelectedMarketId] = useState<string | null>(null)
   const [resolveTarget, setResolveTarget] = useState<Market | null>(null)
@@ -426,6 +427,25 @@ export default function AdminMarketsPage() {
     }
   }
 
+  async function handleRestart() {
+    setActionLoading(true)
+    try {
+      const res = await fetch('/api/admin/markets/btc-5m/restart', { method: 'POST' })
+      const data = await res.json()
+      if (data.success) {
+        toast.success(`BTC 5분 마켓 ${data.restarted}개를 재시작했습니다.`)
+        fetchMarkets()
+      } else {
+        toast.error(data.error ?? '재시작 실패')
+      }
+    } catch {
+      toast.error('서버 오류가 발생했습니다.')
+    } finally {
+      setActionLoading(false)
+      setRestartOpen(false)
+    }
+  }
+
   const totalPages = Math.ceil(total / limit)
 
   return (
@@ -447,14 +467,24 @@ export default function AdminMarketsPage() {
           </TabsList>
         </Tabs>
         {marketTab === 'btc_5m' && (
-          <Button
-            variant="destructive"
-            size="sm"
-            disabled={actionLoading}
-            onClick={() => setBulkStopOpen(true)}
-          >
-            BTC 5분 마켓 일괄 중지
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={actionLoading}
+              onClick={() => setRestartOpen(true)}
+            >
+              BTC 5분 마켓 재시작
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              disabled={actionLoading}
+              onClick={() => setBulkStopOpen(true)}
+            >
+              BTC 5분 마켓 일괄 중지
+            </Button>
+          </div>
         )}
       </div>
 
@@ -695,6 +725,16 @@ export default function AdminMarketsPage() {
         variant="destructive"
         onConfirm={handleBulkStop}
         onClose={() => setBulkStopOpen(false)}
+        loading={actionLoading}
+      />
+
+      <ConfirmModal
+        open={restartOpen}
+        title="BTC 5분 마켓 재시작"
+        description="마감(closed)된 모든 BTC 5분 마켓을 진행 중(open)으로 되돌립니다. 계속하시겠습니까?"
+        confirmLabel="재시작"
+        onConfirm={handleRestart}
+        onClose={() => setRestartOpen(false)}
         loading={actionLoading}
       />
 
