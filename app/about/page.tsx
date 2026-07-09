@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: '예견 소개 — 한국 예측 마켓',
-  description: '예견은 누구나 미래 사건에 대한 질문을 만들고, 포인트로 예측에 예측할 수 있는 한국형 예측 마켓 플랫폼입니다.',
+  description: '예견은 누구나 미래 사건에 대한 질문을 만들고, 포인트로 예측에 참여할 수 있는 한국형 예측 커뮤니티입니다. 실제 현금 거래가 없습니다.',
 }
 
 export default function AboutPage() {
@@ -14,10 +14,17 @@ export default function AboutPage() {
           <header className="mb-8">
             <h1 className="text-3xl font-bold text-ink-900 mb-3">예견(YEGYEON)이란?</h1>
             <p className="text-base text-ink-700 leading-relaxed">
-              예견은 누구나 미래 사건에 대한 질문을 만들고, 내부 포인트로 예측에 예측할 수 있는
-              <strong> 한국형 예측 마켓 플랫폼</strong>입니다. 집단 지성을 통해 미래에 대한 확률을 가시화합니다.
+              예견은 누구나 미래 사건에 대한 질문을 만들고, 내부 포인트로 예측에 참여할 수 있는
+              <strong> 한국형 예측 커뮤니티</strong>입니다. 집단 지성을 통해 미래에 대한 확률을 가시화합니다.
             </p>
           </header>
+
+          {/* 현금 도박 아님 고지 */}
+          <div className="mb-8 rounded-lg border border-ink-200 bg-canvas-100 px-4 py-3 text-sm text-ink-700 leading-relaxed">
+            예견은 실제 현금 도박 또는 스포츠 베팅 서비스가 아닙니다. 포인트는 서비스 내에서만
+            사용되는 가상 점수이며, 현금화·환전·양도·매매가 불가능하고 실제 가치가 있는 상품을
+            제공하지 않습니다.
+          </div>
 
           {/* 포인트 시스템 */}
           <section className="mb-8">
@@ -62,7 +69,7 @@ export default function AboutPage() {
               <li>카카오 로그인으로 1분 내 가입합니다.</li>
               <li>가입 보너스 1,000포인트로 관심 있는 마켓에 예측해 보세요.</li>
               <li>직접 마켓을 생성하여 다른 사용자들과 예측을 공유할 수 있습니다.</li>
-              <li>마감 후 결과가 확정되면 자동으로 포인트가 정산됩니다.</li>
+              <li>마감 후 결과가 확정되면 자동으로 포인트에 반영됩니다.</li>
             </ol>
           </section>
 

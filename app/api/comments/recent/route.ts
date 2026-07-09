@@ -5,9 +5,9 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 30
 
 // 사이트 전체의 최근 댓글 — 사이드바 ticker용
-// 공개 가능한 모든 마켓(open/closed/resolved) 댓글을 노출.
-// 숨김(is_hidden)·심사중(pending)·거절(rejected)·취소(cancelled)는 제외.
-const VISIBLE_STATUSES = new Set(['open', 'closed', 'resolved'])
+// 진행 중(open) 마켓 댓글만 노출. 마감(closed)·정산완료(resolved) 마켓 댓글은 제외.
+// 숨김(is_hidden)·심사중(pending)·거절(rejected)·취소(cancelled)도 제외.
+const VISIBLE_STATUSES = new Set(['open'])
 
 export async function GET() {
   const { data, error } = await adminSupabase

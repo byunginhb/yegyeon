@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import FollowButton from '@/components/user/FollowButton'
 import { ReportButton } from '@/components/common/ReportButton'
 import PageShell from '@/components/layout/PageShell'
+import BetCloseCountdown from '@/components/profile/BetCloseCountdown'
 import Link from 'next/link'
 import {
   Calendar,
@@ -109,6 +110,26 @@ export default async function ProfilePage({ params }: Props) {
 
   const markets = (marketsResult.data ?? []) as unknown as Market[]
   const bets = (betsResult.data ?? []) as unknown as BetWithMarket[]
+
+  // 다중 선택/수치 마켓 예측은 outcome에 slug성 문자열이 담겨 URL처럼 보인다.
+  // option_id → market_options.text 로 사람이 읽을 수 있는 라벨을 만든다.
+  const optionIds = Array.from(
+    new Set(bets.map((b) => b.option_id).filter((v): v is string => !!v))
+  )
+  let optionText: Record<string, string> = {}
+  if (optionIds.length > 0) {
+    const { data: opts } = await adminSupabase
+      .from('market_options')
+      .select('id, text')
+      .in('id', optionIds)
+    optionText = Object.fromEntries(
+      (opts ?? []).map((o) => [o.id as string, o.text as string])
+    )
+  }
+
+  // 예측 방향 라벨: 옵션이면 옵션 텍스트, 아니면 YES/NO 등 outcome 그대로.
+  const betLabel = (bet: BetWithMarket): string =>
+    bet.option_id ? (optionText[bet.option_id] ?? '옵션') : bet.outcome
 
   // Summary 통계
   const activeBets = bets.filter(
@@ -292,7 +313,7 @@ export default async function ProfilePage({ params }: Props) {
                                     마켓 정보 없음
                                   </p>
                                 )}
-                                <div className="flex items-center gap-2 mt-1">
+                                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1">
                                   <span
                                     className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                                       bet.outcome === 'YES'
@@ -302,11 +323,14 @@ export default async function ProfilePage({ params }: Props) {
                                         : 'bg-primary/10 text-primary'
                                     }`}
                                   >
-                                    {bet.outcome}
+                                    {betLabel(bet)}
                                   </span>
                                   <span className="text-xs text-ink-400">
-                                    {new Date(bet.created_at).toLocaleDateString('ko-KR')}
+                                    예견일 {new Date(bet.created_at).toLocaleDateString('ko-KR')}
                                   </span>
+                                  {market?.close_date && (
+                                    <BetCloseCountdown closeDate={market.close_date} />
+                                  )}
                                 </div>
                               </div>
                               <div className="text-right shrink-0">
@@ -390,7 +414,7 @@ export default async function ProfilePage({ params }: Props) {
                                         : 'bg-primary/10 text-primary'
                                     }`}
                                   >
-                                    {bet.outcome}
+                                    {betLabel(bet)}
                                   </span>
                                   {market?.resolution && (
                                     <span className="text-xs text-ink-500">
@@ -531,7 +555,7 @@ export default async function ProfilePage({ params }: Props) {
                                 : 'bg-scarlet-500/10 text-scarlet-500'
                             }`}
                           >
-                            {bet.outcome.toUpperCase()}
+                            {betLabel(bet)}
                           </span>
                           <span className="tabular-nums">
                             {bet.amount.toLocaleString()}포인트 예측

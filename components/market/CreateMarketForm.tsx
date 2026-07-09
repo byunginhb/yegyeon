@@ -328,8 +328,8 @@ export default function CreateMarketForm({ categories }: Props) {
                 value={form.description}
                 onChange={e => update('description', e.target.value)}
                 placeholder="마켓에 대한 추가 설명을 입력하세요."
-                rows={3}
-                className="w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring resize-none transition-colors"
+                rows={6}
+                className="w-full min-h-[8rem] rounded-lg border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring resize-y transition-colors"
               />
             </div>
 
@@ -407,8 +407,8 @@ export default function CreateMarketForm({ categories }: Props) {
                 value={form.resolution_criteria}
                 onChange={e => update('resolution_criteria', e.target.value)}
                 placeholder="이 마켓의 결과를 어떻게 판단할지 명확하게 설명해주세요."
-                rows={3}
-                className="w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring resize-none transition-colors"
+                rows={6}
+                className="w-full min-h-[8rem] rounded-lg border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring resize-y transition-colors"
               />
             </div>
           </div>
