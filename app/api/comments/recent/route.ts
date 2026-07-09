@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
 import { adminSupabase } from '@/lib/supabase/admin'
 
-export const dynamic = 'force-dynamic'
+// force-dynamic이면 아래 revalidate 캐시가 무효화돼 매 요청마다 DB를 친다.
+// 티커는 30초 지연을 허용하므로 응답을 캐시해 부하를 줄인다.
 export const revalidate = 30
 
 // 사이트 전체의 최근 댓글 — 사이드바 ticker용

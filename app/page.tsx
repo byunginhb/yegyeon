@@ -30,6 +30,7 @@ import MarketListSkeleton from '@/components/market/MarketListSkeleton'
 import HomeHeader from '@/components/home/HomeHeader'
 import PageShell from '@/components/layout/PageShell'
 import MobileGamificationStrip from '@/components/gamification/MobileGamificationStrip'
+import { unstable_cache } from 'next/cache'
 import { adminSupabase } from '@/lib/supabase/admin'
 import type { Category, Market } from '@/types/index'
 
@@ -116,6 +117,18 @@ async function fetchMarkets(params: {
   return (data as unknown as Market[]) ?? []
 }
 
+// 홈은 요청마다 SSR된다(searchParams로 동적). 무캐시로 두면 동시 접속·크롤러 시
+// 카테고리/마켓 쿼리가 매번 나가 DB가 과부하된다. 데이터 캐시로 동일 조건 요청을 합친다.
+const getCategories = unstable_cache(fetchCategories, ['home-categories'], {
+  revalidate: 300,
+})
+const getMarkets = unstable_cache(
+  (params: { category?: string; sort?: string; page?: string; q?: string }) =>
+    fetchMarkets(params),
+  ['home-markets'],
+  { revalidate: 30 }
+)
+
 async function MarketsSection({
   category,
   sort,
@@ -127,7 +140,7 @@ async function MarketsSection({
   page?: string
   q?: string
 }) {
-  const markets = await fetchMarkets({ category, sort, page, q })
+  const markets = await getMarkets({ category, sort, page, q })
   const emptyMessage = q
     ? `"${q}" 검색 결과가 없습니다.`
     : '열린 마켓이 없습니다.'
@@ -136,7 +149,7 @@ async function MarketsSection({
 
 export default async function HomePage({ searchParams }: HomePageProps) {
   const params = await searchParams
-  const categories = await fetchCategories()
+  const categories = await getCategories()
 
   return (
     <PageShell>

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { unstable_cache } from 'next/cache'
 import { TrendingUp, Flame, Trophy } from 'lucide-react'
 import { adminSupabase } from '@/lib/supabase/admin'
 import PointIcon from '@/components/ui/PointIcon'
@@ -84,8 +85,15 @@ async function fetchSidebarData() {
   }
 }
 
+// 사이드바는 모든 페이지에 렌더된다. 매 요청마다 4개 쿼리가 나가면
+// 동시 접속·크롤러 상황에서 DB가 과부하(522)된다.
+// 60초 데이터 캐시로 동시 요청을 단일 쿼리로 합친다.
+const getSidebarData = unstable_cache(fetchSidebarData, ['right-sidebar-data'], {
+  revalidate: 60,
+})
+
 export default async function RightSidebar() {
-  const { trending, topUsers, categories } = await fetchSidebarData()
+  const { trending, topUsers, categories } = await getSidebarData()
 
   return (
     <aside className="hidden xl:block w-72 shrink-0 space-y-4 pl-4">
