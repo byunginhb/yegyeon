@@ -343,16 +343,7 @@ export default async function MarketDetailPage({ params }: Props) {
             </div>
           )}
 
-          {/* 자동 마켓(BTC 5분 등)은 전용 위젯에서만 예측 */}
-          {market.auto_kind ? (
-            <div className="mb-5 p-4 rounded-xl bg-canvas-50 border border-ink-200 text-center text-sm text-ink-500">
-              이 라운드는{' '}
-              <Link href="/" className="text-primary font-medium hover:underline">
-                메인 페이지의 실시간 위젯
-              </Link>
-              에서 예측할 수 있습니다.
-            </div>
-          ) : !isPending && !isRejected ? (
+          {!isPending && !isRejected ? (
             <>
               {/* MC 옵션별 시계열 차트 (Polymarket 스타일) */}
               {market.type === 'multiple_choice' && mcChartSeries.length > 0 && (

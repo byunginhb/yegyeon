@@ -27,7 +27,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -255,10 +254,7 @@ export default function AdminMarketsPage() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState(() => searchParams.get('status') ?? 'all')
-  const [marketTab, setMarketTab] = useState<'general' | 'btc_5m'>('general')
   const [loading, setLoading] = useState(true)
-  const [bulkStopOpen, setBulkStopOpen] = useState(false)
-  const [restartOpen, setRestartOpen] = useState(false)
 
   const [selectedMarketId, setSelectedMarketId] = useState<string | null>(null)
   const [resolveTarget, setResolveTarget] = useState<Market | null>(null)
@@ -281,7 +277,6 @@ export default function AdminMarketsPage() {
         limit: String(limit),
         status: statusFilter,
         search,
-        auto_kind: marketTab === 'general' ? 'null' : 'btc_5m',
       })
       const res = await fetch(`/api/admin/markets?${params}`)
       const data = await res.json()
@@ -307,7 +302,7 @@ export default function AdminMarketsPage() {
     } finally {
       setLoading(false)
     }
-  }, [page, statusFilter, search, marketTab])
+  }, [page, statusFilter, search])
 
   useEffect(() => {
     fetchMarkets()
@@ -408,85 +403,11 @@ export default function AdminMarketsPage() {
     }
   }
 
-  async function handleBulkStop() {
-    setActionLoading(true)
-    try {
-      const res = await fetch('/api/admin/markets/btc-5m/stop', { method: 'POST' })
-      const data = await res.json()
-      if (data.success) {
-        toast.success(`BTC 5분 마켓 ${data.stopped}개를 중지했습니다.`)
-        fetchMarkets()
-      } else {
-        toast.error(data.error ?? '일괄 중지 실패')
-      }
-    } catch {
-      toast.error('서버 오류가 발생했습니다.')
-    } finally {
-      setActionLoading(false)
-      setBulkStopOpen(false)
-    }
-  }
-
-  async function handleRestart() {
-    setActionLoading(true)
-    try {
-      const res = await fetch('/api/admin/markets/btc-5m/restart', { method: 'POST' })
-      const data = await res.json()
-      if (data.success) {
-        toast.success(`BTC 5분 마켓 ${data.restarted}개를 재시작했습니다.`)
-        fetchMarkets()
-      } else {
-        toast.error(data.error ?? '재시작 실패')
-      }
-    } catch {
-      toast.error('서버 오류가 발생했습니다.')
-    } finally {
-      setActionLoading(false)
-      setRestartOpen(false)
-    }
-  }
-
   const totalPages = Math.ceil(total / limit)
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-ink-900">마켓 관리</h1>
-
-      {/* 마켓 종류 탭 */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <Tabs
-          value={marketTab}
-          onValueChange={(v) => {
-            setMarketTab(v as 'general' | 'btc_5m')
-            setPage(1)
-          }}
-        >
-          <TabsList>
-            <TabsTrigger value="general">일반 마켓</TabsTrigger>
-            <TabsTrigger value="btc_5m">BTC 5분 마켓</TabsTrigger>
-          </TabsList>
-        </Tabs>
-        {marketTab === 'btc_5m' && (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={actionLoading}
-              onClick={() => setRestartOpen(true)}
-            >
-              BTC 5분 마켓 재시작
-            </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              disabled={actionLoading}
-              onClick={() => setBulkStopOpen(true)}
-            >
-              BTC 5분 마켓 일괄 중지
-            </Button>
-          </div>
-        )}
-      </div>
 
       {/* 필터 */}
       <div className="flex items-center gap-3 flex-wrap">
@@ -714,27 +635,6 @@ export default function AdminMarketsPage() {
         variant="destructive"
         onConfirm={handleDelete}
         onClose={() => setDeleteTarget(null)}
-        loading={actionLoading}
-      />
-
-      <ConfirmModal
-        open={bulkStopOpen}
-        title="BTC 5분 마켓 일괄 중지"
-        description="진행 중(open)인 모든 BTC 5분 마켓을 마감(closed) 처리합니다. 계속하시겠습니까?"
-        confirmLabel="일괄 중지"
-        variant="destructive"
-        onConfirm={handleBulkStop}
-        onClose={() => setBulkStopOpen(false)}
-        loading={actionLoading}
-      />
-
-      <ConfirmModal
-        open={restartOpen}
-        title="BTC 5분 마켓 재시작"
-        description="마감(closed)된 모든 BTC 5분 마켓을 진행 중(open)으로 되돌립니다. 계속하시겠습니까?"
-        confirmLabel="재시작"
-        onConfirm={handleRestart}
-        onClose={() => setRestartOpen(false)}
         loading={actionLoading}
       />
 
