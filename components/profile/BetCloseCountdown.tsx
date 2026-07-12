@@ -4,11 +4,19 @@ import { useEffect, useState } from 'react'
 import { Clock } from 'lucide-react'
 
 // 마감까지 남은 시간 카운트다운.
-// 성능 보호: 평상시 1초 간격, 마감 임박(60초 미만) 시에만 100ms로 밀리초 표시.
-const IMMINENT_MS = 60_000
+// 성능 보호(단계별 갱신): 평상시 1초, 10분 이내 0.1초, 마지막 1분 0.01초(밀리초 느낌).
+//   → 무거운 고빈도 갱신은 마감 임박 카드에만 적용된다.
+const LAST_MINUTE_MS = 60_000
+const LAST_10MIN_MS = 600_000
 
 function diff(closeDate: string): number {
   return new Date(closeDate).getTime() - Date.now()
+}
+
+function tickInterval(remaining: number): number {
+  if (remaining < LAST_MINUTE_MS) return 50 // 센티초가 살아있게 보이도록
+  if (remaining < LAST_10MIN_MS) return 100
+  return 1000
 }
 
 function format(remaining: number): string {
@@ -19,11 +27,18 @@ function format(remaining: number): string {
   const hours = Math.floor((totalSec % 86400) / 3600)
   const minutes = Math.floor((totalSec % 3600) / 60)
   const seconds = Math.floor(totalSec % 60)
+  const mm = String(minutes).padStart(2, '0')
+  const ss = String(seconds).padStart(2, '0')
 
-  if (remaining < IMMINENT_MS) {
-    // 임박: 초.십분의일초까지 (100ms 갱신)
+  if (remaining < LAST_MINUTE_MS) {
+    // 마지막 1분: 분:초.센티초 (00:47.62)
+    const cs = Math.floor((remaining % 1000) / 10)
+    return `${mm}:${ss}.${String(cs).padStart(2, '0')}`
+  }
+  if (remaining < LAST_10MIN_MS) {
+    // 10분 이내: 분:초.십분의일초 (09:58.4)
     const tenths = Math.floor((remaining % 1000) / 100)
-    return `${seconds}.${tenths}초`
+    return `${mm}:${ss}.${tenths}`
   }
   if (days > 0) return `${days}일 ${hours}시간`
   if (hours > 0) return `${hours}시간 ${minutes}분`
@@ -43,13 +58,13 @@ export default function BetCloseCountdown({ closeDate }: { closeDate: string }) 
       const left = diff(closeDate)
       setRemaining(left)
       if (left <= 0) return
-      id = setTimeout(schedule, left < IMMINENT_MS ? 100 : 1000)
+      id = setTimeout(schedule, tickInterval(left))
     }
     schedule()
     return () => clearTimeout(id)
   }, [closeDate])
 
-  const imminent = remaining !== null && remaining > 0 && remaining < IMMINENT_MS
+  const imminent = remaining !== null && remaining > 0 && remaining < LAST_MINUTE_MS
   const closed = remaining !== null && remaining <= 0
 
   return (

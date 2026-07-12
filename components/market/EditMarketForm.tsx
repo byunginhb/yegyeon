@@ -8,6 +8,7 @@ import { CategoryIcon } from '@/lib/categoryIcon'
 import MarketImagePicker from './MarketImagePicker'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import DateTimeInput from '@/components/ui/DateTimeInput'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -267,13 +268,11 @@ export default function EditMarketForm({ market, categories, isAdmin = false }: 
           <Label htmlFor="close_date" className="text-ink-800 font-medium">
             마감일 <span className="text-scarlet-500">*</span>
           </Label>
-          <Input
+          <DateTimeInput
             id="close_date"
-            type="datetime-local"
             value={form.close_date}
-            min={minCloseDateLocal}
-            onChange={(e) => update('close_date', e.target.value)}
-            className="h-10"
+            minDate={minCloseDateLocal.slice(0, 10)}
+            onChange={(v) => update('close_date', v)}
           />
           <p className="text-xs text-ink-500">
             현재 마감일: {new Date(market.close_date).toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short' })}

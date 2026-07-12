@@ -7,6 +7,7 @@ import { CategoryIcon } from '@/lib/categoryIcon'
 import MarketImagePicker from './MarketImagePicker'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import DateTimeInput from '@/components/ui/DateTimeInput'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -385,13 +386,11 @@ export default function CreateMarketForm({ categories }: Props) {
               <Label htmlFor="close_date" className="text-ink-800 font-medium">
                 마감일 <span className="text-scarlet-500">*</span>
               </Label>
-              <Input
+              <DateTimeInput
                 id="close_date"
-                type="datetime-local"
                 value={form.close_date}
-                onChange={e => update('close_date', e.target.value)}
-                min={getMinDatetimeLocal()}
-                className="h-10"
+                onChange={(v) => update('close_date', v)}
+                minDate={getMinDatetimeLocal().slice(0, 10)}
               />
               <p className="text-xs text-ink-500">
                 최소 1시간 이후, 최대 5년 이내
