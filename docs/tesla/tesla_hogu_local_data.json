@@ -1,0 +1,953 @@
+{
+  "meta": {
+    "serviceName": "테슬라 호구연대표",
+    "version": "0.1-local-seed",
+    "asOf": "2026-07-14",
+    "scope": "대한민국 출시 차량, Model 3·Model Y 중심",
+    "dataMode": "local-json-only",
+    "disclaimer": "호구점수는 밈·비교용 편집값입니다. 같은 연식도 VIN·생산월·실차 사양이 다를 수 있습니다.",
+    "salesDefinition": "국내 신규등록대수를 출고량의 대리값으로 사용",
+    "trimSalesPolicy": "공개 수치가 확인되지 않은 트림별 대수는 추정하지 않음"
+  },
+  "scoreBands": [
+    {
+      "min": 0,
+      "max": 19,
+      "label": "타이밍의 신"
+    },
+    {
+      "min": 20,
+      "max": 34,
+      "label": "평범한 테슬람"
+    },
+    {
+      "min": 35,
+      "max": 49,
+      "label": "약호구"
+    },
+    {
+      "min": 50,
+      "max": 64,
+      "label": "호구"
+    },
+    {
+      "min": 65,
+      "max": 79,
+      "label": "흑우"
+    },
+    {
+      "min": 80,
+      "max": 100,
+      "label": "테슬라 발전기금 명예이사"
+    }
+  ],
+  "scoreWeights": [
+    {
+      "key": "priceTiming",
+      "label": "가격·출고 타이밍",
+      "max": 35
+    },
+    {
+      "key": "fsdAccess",
+      "label": "FSD 권리·현재 사용",
+      "max": 20
+    },
+    {
+      "key": "batteryRisk",
+      "label": "배터리·BMS",
+      "max": 20
+    },
+    {
+      "key": "hardwareComfort",
+      "label": "HW·카메라·편의 세대",
+      "max": 15
+    },
+    {
+      "key": "warrantyRepair",
+      "label": "보증·수리 위험",
+      "max": 10
+    }
+  ],
+  "generationSpecs": [
+    {
+      "id": "m3-us-legacy-pre-refresh",
+      "label": "Model 3 미국산 초기형",
+      "model": "Model 3",
+      "period": "2019~2020 전반",
+      "origin": "미국",
+      "factory": "Fremont",
+      "vinHint": "5YJ 계열 / 생산공장 F",
+      "hardware": {
+        "autopilotComputer": "HW3",
+        "cameras": "외부 8 + 실내 1",
+        "frontBumperCamera": "없음",
+        "radar": "전방 레이더 있음",
+        "uss": "12개",
+        "infotainment": "Intel Atom",
+        "heatPump": "없음",
+        "ventilatedSeats": "없음",
+        "rearScreen": "없음",
+        "stalks": "있음"
+      },
+      "battery": "Panasonic 2170 NCA 계열",
+      "fsdKorea": "미국산 HW3·FSD 활성 차량은 v14 Lite 대상 가능",
+      "bmsRisk": "생산연월에 따라 별도 확인",
+      "confidence": "mixed"
+    },
+    {
+      "id": "m3-us-legacy-refresh",
+      "label": "Model 3 미국산 리프레시",
+      "model": "Model 3",
+      "period": "2020 후반~2022",
+      "origin": "미국",
+      "factory": "Fremont",
+      "vinHint": "5YJ 계열 / 생산공장 F",
+      "hardware": {
+        "autopilotComputer": "HW3",
+        "cameras": "외부 8 + 실내 1",
+        "frontBumperCamera": "없음",
+        "radar": "있음→삭제 MIX",
+        "uss": "있음→삭제 MIX",
+        "infotainment": "Intel Atom→AMD Ryzen MIX",
+        "heatPump": "있음",
+        "ventilatedSeats": "없음",
+        "rearScreen": "없음",
+        "stalks": "있음"
+      },
+      "battery": "Panasonic 2170 계열",
+      "fsdKorea": "미국산 HW3·FSD 활성 차량은 v14 Lite 대상 가능",
+      "bmsRisk": "2021년형 Model 3는 BMS_a079 집중 관찰군",
+      "confidence": "mixed"
+    },
+    {
+      "id": "m3-cn-legacy",
+      "label": "Model 3 중국산 레거시",
+      "model": "Model 3",
+      "period": "2021~2023",
+      "origin": "중국",
+      "factory": "Shanghai",
+      "vinHint": "LRW 계열 / 생산공장 C",
+      "hardware": {
+        "autopilotComputer": "HW3",
+        "cameras": "외부 8 + 실내 1",
+        "frontBumperCamera": "없음",
+        "radar": "Vision 전환 MIX",
+        "uss": "있음→삭제 MIX",
+        "infotainment": "Intel Atom→AMD Ryzen MIX",
+        "heatPump": "있음",
+        "ventilatedSeats": "없음",
+        "rearScreen": "없음",
+        "stalks": "있음"
+      },
+      "battery": "RWD CATL LFP / LR·Performance LG NCM 중심",
+      "fsdKorea": "현재 국내 감독형 FSD 미지원",
+      "bmsRisk": "팩·연식별 확인",
+      "confidence": "mixed"
+    },
+    {
+      "id": "m3-cn-highland",
+      "label": "Model 3 Highland",
+      "model": "Model 3",
+      "period": "2024~",
+      "origin": "중국",
+      "factory": "Shanghai",
+      "vinHint": "LRW 계열 / 생산공장 C",
+      "hardware": {
+        "autopilotComputer": "HW4",
+        "cameras": "초기 외부 7 + 실내 1, 후기 MIX",
+        "frontBumperCamera": "초기 없음, 후기 MIX",
+        "radar": "Tesla Vision",
+        "uss": "없음",
+        "infotainment": "AMD Ryzen",
+        "heatPump": "있음",
+        "ventilatedSeats": "앞좌석 있음",
+        "rearScreen": "있음",
+        "stalks": "초기 없음, 후기 생산분 MIX"
+      },
+      "battery": "RWD CATL LFP / Long Range·Performance LG NCM 중심",
+      "fsdKorea": "현재 국내 감독형 FSD 미지원",
+      "bmsRisk": "개선 세대이나 실차 팩 확인",
+      "confidence": "mixed"
+    },
+    {
+      "id": "my-us-legacy",
+      "label": "Model Y 미국산 레거시",
+      "model": "Model Y",
+      "period": "2021~2022 중심",
+      "origin": "미국",
+      "factory": "Fremont/Austin",
+      "vinHint": "5YJ·7SA 계열",
+      "hardware": {
+        "autopilotComputer": "HW3",
+        "cameras": "외부 8 + 실내 1",
+        "frontBumperCamera": "없음",
+        "radar": "있음→삭제 MIX",
+        "uss": "있음→삭제 MIX",
+        "infotainment": "Intel Atom→AMD Ryzen MIX",
+        "heatPump": "있음",
+        "ventilatedSeats": "없음",
+        "rearScreen": "없음",
+        "stalks": "있음"
+      },
+      "battery": "Panasonic 2170 계열",
+      "fsdKorea": "미국산 HW3·FSD 활성 차량은 v14 Lite 대상 가능",
+      "bmsRisk": "2021년형 Model Y는 BMS_a079 집중 관찰군",
+      "confidence": "mixed"
+    },
+    {
+      "id": "my-cn-legacy",
+      "label": "Model Y 중국산 레거시",
+      "model": "Model Y",
+      "period": "2023~2024",
+      "origin": "중국",
+      "factory": "Shanghai",
+      "vinHint": "LRW 계열 / 생산공장 C",
+      "hardware": {
+        "autopilotComputer": "HW3",
+        "cameras": "외부 8 + 실내 1",
+        "frontBumperCamera": "없음",
+        "radar": "Tesla Vision",
+        "uss": "없음",
+        "infotainment": "AMD Ryzen",
+        "heatPump": "있음",
+        "ventilatedSeats": "없음",
+        "rearScreen": "없음",
+        "stalks": "있음"
+      },
+      "battery": "RWD CATL LFP / 기타 트림 LG NCM 중심",
+      "fsdKorea": "현재 국내 감독형 FSD 미지원",
+      "bmsRisk": "연식·팩별 확인",
+      "confidence": "mixed"
+    },
+    {
+      "id": "my-cn-juniper",
+      "label": "Model Y Juniper",
+      "model": "Model Y",
+      "period": "2025~",
+      "origin": "중국",
+      "factory": "Shanghai",
+      "vinHint": "LRW 계열 / 생산공장 C",
+      "hardware": {
+        "autopilotComputer": "HW4",
+        "cameras": "외부 8 + 실내 1",
+        "frontBumperCamera": "있음·워셔 포함",
+        "radar": "Tesla Vision / 실내 레이더",
+        "uss": "없음",
+        "infotainment": "AMD Ryzen",
+        "heatPump": "있음",
+        "ventilatedSeats": "앞좌석 있음",
+        "rearScreen": "있음",
+        "stalks": "있음"
+      },
+      "battery": "RWD CATL LFP / Long Range LG NCM 중심",
+      "fsdKorea": "현재 국내 감독형 FSD 미지원",
+      "bmsRisk": "신형 세대, 장기 데이터 축적 중",
+      "confidence": "mixed"
+    },
+    {
+      "id": "sx-us-refresh",
+      "label": "Model S/X Refresh",
+      "model": "Model S/X",
+      "period": "2023~",
+      "origin": "미국",
+      "factory": "Fremont",
+      "vinHint": "5YJ·7SA 계열",
+      "hardware": {
+        "autopilotComputer": "HW4",
+        "cameras": "생산시기별 7+1 또는 8+1 MIX",
+        "frontBumperCamera": "후기 생산분 확인",
+        "radar": "Vision 중심",
+        "uss": "생산시기별 MIX",
+        "infotainment": "AMD Ryzen",
+        "heatPump": "있음",
+        "ventilatedSeats": "앞좌석 있음",
+        "rearScreen": "있음",
+        "stalks": "사양별 확인"
+      },
+      "battery": "Panasonic 18650 계열",
+      "fsdKorea": "감독형 FSD v14 사용 가능군",
+      "bmsRisk": "개별 이력 확인",
+      "confidence": "mixed"
+    }
+  ],
+  "vehicleCards": [
+    {
+      "id": "2019-m3-srplus",
+      "year": 2019,
+      "model": "Model 3",
+      "trim": "Standard Range Plus",
+      "generationId": "m3-us-legacy-pre-refresh",
+      "representativePriceKRW": 53690000,
+      "subsidySummary": "국고 최대 900만원, 차량가격 상한 없음",
+      "baseHoguScore": 43,
+      "oneLine": "초기 한국 상륙 프리미엄, 대신 미국산 HW3의 현재 활용가치는 남음",
+      "scoreReasons": [
+        "초기형 편의사양",
+        "히트펌프 없음",
+        "미국산 HW3 FSD 가능성이 상쇄"
+      ],
+      "confidence": "verified-price-mixed-spec"
+    },
+    {
+      "id": "2019-m3-lr",
+      "year": 2019,
+      "model": "Model 3",
+      "trim": "Long Range AWD",
+      "generationId": "m3-us-legacy-pre-refresh",
+      "representativePriceKRW": 63690000,
+      "subsidySummary": "국고 최대 900만원, 차량가격 상한 없음",
+      "baseHoguScore": 46,
+      "oneLine": "주행거리는 좋았지만 초기 사양과 이후 리프레시의 격차가 큼",
+      "scoreReasons": [
+        "초기형 MCU·공조",
+        "리프레시 이전",
+        "미국산 HW3 가치"
+      ],
+      "confidence": "verified-price-mixed-spec"
+    },
+    {
+      "id": "2019-m3-p",
+      "year": 2019,
+      "model": "Model 3",
+      "trim": "Performance",
+      "generationId": "m3-us-legacy-pre-refresh",
+      "representativePriceKRW": 73690000,
+      "subsidySummary": "국고 최대 900만원, 차량가격 상한 없음",
+      "baseHoguScore": 50,
+      "oneLine": "초기 고가 퍼포먼스, 감가와 편의사양 열세가 큼",
+      "scoreReasons": [
+        "초기 고가",
+        "구형 편의사양",
+        "성능과 FSD 활용이 일부 상쇄"
+      ],
+      "confidence": "verified-price-mixed-spec"
+    },
+    {
+      "id": "2020-m3-pre-refresh",
+      "year": 2020,
+      "model": "Model 3",
+      "trim": "SR+/LR/P 리프레시 이전",
+      "generationId": "m3-us-legacy-pre-refresh",
+      "representativePriceKRW": null,
+      "subsidySummary": "국고 최대 820만원, 차량가격 상한 없음",
+      "baseHoguScore": 60,
+      "oneLine": "히트펌프·전동트렁크 리프레시 직전 출고면 체감 손해가 큼",
+      "scoreReasons": [
+        "리프레시 직전",
+        "히트펌프 없음",
+        "후기형과 상품성 차이"
+      ],
+      "confidence": "mixed"
+    },
+    {
+      "id": "2020-m3-refresh",
+      "year": 2020,
+      "model": "Model 3",
+      "trim": "SR+/LR/P 리프레시",
+      "generationId": "m3-us-legacy-refresh",
+      "representativePriceKRW": null,
+      "subsidySummary": "국고 최대 820만원, 차량가격 상한 없음",
+      "baseHoguScore": 39,
+      "oneLine": "리프레시 혜택을 먼저 받은 비교적 안정적인 구간",
+      "scoreReasons": [
+        "히트펌프 적용",
+        "전동트렁크 등 개선",
+        "이후 가격변동은 확인 필요"
+      ],
+      "confidence": "mixed"
+    },
+    {
+      "id": "2021-m3-rwd-us",
+      "year": 2021,
+      "model": "Model 3",
+      "trim": "Standard Range Plus / RWD 미국산",
+      "generationId": "m3-us-legacy-refresh",
+      "representativePriceKRW": 54790000,
+      "subsidySummary": "6천만원 미만 전액 가격계수",
+      "baseHoguScore": 61,
+      "oneLine": "BMS 위험군이지만 미국산 HW3의 FSD Lite 가능성이 상쇄",
+      "scoreReasons": [
+        "2021 BMS_a079 관찰군",
+        "미국산 HW3",
+        "보증·팩교체 이력 중요"
+      ],
+      "confidence": "mixed"
+    },
+    {
+      "id": "2021-m3-rwd-cn",
+      "year": 2021,
+      "model": "Model 3",
+      "trim": "RWD 중국산",
+      "generationId": "m3-cn-legacy",
+      "representativePriceKRW": 54790000,
+      "subsidySummary": "6천만원 미만 전액 가격계수",
+      "baseHoguScore": 54,
+      "oneLine": "LFP와 생산품질은 장점, 현재 국내 FSD 미지원은 약점",
+      "scoreReasons": [
+        "중국산 FSD 미지원",
+        "LFP 특성",
+        "생산월별 MCU·센서 MIX"
+      ],
+      "confidence": "mixed"
+    },
+    {
+      "id": "2021-m3-lr",
+      "year": 2021,
+      "model": "Model 3",
+      "trim": "Long Range AWD",
+      "generationId": "m3-us-legacy-refresh",
+      "representativePriceKRW": 59990000,
+      "subsidySummary": "6천만원 미만 전액 가격계수 문턱",
+      "baseHoguScore": 58,
+      "oneLine": "5,999만원 문턱은 영리했지만 BMS·후속 가격 변동이 변수",
+      "scoreReasons": [
+        "보조금 문턱 가격",
+        "BMS 관찰군",
+        "미국산 HW3 활용 가능"
+      ],
+      "confidence": "mixed"
+    },
+    {
+      "id": "2021-my-sr",
+      "year": 2021,
+      "model": "Model Y",
+      "trim": "Standard Range",
+      "generationId": "my-us-legacy",
+      "representativePriceKRW": 59990000,
+      "subsidySummary": "6천만원 미만 전액 가격계수 문턱",
+      "baseHoguScore": 63,
+      "oneLine": "초기 희소 트림이지만 2021 BMS 위험과 구형 편의사양이 큼",
+      "scoreReasons": [
+        "2021 BMS 관찰군",
+        "구형 승차감·편의",
+        "미국산 HW3 FSD 가능"
+      ],
+      "confidence": "mixed"
+    },
+    {
+      "id": "2021-my-lr",
+      "year": 2021,
+      "model": "Model Y",
+      "trim": "Long Range AWD",
+      "generationId": "my-us-legacy",
+      "representativePriceKRW": 69990000,
+      "subsidySummary": "6천~9천만원 50% 가격계수",
+      "baseHoguScore": 66,
+      "oneLine": "국내 초기 인기 트림이지만 BMS와 이후 중국산 가격 공세 영향",
+      "scoreReasons": [
+        "2021 BMS 관찰군",
+        "이후 가격 하락",
+        "FSD Lite 가능성이 상쇄"
+      ],
+      "confidence": "mixed"
+    },
+    {
+      "id": "2022-m3-rwd",
+      "year": 2022,
+      "model": "Model 3",
+      "trim": "RWD",
+      "generationId": "m3-cn-legacy",
+      "representativePriceKRW": 60340000,
+      "subsidySummary": "5,500~8,500만원 50% 가격계수",
+      "baseHoguScore": 72,
+      "oneLine": "가격 고점과 센서·MCU 전환이 겹친 대표 흑우 후보",
+      "scoreReasons": [
+        "가격 고점",
+        "USS·레이더 삭제 MIX",
+        "중국산 FSD 미지원"
+      ],
+      "confidence": "mixed"
+    },
+    {
+      "id": "2022-m3-lr-p",
+      "year": 2022,
+      "model": "Model 3",
+      "trim": "Long Range / Performance",
+      "generationId": "m3-us-legacy-refresh",
+      "representativePriceKRW": 84690000,
+      "subsidySummary": "일부 트림 보조금 제외 또는 축소",
+      "baseHoguScore": 78,
+      "oneLine": "높은 판매가·구형 세대·센서 삭제 전환이 겹친 고점 구간",
+      "scoreReasons": [
+        "판매가 고점",
+        "보조금 불리",
+        "후속 Highland와 상품성 차이"
+      ],
+      "confidence": "mixed"
+    },
+    {
+      "id": "2022-my-lr-p",
+      "year": 2022,
+      "model": "Model Y",
+      "trim": "Long Range / Performance",
+      "generationId": "my-us-legacy",
+      "representativePriceKRW": 77890000,
+      "subsidySummary": "5,500~8,500만원 50% 가격계수",
+      "baseHoguScore": 76,
+      "oneLine": "가격 고점과 중국산 RWD 등장 전의 프리미엄을 부담",
+      "scoreReasons": [
+        "가격 고점",
+        "구형 편의사양",
+        "미국산 FSD 가능성이 일부 상쇄"
+      ],
+      "confidence": "mixed"
+    },
+    {
+      "id": "2023-m3-rwd",
+      "year": 2023,
+      "model": "Model 3",
+      "trim": "RWD",
+      "generationId": "m3-cn-legacy",
+      "representativePriceKRW": null,
+      "subsidySummary": "5,700만원 미만 전액 가격계수",
+      "baseHoguScore": 48,
+      "oneLine": "Highland 직전 재고 여부가 점수를 크게 가름",
+      "scoreReasons": [
+        "Highland 직전",
+        "중국산 FSD 미지원",
+        "할인 출고면 감점 완화"
+      ],
+      "confidence": "mixed"
+    },
+    {
+      "id": "2023-my-rwd",
+      "year": 2023,
+      "model": "Model Y",
+      "trim": "RWD",
+      "generationId": "my-cn-legacy",
+      "representativePriceKRW": 56990000,
+      "subsidySummary": "5,700만원 미만 전액 가격계수 문턱",
+      "baseHoguScore": 30,
+      "oneLine": "보조금 문턱을 잘 맞춘 가성비 승자, FSD 미지원은 남음",
+      "scoreReasons": [
+        "보조금 문턱 가격",
+        "CATL LFP",
+        "중국산 FSD 미지원"
+      ],
+      "confidence": "verified-price-mixed-spec"
+    },
+    {
+      "id": "2024-m3-rwd",
+      "year": 2024,
+      "model": "Model 3",
+      "trim": "Highland RWD",
+      "generationId": "m3-cn-highland",
+      "representativePriceKRW": 51990000,
+      "subsidySummary": "5,500만원 미만 전액 가격계수",
+      "baseHoguScore": 32,
+      "oneLine": "통풍·후석화면·HW4를 얻었지만 중국산 FSD 공백",
+      "scoreReasons": [
+        "신형 편의사양",
+        "HW4",
+        "FSD 미지원·초기 전면카메라 없음"
+      ],
+      "confidence": "verified-price-mixed-spec"
+    },
+    {
+      "id": "2024-m3-lr",
+      "year": 2024,
+      "model": "Model 3",
+      "trim": "Highland Long Range AWD",
+      "generationId": "m3-cn-highland",
+      "representativePriceKRW": 59990000,
+      "subsidySummary": "5,500~8,500만원 50% 가격계수",
+      "baseHoguScore": 38,
+      "oneLine": "상품성은 뛰어나지만 보조금과 FSD 활용도에서 애매한 위치",
+      "scoreReasons": [
+        "50% 가격계수",
+        "HW4·통풍 장점",
+        "중국산 FSD 미지원"
+      ],
+      "confidence": "verified-price-mixed-spec"
+    },
+    {
+      "id": "2024-my-rwd",
+      "year": 2024,
+      "model": "Model Y",
+      "trim": "RWD",
+      "generationId": "my-cn-legacy",
+      "representativePriceKRW": null,
+      "subsidySummary": "5,500만원 미만 또는 경계 가격 시기 존재",
+      "baseHoguScore": 33,
+      "oneLine": "국내 대량 보급의 핵심, 가격은 강하지만 Juniper 직전 여부 확인",
+      "scoreReasons": [
+        "높은 판매량",
+        "Juniper 직전",
+        "중국산 FSD 미지원"
+      ],
+      "confidence": "mixed"
+    },
+    {
+      "id": "2025-m3-highland",
+      "year": 2025,
+      "model": "Model 3",
+      "trim": "RWD / Long Range / Performance",
+      "generationId": "m3-cn-highland",
+      "representativePriceKRW": null,
+      "subsidySummary": "5,300만원 미만 전액, 5,300~8,500만원 50%",
+      "baseHoguScore": 35,
+      "oneLine": "신형 사양은 좋지만 연말 대폭 가격 조정 전 출고 여부가 핵심",
+      "scoreReasons": [
+        "Highland 상품성",
+        "연말 가격 인하 가능성",
+        "중국산 FSD 미지원"
+      ],
+      "confidence": "mixed"
+    },
+    {
+      "id": "2025-my-rwd",
+      "year": 2025,
+      "model": "Model Y",
+      "trim": "Juniper RWD",
+      "generationId": "my-cn-juniper",
+      "representativePriceKRW": 52990000,
+      "subsidySummary": "5,300만원 미만 전액 가격계수 문턱",
+      "baseHoguScore": 26,
+      "oneLine": "편의사양과 가격을 모두 챙긴 대중형 승자",
+      "scoreReasons": [
+        "전면카메라·통풍·후석화면",
+        "보조금 문턱",
+        "중국산 FSD 미지원"
+      ],
+      "confidence": "verified-price-mixed-spec"
+    },
+    {
+      "id": "2025-my-lr",
+      "year": 2025,
+      "model": "Model Y",
+      "trim": "Juniper Long Range AWD",
+      "generationId": "my-cn-juniper",
+      "representativePriceKRW": 63140000,
+      "subsidySummary": "5,300~8,500만원 50% 가격계수",
+      "baseHoguScore": 37,
+      "oneLine": "상품성은 강하지만 RWD 대비 가격과 보조금 효율이 약함",
+      "scoreReasons": [
+        "신형 편의사양",
+        "50% 가격계수",
+        "FSD 미지원"
+      ],
+      "confidence": "verified-price-mixed-spec"
+    },
+    {
+      "id": "2025-my-launch",
+      "year": 2025,
+      "model": "Model Y",
+      "trim": "Launch Series",
+      "generationId": "my-cn-juniper",
+      "representativePriceKRW": 73000000,
+      "subsidySummary": "5,300~8,500만원 50% 가격계수",
+      "baseHoguScore": 57,
+      "oneLine": "빠른 인도와 희소성의 대가로 런치 프리미엄을 지불",
+      "scoreReasons": [
+        "런치 프리미엄",
+        "후속 일반 트림 가격",
+        "신형 사양은 강점"
+      ],
+      "confidence": "verified-price-mixed-spec"
+    },
+    {
+      "id": "2026-m3-rwd",
+      "year": 2026,
+      "model": "Model 3",
+      "trim": "RWD",
+      "generationId": "m3-cn-highland",
+      "representativePriceKRW": 46990000,
+      "subsidySummary": "국고 168만원, 지방비 별도",
+      "baseHoguScore": 24,
+      "oneLine": "가격 방어력이 좋은 보급형, LFP·FSD 제한은 취향 문제",
+      "scoreReasons": [
+        "낮은 진입가",
+        "통풍·후석화면",
+        "중국산 FSD 미지원"
+      ],
+      "confidence": "current-price-verified-subsidy"
+    },
+    {
+      "id": "2026-m3-premium-lr-rwd",
+      "year": 2026,
+      "model": "Model 3",
+      "trim": "Premium Long Range RWD",
+      "generationId": "m3-cn-highland",
+      "representativePriceKRW": 59990000,
+      "subsidySummary": "국고 210만원, 지방비 별도",
+      "baseHoguScore": 49,
+      "oneLine": "2026년 7월 가격 인상과 국고 감소를 함께 맞은 대표 경계선",
+      "scoreReasons": [
+        "7월 가격 인상",
+        "국고 감소",
+        "긴 주행거리는 강점"
+      ],
+      "confidence": "current-price-verified-subsidy"
+    },
+    {
+      "id": "2026-m3-performance",
+      "year": 2026,
+      "model": "Model 3",
+      "trim": "Performance",
+      "generationId": "m3-cn-highland",
+      "representativePriceKRW": 69990000,
+      "subsidySummary": "국고 200만원, 지방비 별도",
+      "baseHoguScore": 47,
+      "oneLine": "성능은 압도적이지만 가격 인상과 중국산 FSD 공백",
+      "scoreReasons": [
+        "고가 트림",
+        "HW4·통풍 장점",
+        "FSD 미지원"
+      ],
+      "confidence": "current-price-verified-subsidy"
+    },
+    {
+      "id": "2026-my-premium-rwd",
+      "year": 2026,
+      "model": "Model Y",
+      "trim": "Premium RWD",
+      "generationId": "my-cn-juniper",
+      "representativePriceKRW": 49990000,
+      "subsidySummary": "국고 170만원, 지방비 별도",
+      "baseHoguScore": 20,
+      "oneLine": "가격·공간·신형 편의사양 균형이 가장 좋은 대량 보급형",
+      "scoreReasons": [
+        "4천만원대 가격",
+        "Juniper 편의사양",
+        "중국산 FSD 미지원"
+      ],
+      "confidence": "current-price-verified-subsidy"
+    },
+    {
+      "id": "2026-my-premium-lr-awd",
+      "year": 2026,
+      "model": "Model Y",
+      "trim": "Premium Long Range AWD",
+      "generationId": "my-cn-juniper",
+      "representativePriceKRW": 66990000,
+      "subsidySummary": "국고 210만원, 지방비 별도",
+      "baseHoguScore": 39,
+      "oneLine": "신형 상품성은 좋지만 RWD 대비 가격 효율이 낮음",
+      "scoreReasons": [
+        "50% 가격계수 구간",
+        "신형 편의사양",
+        "중국산 FSD 미지원"
+      ],
+      "confidence": "current-price-verified-subsidy"
+    },
+    {
+      "id": "2026-my-l-awd",
+      "year": 2026,
+      "model": "Model Y",
+      "trim": "L AWD",
+      "generationId": "my-cn-juniper",
+      "representativePriceKRW": 72990000,
+      "subsidySummary": "국고 215만원, 지방비 별도",
+      "baseHoguScore": 43,
+      "oneLine": "공간과 희소성은 강점, 가격·보조금 효율은 약점",
+      "scoreReasons": [
+        "높은 차량가",
+        "넓은 공간",
+        "중국산 FSD 미지원"
+      ],
+      "confidence": "current-price-verified-subsidy"
+    }
+  ],
+  "annualModelRegistrations": [
+    {
+      "year": 2019,
+      "model": "Model 3",
+      "count": 1604,
+      "scope": "연간 국내 신규등록",
+      "confidence": "verified",
+      "sourceUrl": "https://zdnet.co.kr/view/?no=20200105121116"
+    },
+    {
+      "year": 2020,
+      "model": "Model 3",
+      "count": 11003,
+      "scope": "연간 국내 판매·등록 대리값",
+      "confidence": "verified",
+      "sourceUrl": "https://auto.danawa.com/newcar/?Brand=611&Month=2020-01-00&MonthTo=2020-12-00&Tab=Brand&Work=record&pcUse=y"
+    },
+    {
+      "year": 2021,
+      "model": "Model 3",
+      "count": 8898,
+      "scope": "연간 국내 신규등록",
+      "confidence": "verified",
+      "sourceUrl": "https://www.dnews.co.kr/uhtml/view.jsp?idxno=202206201752399650909"
+    },
+    {
+      "year": 2021,
+      "model": "Model Y",
+      "count": 8891,
+      "scope": "연간 국내 신규등록",
+      "confidence": "verified",
+      "sourceUrl": "https://www.dnews.co.kr/uhtml/view.jsp?idxno=202206201752399650909"
+    },
+    {
+      "year": 2022,
+      "model": "Model 3",
+      "count": 7323,
+      "scope": "연간 국내 판매·등록 대리값",
+      "confidence": "verified",
+      "sourceUrl": "https://auto.danawa.com/auto/?Brand=611&Month=2022-01-00&MonthTo=2022-12-00&Tab=Grand&Work=record&pcUse=y"
+    },
+    {
+      "year": 2022,
+      "model": "Model Y",
+      "count": 7248,
+      "scope": "연간 국내 판매·등록 대리값",
+      "confidence": "verified",
+      "sourceUrl": "https://auto.danawa.com/auto/?Brand=611&Month=2022-01-00&MonthTo=2022-12-00&Tab=Grand&Work=record&pcUse=y"
+    },
+    {
+      "year": 2023,
+      "model": "Model 3",
+      "count": 552,
+      "scope": "연간 국내 판매·등록 대리값",
+      "confidence": "verified-secondary",
+      "sourceUrl": "https://auto.danawa.com/auto/?Brand=611&Tab=record&Work=brand"
+    },
+    {
+      "year": 2023,
+      "model": "Model Y",
+      "count": 13885,
+      "scope": "연간 국내 판매·등록 대리값",
+      "confidence": "verified-secondary",
+      "sourceUrl": "https://auto.danawa.com/auto/?Brand=611&Tab=record&Work=brand"
+    },
+    {
+      "year": 2024,
+      "model": "Model 3",
+      "count": 10502,
+      "scope": "연간 국내 신규등록",
+      "confidence": "verified",
+      "sourceUrl": "https://roadtestmedia.com/2025%EB%85%84-%EC%88%98%EC%9E%85%EC%B0%A8-%ED%8C%90%EB%A7%A4%EB%9F%89-%EA%B3%B5%EA%B0%9C-%EB%88%88%EC%97%90-%EB%9D%84%EB%8A%94-%ED%85%8C%EC%8A%AC%EB%9D%BC%EC%99%80-byd/"
+    },
+    {
+      "year": 2024,
+      "model": "Model Y",
+      "count": 18717,
+      "scope": "연간 국내 신규등록",
+      "confidence": "verified",
+      "sourceUrl": "https://roadtestmedia.com/2025%EB%85%84-%EC%88%98%EC%9E%85%EC%B0%A8-%ED%8C%90%EB%A7%A4%EB%9F%89-%EA%B3%B5%EA%B0%9C-%EB%88%88%EC%97%90-%EB%9D%84%EB%8A%94-%ED%85%8C%EC%8A%AC%EB%9D%BC%EC%99%80-byd/"
+    },
+    {
+      "year": 2025,
+      "model": "Model 3",
+      "count": 8825,
+      "scope": "연간 국내 신규등록",
+      "confidence": "verified",
+      "sourceUrl": "https://www.bloter.net/news/articleView.html?idxno=651016"
+    },
+    {
+      "year": 2025,
+      "model": "Model Y",
+      "count": 50405,
+      "scope": "연간 국내 신규등록",
+      "confidence": "verified",
+      "sourceUrl": "https://www.bloter.net/news/articleView.html?idxno=651016"
+    }
+  ],
+  "knownTrimRegistrations": [
+    {
+      "period": "2024-01-01/2024-12-31",
+      "model": "Model Y",
+      "trim": "RWD",
+      "count": 15052,
+      "parentModelCount": 18718,
+      "confidence": "verified-secondary",
+      "note": "보도 기준 약 80%. 부모 모델 합계가 다른 통계와 1대 차이날 수 있음.",
+      "sourceUrl": "https://v.daum.net/v/0EuSR1RuVm"
+    },
+    {
+      "period": "2026-01-01/2026-04-30",
+      "model": "Model 3",
+      "trim": "Premium Long Range RWD",
+      "count": 3697,
+      "confidence": "verified",
+      "sourceUrl": "https://v.daum.net/v/UkmP4ZpXv0?vfrom_area=channel_ranking"
+    },
+    {
+      "period": "2026-01-01/2026-04-30",
+      "model": "Model 3",
+      "trim": "RWD",
+      "count": 2376,
+      "confidence": "verified",
+      "sourceUrl": "https://v.daum.net/v/UkmP4ZpXv0?vfrom_area=channel_ranking"
+    },
+    {
+      "period": "2026-01-01/2026-04-30",
+      "model": "Model 3",
+      "trim": "Performance",
+      "count": 1073,
+      "confidence": "verified",
+      "sourceUrl": "https://v.daum.net/v/UkmP4ZpXv0?vfrom_area=channel_ranking"
+    }
+  ],
+  "videos": [
+    {
+      "id": "youtube-mocar-fsd-next-year",
+      "channel": "김한용의 MOCAR",
+      "title": "Why I’m Saying Tesla FSD V14 Is Coming to Korea Next Year!",
+      "youtubeUrl": "https://www.youtube.com/watch?v=VTJQ_FFe7YI",
+      "embedUrl": "https://www.youtube-nocookie.com/embed/VTJQ_FFe7YI",
+      "tags": [
+        "FSD",
+        "한국",
+        "예측"
+      ],
+      "isDefault": true
+    },
+    {
+      "id": "youtube-mocar-juniper",
+      "channel": "김한용의 MOCAR",
+      "title": "테슬라 모델Y 주니퍼 시승기, 진짜 5299만원이다!",
+      "youtubeUrl": "https://www.youtube.com/watch?v=xQL-vpfi9WU",
+      "embedUrl": "https://www.youtube-nocookie.com/embed/xQL-vpfi9WU",
+      "tags": [
+        "Model Y",
+        "Juniper",
+        "가격"
+      ],
+      "isDefault": true
+    },
+    {
+      "id": "youtube-motline-fsd-lite",
+      "channel": "모트라인",
+      "title": "테슬라 Model Y FSD Lite 한국 도로 테스트",
+      "youtubeUrl": "https://www.youtube.com/watch?v=Zwhih_TLrhU",
+      "embedUrl": "https://www.youtube-nocookie.com/embed/Zwhih_TLrhU",
+      "tags": [
+        "FSD Lite",
+        "Model Y",
+        "시승"
+      ],
+      "isDefault": true
+    }
+  ],
+  "sources": [
+    {
+      "label": "Tesla Model 3 사용자 매뉴얼",
+      "url": "https://www.tesla.com/ownersmanual/model3/ko_kr/",
+      "type": "official"
+    },
+    {
+      "label": "Tesla Model Y 사용자 매뉴얼",
+      "url": "https://www.tesla.com/ownersmanual/modely/ko_kr/",
+      "type": "official"
+    },
+    {
+      "label": "Tesla VIN 서비스 매뉴얼",
+      "url": "https://service.tesla.com/docs/Model3/ServiceManual/2024/en-us/GUID-B7B9507C-C984-41F2-89EE-D23CA4E682ED.html",
+      "type": "official"
+    },
+    {
+      "label": "무공해차 통합누리집 보조금 대상 차종",
+      "url": "https://ev.or.kr/nportal/buySupprt/initSubsidyTargetVehicleAction.do",
+      "type": "government"
+    },
+    {
+      "label": "다나와 자동차 판매실적",
+      "url": "https://auto.danawa.com/auto/?Brand=611&Tab=record&Work=brand",
+      "type": "aggregated-official-data"
+    }
+  ]
+}

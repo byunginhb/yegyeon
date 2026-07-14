@@ -8,7 +8,7 @@ import SiteFooter from './SiteFooter'
 import { AnnouncementBanner } from '@/components/common/AnnouncementBanner'
 import WelcomePopup from '@/components/common/WelcomePopup'
 
-const SIDEBAR_EXCLUDED = ['/admin', '/auth']
+const SIDEBAR_EXCLUDED = ['/admin', '/auth', '/tesla']
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()

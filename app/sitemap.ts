@@ -12,6 +12,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: SITE_URL, lastModified: now, changeFrequency: 'hourly', priority: 1 },
     { url: `${SITE_URL}/browse`, lastModified: now, changeFrequency: 'hourly', priority: 0.9 },
     { url: `${SITE_URL}/leaderboard`, lastModified: now, changeFrequency: 'daily', priority: 0.7 },
+    { url: `${SITE_URL}/tesla`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${SITE_URL}/about`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${SITE_URL}/legal/terms_of_service`, lastModified: now, changeFrequency: 'monthly', priority: 0.3 },
     { url: `${SITE_URL}/legal/privacy_policy`, lastModified: now, changeFrequency: 'monthly', priority: 0.3 },
