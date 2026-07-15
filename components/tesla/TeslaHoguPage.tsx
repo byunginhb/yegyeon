@@ -268,7 +268,7 @@ export default function TeslaHoguPage({ data }: { data: TeslaData }) {
   return (
     <main className={styles.page}>
       <header className={styles.topRail}>
-        <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-5 px-4 sm:px-6 lg:px-10">
+        <div className="mx-auto flex h-14 max-w-[1440px] items-center justify-between gap-5 px-4 sm:px-6 lg:px-10">
           <div className="inline-flex items-center gap-3 font-black tracking-[-0.03em] text-white">
             <span className="grid h-8 w-8 place-items-center rounded-full border border-red-500/60 bg-red-600/10 text-xs text-red-400">T</span>
             <span>TESLA HOGU <span className="hidden font-mono text-[10px] font-bold tracking-[0.16em] text-zinc-600 sm:inline">/ KOREA ARCHIVE</span></span>
@@ -286,17 +286,17 @@ export default function TeslaHoguPage({ data }: { data: TeslaData }) {
 
       <section className={styles.hero}>
         <div className={styles.heroMark} aria-hidden>3/Y</div>
-        <div className="mx-auto grid min-h-[560px] max-w-[1440px] items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1.25fr_.75fr] lg:px-10">
+        <div className="mx-auto grid min-h-[300px] max-w-[1440px] items-center gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[1.25fr_.75fr] lg:px-10">
           <div className={styles.reveal}>
-            <div className="mb-6 flex items-center gap-3">
+            <div className="mb-4 flex items-center gap-3">
               <span className="h-px w-10 bg-red-500" />
               <span className="font-mono text-xs font-black uppercase tracking-[0.2em] text-red-400">Korea delivery archive · 2019—2026</span>
             </div>
-            <h1 className={styles.displayTitle}>테슬라<br /><span className="text-red-500">호구</span>연대표</h1>
-            <p className="mt-7 max-w-2xl text-base font-medium leading-8 text-zinc-300 sm:text-lg">어느 해, 어느 트림이 웃었고 울었을까. 한국 출시 Model 3와 Model Y의 가격·하드웨어·등록대수를 한 줄의 시간축에 올렸습니다.</p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <a href="#timeline" className="inline-flex h-12 items-center gap-2 rounded-xl bg-red-600 px-5 text-sm font-black text-white transition hover:bg-red-500">내 연식 찾기 <CarFront className="h-4 w-4" /></a>
-              <a href="#registrations" className="inline-flex h-12 items-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] px-5 text-sm font-black text-zinc-200 transition hover:border-white/35 hover:bg-white/[0.07]">등록 분포 <ArrowUpRight className="h-4 w-4" /></a>
+            <h1 className={styles.displayTitle}>테슬라<span className="hidden sm:inline"> </span><br className="sm:hidden" /><span className="text-red-500">호구</span>연대표</h1>
+            <p className="mt-4 max-w-3xl text-sm font-medium leading-6 text-zinc-300 sm:text-base">어느 해, 어느 트림이 웃었고 울었을까. 한국 출시 Model 3와 Model Y의 가격·하드웨어·등록대수를 한 줄의 시간축에 올렸습니다.</p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <a href="#timeline" className="inline-flex h-10 items-center gap-2 rounded-xl bg-red-600 px-4 text-sm font-black text-white transition hover:bg-red-500">내 연식 찾기 <CarFront className="h-4 w-4" /></a>
+              <a href="#registrations" className="inline-flex h-10 items-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] px-4 text-sm font-black text-zinc-200 transition hover:border-white/35 hover:bg-white/[0.07]">등록 분포 <ArrowUpRight className="h-4 w-4" /></a>
             </div>
           </div>
 
@@ -307,21 +307,33 @@ export default function TeslaHoguPage({ data }: { data: TeslaData }) {
               ['REGISTRATIONS', `${Math.round(totalRegistrations / 1000)}K+`],
               ['PEAK INDEX', `${highestScore}/100`],
             ].map(([label, value]) => (
-              <div key={label} className="bg-[#101216]/95 p-5 sm:p-7">
+              <div key={label} className="bg-[#101216]/95 p-3">
                 <p className="font-mono text-[10px] font-black tracking-[0.16em] text-zinc-600">{label}</p>
-                <p className="mt-3 font-mono text-3xl font-black tracking-[-0.06em] text-white sm:text-4xl">{value}</p>
+                <p className="mt-1.5 font-mono text-2xl font-black tracking-[-0.06em] text-white">{value}</p>
               </div>
             ))}
-            <div className="col-span-2 flex items-start gap-3 bg-red-600 p-5 text-white sm:p-6">
-              <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0" />
-              <p className="text-xs font-bold leading-5">{data.meta.disclaimer} 호구점수는 사실 판정이나 결함 판정이 아닙니다.</p>
+            <div className="col-span-2 bg-[#101216]/95 p-3">
+              <div className="flex items-start gap-3">
+                <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-3 text-[10px] font-black uppercase tracking-[0.12em]">
+                    <span className="text-zinc-300">점수 읽는 법</span>
+                    <span className="text-red-400">높을수록 호구 ↑</span>
+                  </div>
+                  <div className="mt-2 h-1.5 rounded-full bg-gradient-to-r from-emerald-400 via-amber-300 to-red-500" />
+                  <div className="mt-1.5 flex justify-between font-mono text-[9px] font-bold text-zinc-500">
+                    <span>0 · 타이밍의 신</span><span>50 · 호구</span><span>100 · 명예이사</span>
+                  </div>
+                  <p className="mt-2 text-[10px] leading-4 text-zinc-500">낮을수록 구매 타이밍이 유리하고, 높을수록 가격·세대 리스크를 많이 안은 구간입니다. 차량 결함 판정이 아닌 밈·비교용 편집값입니다.</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-10">
-        <section id="timeline" className="scroll-mt-24 py-20 sm:py-28">
+        <section id="timeline" className="scroll-mt-20 pb-20 pt-10 sm:pb-28 sm:pt-12">
           <div className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className={styles.sectionNumber}>01 / MODEL TIMELINE</p>

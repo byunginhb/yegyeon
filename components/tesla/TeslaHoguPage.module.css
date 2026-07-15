@@ -31,7 +31,7 @@
 .hero {
   position: relative;
   isolation: isolate;
-  min-height: 560px;
+  min-height: 300px;
   overflow: hidden;
   border-bottom: 1px solid var(--tesla-line);
 }
@@ -39,10 +39,10 @@
 .hero::before {
   position: absolute;
   z-index: -1;
-  top: -28%;
+  top: -78%;
   right: -11%;
-  width: 54rem;
-  height: 54rem;
+  width: 42rem;
+  height: 42rem;
   content: '';
   border: 1px solid rgba(232, 33, 39, 0.34);
   border-radius: 999px;
@@ -66,11 +66,11 @@
 .heroMark {
   position: absolute;
   right: -0.04em;
-  bottom: -0.28em;
+  bottom: -0.42em;
   z-index: -1;
   color: rgba(255, 255, 255, 0.028);
   font-family: var(--font-figtree), sans-serif;
-  font-size: clamp(13rem, 32vw, 35rem);
+  font-size: clamp(9rem, 19vw, 19rem);
   font-weight: 900;
   font-style: italic;
   line-height: 1;
@@ -79,9 +79,9 @@
 }
 
 .displayTitle {
-  max-width: 11ch;
+  max-width: none;
   font-family: var(--font-figtree), 'Noto Sans KR', sans-serif;
-  font-size: clamp(3.4rem, 8.4vw, 8.4rem);
+  font-size: clamp(2.8rem, 5vw, 5rem);
   font-weight: 900;
   font-style: italic;
   line-height: 0.88;
@@ -207,9 +207,9 @@
 }
 
 @media (max-width: 767px) {
-  .hero { min-height: 610px; }
+  .hero { min-height: 0; }
   .yearRail { padding-left: 1.7rem; }
-  .heroMark { bottom: -0.08em; font-size: 17rem; }
+  .heroMark { bottom: 0; font-size: 11rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

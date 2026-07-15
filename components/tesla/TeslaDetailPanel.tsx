@@ -99,6 +99,9 @@ export default function TeslaDetailPanel({
           <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-bold text-zinc-400">
             밈·비교용 점수
           </span>
+          <span className="rounded-full border border-red-400/20 bg-red-400/[0.06] px-3 py-1 text-xs font-bold text-red-300">
+            높을수록 호구 ↑
+          </span>
         </div>
         <p className="mt-4 text-sm font-medium leading-6 text-zinc-200">{card.oneLine}</p>
       </div>
