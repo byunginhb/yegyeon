@@ -1,7 +1,13 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { adminSupabase } from '@/lib/supabase/admin'
-import { DAILY_QUESTS, getTodayDate, getYesterdayDate, calculateAttendanceReward } from '@/lib/quest'
+import {
+  DAILY_QUESTS,
+  ONETIME_QUESTS,
+  getTodayDate,
+  getYesterdayDate,
+  calculateAttendanceReward,
+} from '@/lib/quest'
 
 interface QuestProgressRow {
   quest_type: string
@@ -104,10 +110,39 @@ export async function GET() {
 
     const allCompleted = quests.every((q) => q.completed)
 
+    // 1회성 퀘스트: 날짜 무관 완료 여부 조회
+    const { data: onetimeProgress } = await adminSupabase
+      .from('user_quest_progress')
+      .select('quest_type, completed_at, points_earned')
+      .eq('user_id', userData.id)
+      .in(
+        'quest_type',
+        ONETIME_QUESTS.map((q) => q.type)
+      )
+
+    const onetimeMap = new Map<string, QuestProgressRow>()
+    for (const row of (onetimeProgress ?? []) as QuestProgressRow[]) {
+      if (row.completed_at) onetimeMap.set(row.quest_type, row)
+    }
+
+    const onetimeQuests = ONETIME_QUESTS.map((q) => {
+      const matched = onetimeMap.get(q.type)
+      return {
+        type: q.type,
+        title: q.title,
+        description: q.description,
+        points: matched?.points_earned ?? q.points,
+        icon: q.icon,
+        completed: Boolean(matched),
+        completed_at: matched?.completed_at ?? null,
+      }
+    })
+
     return NextResponse.json({
       success: true,
       data: {
         quests,
+        onetime_quests: onetimeQuests,
         total_points_today: totalPointsToday,
         all_completed: allCompleted,
       },

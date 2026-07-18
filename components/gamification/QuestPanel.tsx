@@ -14,6 +14,7 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import { Skeleton } from '@/components/ui/skeleton'
 import PointIcon from '@/components/ui/PointIcon'
+import BookmarkQuestCard from '@/components/gamification/BookmarkQuestCard'
 import { cn } from '@/lib/utils'
 
 interface QuestItem {
@@ -28,6 +29,7 @@ interface QuestItem {
 
 interface QuestData {
   quests: QuestItem[]
+  onetime_quests?: QuestItem[]
   total_points_today: number
   all_completed: boolean
 }
@@ -146,6 +148,14 @@ export default function QuestPanel() {
               <QuestRow key={quest.type} quest={quest} />
             ))}
           </ul>
+
+          {data.onetime_quests
+            ?.filter((quest) => !quest.completed)
+            .map((quest) => (
+              <div key={quest.type} className="mt-2">
+                <BookmarkQuestCard quest={quest} />
+              </div>
+            ))}
 
           {data.all_completed && (
             <div className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-teal-500/10 px-3 py-2 text-[11px] font-medium text-teal-600 dark:text-teal-400">

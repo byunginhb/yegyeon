@@ -61,6 +61,26 @@ export const DAILY_QUESTS = [
 
 export type DailyQuestType = (typeof DAILY_QUESTS)[number]['type']
 
+/**
+ * 1회성 퀘스트 정의 (ONETIME_QUESTS)
+ * 날짜와 무관하게 유저당 1회만 완료/보상 지급
+ */
+export const ONETIME_QUESTS = [
+  {
+    type: 'bookmark_home',
+    title: '예견 바로가기 추가하기',
+    description: 'PC는 북마크(Ctrl+D), 모바일은 홈 화면에 예견을 추가하세요',
+    points: 100000,
+    icon: 'bookmark-plus',
+  },
+] as const
+
+export type OnetimeQuestType = (typeof ONETIME_QUESTS)[number]['type']
+
+export function isOnetimeQuest(questType: string): questType is OnetimeQuestType {
+  return ONETIME_QUESTS.some((q) => q.type === questType)
+}
+
 const QUEST_LOOKUP = new Map(DAILY_QUESTS.map((q) => [q.type, q]))
 
 /**

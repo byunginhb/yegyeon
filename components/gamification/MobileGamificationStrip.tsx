@@ -20,6 +20,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import PointIcon from '@/components/ui/PointIcon'
+import BookmarkQuestCard from '@/components/gamification/BookmarkQuestCard'
 import { cn } from '@/lib/utils'
 
 interface AttendanceData {
@@ -39,6 +40,7 @@ interface QuestItem {
 
 interface QuestData {
   quests: QuestItem[]
+  onetime_quests?: QuestItem[]
   total_points_today: number
   all_completed: boolean
 }
@@ -267,6 +269,22 @@ export default function MobileGamificationStrip() {
                     </li>
                   ))}
                 </ul>
+
+                {quests.onetime_quests
+                  ?.filter((quest) => !quest.completed)
+                  .map((quest) => (
+                    <div key={quest.type} className="mt-3">
+                      <BookmarkQuestCard
+                        quest={quest}
+                        onCompleted={async () => {
+                          const refreshed = await fetch('/api/quests', { cache: 'no-store' })
+                            .then((r) => r.json())
+                            .catch(() => null)
+                          if (refreshed?.success) setQuests(refreshed.data)
+                        }}
+                      />
+                    </div>
+                  ))}
 
                 {quests.all_completed && (
                   <div className="mt-4 flex items-center justify-center gap-1.5 rounded-xl bg-teal-500/10 py-3 text-sm font-medium text-teal-600 dark:text-teal-400">

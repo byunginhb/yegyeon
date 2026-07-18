@@ -2,15 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { adminSupabase } from '@/lib/supabase/admin'
-import { DAILY_QUESTS, getTodayDate, type DailyQuestType } from '@/lib/quest'
+import { DAILY_QUESTS, ONETIME_QUESTS, getTodayDate, isOnetimeQuest } from '@/lib/quest'
 
-const QUEST_TYPES = DAILY_QUESTS.map((q) => q.type) as [DailyQuestType, ...DailyQuestType[]]
+const ALL_QUESTS = [...DAILY_QUESTS, ...ONETIME_QUESTS]
+const QUEST_TYPES = ALL_QUESTS.map((q) => q.type) as [string, ...string[]]
 
 const CompleteSchema = z.object({
   quest_type: z.enum(QUEST_TYPES),
 })
 
-const QUEST_LOOKUP = new Map(DAILY_QUESTS.map((q) => [q.type, q]))
+const QUEST_LOOKUP = new Map<string, (typeof ALL_QUESTS)[number]>(
+  ALL_QUESTS.map((q) => [q.type, q])
+)
 
 /**
  * POST /api/quests/complete
@@ -105,14 +108,19 @@ export async function POST(request: NextRequest) {
     }
 
     const today = getTodayDate()
+    const onetime = isOnetimeQuest(quest.type)
 
-    // 이미 완료된 기록 확인
-    const { data: existing, error: selectError } = await adminSupabase
+    // 이미 완료된 기록 확인 (1회성 퀘스트는 날짜 무관)
+    let existingQuery = adminSupabase
       .from('user_quest_progress')
       .select('id, completed_at, points_earned')
       .eq('user_id', dbUser.id)
       .eq('quest_type', quest.type)
-      .eq('quest_date', today)
+    if (!onetime) {
+      existingQuery = existingQuery.eq('quest_date', today)
+    }
+    const { data: existing, error: selectError } = await existingQuery
+      .limit(1)
       .maybeSingle()
 
     if (selectError) {
