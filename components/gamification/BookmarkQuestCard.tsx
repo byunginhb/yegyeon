@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { BookmarkPlus, Monitor, Smartphone, Share, Loader2, Check } from 'lucide-react'
+import { BookmarkPlus, Monitor, Smartphone, Share, Loader2, Check, ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   Dialog,
@@ -42,9 +42,12 @@ function detectPlatform(): Platform {
  */
 export default function BookmarkQuestCard({
   quest,
+  variant = 'row',
   onCompleted,
 }: {
   quest: BookmarkQuest
+  /** row: 퀘스트 목록용 컴팩트 행 / banner: 홈 상단 강조 배너 */
+  variant?: 'row' | 'banner'
   onCompleted?: () => void
 }) {
   const [open, setOpen] = useState(false)
@@ -122,20 +125,39 @@ export default function BookmarkQuestCard({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger className="flex w-full items-center gap-2 rounded-xl bg-primary/10 px-2.5 py-2 text-left transition-colors hover:bg-primary/15 active:scale-[0.98]">
-        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
-          <BookmarkPlus className="h-3.5 w-3.5" />
-        </span>
-        <span className="flex-1 min-w-0">
-          <span className="block text-xs font-medium leading-tight text-ink-900">{quest.title}</span>
-          <span className="block truncate text-[11px] leading-tight text-ink-500">
-            {quest.description}
+      {variant === 'banner' ? (
+        <DialogTrigger className="flex w-full items-center gap-3 rounded-2xl bg-gradient-to-r from-primary to-violet-500 px-4 py-3 text-left text-white shadow-sm transition-transform active:scale-[0.99]">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15">
+            <BookmarkPlus className="h-5 w-5" />
           </span>
-        </span>
-        <span className="inline-flex shrink-0 items-center gap-0.5 text-[11px] font-semibold text-primary">
-          <PointIcon size={10} />+{quest.points.toLocaleString()}
-        </span>
-      </DialogTrigger>
+          <span className="flex-1 min-w-0">
+            <span className="block text-sm font-semibold leading-tight">{quest.title}</span>
+            <span className="mt-0.5 flex items-center gap-1 text-xs text-white/85">
+              지금 추가하면
+              <span className="inline-flex items-center gap-0.5 font-bold text-white">
+                <PointIcon size={11} />+{quest.points.toLocaleString()}
+              </span>
+              포인트!
+            </span>
+          </span>
+          <ChevronRight className="h-4 w-4 shrink-0 text-white/70" />
+        </DialogTrigger>
+      ) : (
+        <DialogTrigger className="flex w-full items-center gap-2 rounded-xl bg-primary/10 px-2.5 py-2 text-left transition-colors hover:bg-primary/15 active:scale-[0.98]">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
+            <BookmarkPlus className="h-3.5 w-3.5" />
+          </span>
+          <span className="flex-1 min-w-0">
+            <span className="block text-xs font-medium leading-tight text-ink-900">{quest.title}</span>
+            <span className="block truncate text-[11px] leading-tight text-ink-500">
+              {quest.description}
+            </span>
+          </span>
+          <span className="inline-flex shrink-0 items-center gap-0.5 text-[11px] font-semibold text-primary">
+            <PointIcon size={10} />+{quest.points.toLocaleString()}
+          </span>
+        </DialogTrigger>
+      )}
 
       <DialogContent className="max-w-sm">
         <DialogHeader>

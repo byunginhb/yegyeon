@@ -89,6 +89,13 @@ export default function MobileGamificationStrip() {
     return () => { cancelled = true }
   }, [])
 
+  async function refreshQuests() {
+    const refreshed = await fetch('/api/quests', { cache: 'no-store' })
+      .then((r) => r.json())
+      .catch(() => null)
+    if (refreshed?.success) setQuests(refreshed.data)
+  }
+
   async function handleCheckIn() {
     if (checkingIn) return
     setCheckingIn(true)
@@ -130,6 +137,15 @@ export default function MobileGamificationStrip() {
 
   return (
     <div className="xl:hidden -mx-4 px-4 mb-4">
+      {/* 바로가기 추가 미션 배너 (미완료 시에만, 1뎁스 없이 바로 노출) */}
+      {quests?.onetime_quests
+        ?.filter((quest) => !quest.completed)
+        .map((quest) => (
+          <div key={quest.type} className="mb-3">
+            <BookmarkQuestCard quest={quest} variant="banner" onCompleted={refreshQuests} />
+          </div>
+        ))}
+
       <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
 
         {/* 출석 카드 */}
@@ -274,15 +290,7 @@ export default function MobileGamificationStrip() {
                   ?.filter((quest) => !quest.completed)
                   .map((quest) => (
                     <div key={quest.type} className="mt-3">
-                      <BookmarkQuestCard
-                        quest={quest}
-                        onCompleted={async () => {
-                          const refreshed = await fetch('/api/quests', { cache: 'no-store' })
-                            .then((r) => r.json())
-                            .catch(() => null)
-                          if (refreshed?.success) setQuests(refreshed.data)
-                        }}
-                      />
+                      <BookmarkQuestCard quest={quest} onCompleted={refreshQuests} />
                     </div>
                   ))}
 
