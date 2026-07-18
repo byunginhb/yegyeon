@@ -46,17 +46,19 @@ export default function BookmarkQuestCard({
   onCompleted,
 }: {
   quest: BookmarkQuest
-  /** row: 퀘스트 목록용 컴팩트 행 / banner: 홈 상단 강조 배너 */
-  variant?: 'row' | 'banner'
+  /** row: 퀘스트 목록용 컴팩트 행 / banner: 홈 상단 강조 배너 / icon: 헤더 아이콘 버튼 */
+  variant?: 'row' | 'banner' | 'icon'
   onCompleted?: () => void
 }) {
   const [open, setOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [platform, setPlatform] = useState<Platform>('desktop')
+  const [standalone, setStandalone] = useState(false)
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null)
 
   useEffect(() => {
     setPlatform(detectPlatform())
+    setStandalone(window.matchMedia('(display-mode: standalone)').matches)
 
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault()
@@ -123,9 +125,21 @@ export default function BookmarkQuestCard({
     }
   }
 
+  // 이미 설치된 PWA(standalone)에서는 헤더 아이콘을 숨김
+  if (variant === 'icon' && standalone) return null
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {variant === 'banner' ? (
+      {variant === 'icon' ? (
+        <DialogTrigger
+          className="relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-ink-700 transition-colors hover:bg-canvas-50 hover:text-ink-1000"
+          title={`바로가기 추가하고 ${quest.points.toLocaleString()}포인트 받기`}
+          aria-label="바로가기 추가"
+        >
+          <BookmarkPlus className="h-4 w-4" />
+          <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-primary" />
+        </DialogTrigger>
+      ) : variant === 'banner' ? (
         <DialogTrigger className="flex w-full items-center gap-3 rounded-2xl bg-gradient-to-r from-primary to-violet-500 px-4 py-3 text-left text-white shadow-sm transition-transform active:scale-[0.99]">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15">
             <BookmarkPlus className="h-5 w-5" />
@@ -175,7 +189,17 @@ export default function BookmarkQuestCard({
         </DialogHeader>
 
         <div className="space-y-3 text-sm text-ink-700">
-          {platform === 'desktop' && (
+          {platform === 'desktop' && installPrompt && (
+            <div className="flex items-start gap-3 rounded-xl bg-ink-100/40 p-3">
+              <Monitor className="mt-0.5 h-4 w-4 shrink-0 text-ink-500" />
+              <p className="leading-relaxed">
+                아래 버튼을 누르면 예견 앱이 <span className="font-semibold">바탕화면에 바로 설치</span>
+                됩니다.
+              </p>
+            </div>
+          )}
+
+          {platform === 'desktop' && !installPrompt && (
             <div className="flex items-start gap-3 rounded-xl bg-ink-100/40 p-3">
               <Monitor className="mt-0.5 h-4 w-4 shrink-0 text-ink-500" />
               <p className="leading-relaxed">
@@ -218,17 +242,26 @@ export default function BookmarkQuestCard({
             </div>
           )}
 
-          {platform === 'android' && installPrompt && (
+          {installPrompt && (
             <Button onClick={handleInstallClick} disabled={submitting} className="w-full gap-1.5">
-              <Smartphone className="h-4 w-4" />
-              홈 화면에 추가하기
+              {platform === 'desktop' ? (
+                <>
+                  <Monitor className="h-4 w-4" />
+                  바탕화면에 앱 설치하기
+                </>
+              ) : (
+                <>
+                  <Smartphone className="h-4 w-4" />
+                  홈 화면에 추가하기
+                </>
+              )}
             </Button>
           )}
 
           <Button
             onClick={claimReward}
             disabled={submitting}
-            variant={platform === 'android' && installPrompt ? 'outline' : 'default'}
+            variant={installPrompt ? 'outline' : 'default'}
             className="w-full gap-1.5"
           >
             {submitting ? (

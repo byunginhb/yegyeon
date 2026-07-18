@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Moon, Sun, Search, Menu } from 'lucide-react'
 import PointsDisplay from '@/components/ui/PointsDisplay'
+import BookmarkQuestCard from '@/components/gamification/BookmarkQuestCard'
+import { ONETIME_QUESTS } from '@/lib/quest-defs'
 import { useTheme } from 'next-themes'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -110,6 +112,9 @@ export default function Header() {
             <Search className="h-3.5 w-3.5" />
             <span>마켓 검색...</span>
           </Link>
+
+          {/* 바로가기 추가 (PWA 설치/북마크 안내) */}
+          <BookmarkQuestCard quest={ONETIME_QUESTS[0]} variant="icon" />
 
           {/* 다크모드 토글 */}
           <Button
