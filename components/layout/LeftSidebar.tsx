@@ -13,6 +13,8 @@ import { createClient } from '@/lib/supabase/client'
 import PointsDisplay from '@/components/ui/PointsDisplay'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import CommentTicker from '@/components/marquee/CommentTicker'
+import BookmarkQuestCard from '@/components/gamification/BookmarkQuestCard'
+import { ONETIME_QUESTS } from '@/lib/quest-defs'
 import { cn } from '@/lib/utils'
 import type { User } from '@/types'
 
@@ -160,8 +162,11 @@ export default function LeftSidebar() {
         </div>
       </div>
 
-      {/* 하단: 다크모드 + 유저 */}
+      {/* 하단: 바로가기 추가 + 다크모드 + 유저 */}
       <div className="px-3 py-3 space-y-1">
+        {/* 바로가기 추가 (PWA 설치/북마크 안내) */}
+        <BookmarkQuestCard quest={ONETIME_QUESTS[0]} variant="row" />
+
         {/* 다크모드 토글 */}
         {mounted && (
           <button

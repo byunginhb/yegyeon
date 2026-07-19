@@ -8,6 +8,8 @@ import { Moon, Sun, LogOut, User as UserIcon, Briefcase, Shield } from 'lucide-r
 import { useTheme } from 'next-themes'
 import { createClient } from '@/lib/supabase/client'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import BookmarkQuestCard from '@/components/gamification/BookmarkQuestCard'
+import { ONETIME_QUESTS } from '@/lib/quest-defs'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -67,6 +69,9 @@ export default function MobileTopBar() {
       </Link>
 
       <div className="flex items-center gap-1">
+        {/* 바로가기 추가 (PWA 설치/북마크 안내) */}
+        <BookmarkQuestCard quest={ONETIME_QUESTS[0]} variant="icon" />
+
         {mounted && (
           <button
             type="button"
