@@ -1,8 +1,19 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { BookmarkPlus, Monitor, Smartphone, Share, Loader2, Check, ChevronRight } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
+import {
+  BookmarkPlus,
+  Monitor,
+  Smartphone,
+  Share,
+  Loader2,
+  Check,
+  ChevronRight,
+  Home,
+} from 'lucide-react'
 import { toast } from 'sonner'
+import { createClient } from '@/lib/supabase/client'
 import {
   Dialog,
   DialogContent,
@@ -50,11 +61,15 @@ export default function BookmarkQuestCard({
   variant?: 'row' | 'banner' | 'icon'
   onCompleted?: () => void
 }) {
+  const router = useRouter()
+  const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [platform, setPlatform] = useState<Platform>('desktop')
   const [standalone, setStandalone] = useState(false)
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null)
+  // null: 미확인(조회 중), false: 미수령, true: 이미 보상 수령
+  const [claimed, setClaimed] = useState<boolean | null>(null)
 
   useEffect(() => {
     setPlatform(detectPlatform())
@@ -76,6 +91,46 @@ export default function BookmarkQuestCard({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  /**
+   * 다이얼로그 열기: 비로그인 → 로그인 페이지 이동, 로그인 → 열고 보상 수령 여부 조회
+   */
+  async function handleOpenChange(next: boolean) {
+    if (!next) {
+      setOpen(false)
+      return
+    }
+
+    try {
+      const supabase = createClient()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      if (!session?.user) {
+        router.push('/auth/login')
+        return
+      }
+    } catch (error) {
+      console.error('바로가기 다이얼로그 세션 확인 실패:', error)
+      router.push('/auth/login')
+      return
+    }
+
+    setOpen(true)
+
+    // 계정 기준 완료 여부 조회 (다른 기기에서 수령한 경우 포함)
+    try {
+      const res = await fetch('/api/quests', { cache: 'no-store' })
+      const json = await res.json()
+      const matched = (
+        json?.data?.onetime_quests as { type: string; completed: boolean }[] | undefined
+      )?.find((q) => q.type === quest.type)
+      setClaimed(Boolean(matched?.completed))
+    } catch {
+      setClaimed(false)
+    }
+  }
 
   async function claimReward() {
     if (submitting) return
@@ -99,6 +154,7 @@ export default function BookmarkQuestCard({
         toast.success(`바로가기 추가 보상 +${quest.points.toLocaleString()} 포인트 획득!`)
       }
 
+      setClaimed(true)
       setOpen(false)
       window.dispatchEvent(new Event('refresh-quests'))
       onCompleted?.()
@@ -129,7 +185,7 @@ export default function BookmarkQuestCard({
   if (variant === 'icon' && standalone) return null
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       {variant === 'icon' ? (
         <DialogTrigger
           className="relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-ink-700 transition-colors hover:bg-canvas-50 hover:text-ink-1000"
@@ -180,11 +236,17 @@ export default function BookmarkQuestCard({
             예견 바로가기 추가하기
           </DialogTitle>
           <DialogDescription>
-            바로가기를 추가하면{' '}
-            <span className="font-semibold text-primary">
-              +{quest.points.toLocaleString()} 포인트
-            </span>
-            를 드립니다. (1회 한정)
+            {claimed ? (
+              <>이미 보상을 받은 계정이에요. 바로가기는 아래 안내로 계속 추가할 수 있습니다.</>
+            ) : (
+              <>
+                바로가기를 추가하면{' '}
+                <span className="font-semibold text-primary">
+                  +{quest.points.toLocaleString()} 포인트
+                </span>
+                를 드립니다. (1회 한정)
+              </>
+            )}
           </DialogDescription>
         </DialogHeader>
 
@@ -215,7 +277,10 @@ export default function BookmarkQuestCard({
                 <kbd className="rounded border border-ink-300 bg-canvas-0 px-1.5 py-0.5 text-xs font-semibold">
                   ⌘ + D
                 </kbd>
-                )를 눌러 예견을 북마크에 추가하세요.
+                )를 눌러 예견을 북마크에 추가하세요.{' '}
+                <span className="text-ink-500">
+                  지금 보고 있는 페이지가 저장되므로, 메인페이지에서 눌러야 메인이 북마크됩니다.
+                </span>
               </p>
             </div>
           )}
@@ -242,6 +307,19 @@ export default function BookmarkQuestCard({
             </div>
           )}
 
+          {/* 수동 추가 경로(Ctrl+D, iOS 공유)는 현재 페이지가 저장되므로 메인 이동 버튼 제공 */}
+          {pathname !== '/' &&
+            ((platform === 'desktop' && !installPrompt) || platform === 'ios') && (
+              <Button
+                variant="outline"
+                onClick={() => router.push('/')}
+                className="w-full gap-1.5"
+              >
+                <Home className="h-4 w-4" />
+                메인페이지로 이동해서 추가하기
+              </Button>
+            )}
+
           {installPrompt && (
             <Button onClick={handleInstallClick} disabled={submitting} className="w-full gap-1.5">
               {platform === 'desktop' ? (
@@ -258,21 +336,24 @@ export default function BookmarkQuestCard({
             </Button>
           )}
 
-          <Button
-            onClick={claimReward}
-            disabled={submitting}
-            variant={installPrompt ? 'outline' : 'default'}
-            className="w-full gap-1.5"
-          >
-            {submitting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <>
-                <Check className="h-4 w-4" />
-                추가 완료! 보상 받기
-              </>
-            )}
-          </Button>
+          {/* 보상 버튼은 아직 보상을 받지 않은 계정에만 노출 (수령 여부 조회 중에는 숨김) */}
+          {claimed === false && (
+            <Button
+              onClick={claimReward}
+              disabled={submitting}
+              variant={installPrompt ? 'outline' : 'default'}
+              className="w-full gap-1.5"
+            >
+              {submitting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <Check className="h-4 w-4" />
+                  추가 완료! 보상 받기
+                </>
+              )}
+            </Button>
+          )}
         </div>
       </DialogContent>
     </Dialog>
