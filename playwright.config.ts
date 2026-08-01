@@ -11,6 +11,16 @@ export default defineConfig({
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
+    // 티저 팝업이 다른 테스트의 클릭을 가로채지 않도록 기본 억제 (전용 스펙에서만 해제)
+    storageState: {
+      cookies: [],
+      origins: [
+        {
+          origin: 'http://localhost:3000',
+          localStorage: [{ name: 'yegyeon:teaser:hideUntil', value: '99999999999999' }],
+        },
+      ],
+    },
   },
   projects: [
     {

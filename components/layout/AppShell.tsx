@@ -7,6 +7,7 @@ import MobileTopBar from './MobileTopBar'
 import SiteFooter from './SiteFooter'
 import { AnnouncementBanner } from '@/components/common/AnnouncementBanner'
 import WelcomePopup from '@/components/common/WelcomePopup'
+import TeaserMarketPopup from '@/components/common/TeaserMarketPopup'
 
 const SIDEBAR_EXCLUDED = ['/admin', '/auth', '/tesla']
 
@@ -29,6 +30,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       </div>
       <MobileNav />
       <WelcomePopup />
+      <TeaserMarketPopup />
     </>
   )
 }
