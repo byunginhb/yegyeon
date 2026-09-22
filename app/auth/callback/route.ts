@@ -35,8 +35,16 @@ export async function GET(request: NextRequest) {
       }
     )
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
+      // 안드로이드 앱 로그인(Custom Tab): 세션을 앱에 넘긴다. 앱은 refresh token을 /auth/app-session 에 POST 해 WebView 쿠키로 바꾼다.
+      if (request.cookies.get('yg_app')?.value === '1' && data.session) {
+        const res = NextResponse.redirect(
+          `yegyeon://auth?rt=${encodeURIComponent(data.session.refresh_token)}`
+        )
+        res.cookies.delete('yg_app')
+        return res
+      }
       return NextResponse.redirect(`${origin}${next}`)
     }
   }

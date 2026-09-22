@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "예견",
+    "slug": "yegyeon",
+    "scheme": "yegyeon",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#111827",
+    "android": {
+      "package": "com.yegyeon.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundColor": "#2456c0"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 160,
+          "resizeMode": "contain",
+          "backgroundColor": "#111827"
+        }
+      ],
+      "./withReleaseSigning"
+    ]
+  }
+}

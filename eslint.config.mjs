@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // 안드로이드 래퍼 앱(Expo)은 별도 프로젝트
+    "mobile/**",
   ]),
 ]);
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -41,6 +41,18 @@ export default function LoginPage() {
       },
     })
   }
+
+  // 안드로이드 앱: WebView에선 구글 OAuth가 차단되므로 앱이 이 페이지를 외부 브라우저(Custom Tab)로 연다.
+  // ?app=1&provider=google|kakao → yg_app 쿠키를 심고 바로 OAuth 시작. 콜백(/auth/callback)이 쿠키를 보고 yegyeon:// 로 돌려준다.
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search)
+    const provider = q.get('provider')
+    if (q.get('app') === '1' && (provider === 'google' || provider === 'kakao')) {
+      document.cookie = 'yg_app=1; path=/; max-age=600; SameSite=Lax'
+      handleOAuthLogin(provider)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-canvas-100 px-4">
